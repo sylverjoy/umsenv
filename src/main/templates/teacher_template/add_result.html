@@ -1,0 +1,36 @@
+{%extends 'main/main_home_teachers.html'%}
+{%block content%}
+
+
+        <div class="col-md-12 grid-margin stretch-card">
+
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Add Result</h4>
+              <p class="card-description style= color:red;">
+                Add Registration Number
+              </p>
+               
+              <form action = "" method="POST" enctype="multipart/form-data" class="forms-sample">
+                {% csrf_token %}
+                <div class="form-group">
+                  <input type="text" name="registration_number" class="form-control form-control-lg" id="exampleInputPassword1" placeholder="Registration Number">
+                  <!-- <label for="cars">Select Teacher From That Department</label>
+  <select name="registration_number"  class="form-control form-control-lg" id="cars">
+    {%for c in data%}
+    <option value="{{c.student_id}}"+ {% if c in selected_values %} selected {% endif %}>{{c.student_id}}</option>
+    {% endfor %}
+  </select> -->
+                </div>
+                <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                <!-- <button class="btn btn-light">Cancel</button> -->
+              </form>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+  </div>
+</div>
+
+{%endblock%}

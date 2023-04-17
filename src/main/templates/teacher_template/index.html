@@ -1,0 +1,226 @@
+{%extends 'main/main_home_teachers.html'%} {%block content%}
+<!-- partial -->
+
+<div class="row">
+    <div class="col-md-12 grid-margin">
+        <div class="row">
+            <div class="col-12 col-xl-8 mb-4 mb-xl-0">
+                <!-- here name-->
+                <h3 class="font-weight-bold">Welcome, {{name}} (Teacher)</h3>
+            </div>
+            <div class="col-12 col-xl-4">
+                <div class="justify-content-end d-flex">
+                    <div class="dropdown flex-md-grow-1 flex-xl-grow-0">
+                        <div aria-haspopup="true" aria-expanded="true">
+                            Today, {% now "jS F Y (g:i a)" %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 grid-margin">
+        <div class="row">
+    <div class="col-md-3 stretch-card grid-margin grid-margin-md-0">
+        <div class="card data-icon-card-primary">
+          <div class="card-body">
+            <p class="card-title text-white">Your Department</p>                      
+            <div class="row">
+              <div class="col-8 text-white">
+                <h3>{{dept}}</h3>
+              </div>
+
+            </div>
+          </div>
+        </div>
+    </div>
+    <div class="col-md-3 stretch-card grid-margin grid-margin-md-0">
+        <div class="card data-icon-card-primary">
+          <div class="card-body">
+            <p class="card-title text-white">Your ID</p>                      
+            <div class="row">
+              <div class="col-8 text-white">
+                <h3>{{t_id}}</h3>
+              </div>
+
+            </div>
+          </div>
+        </div>
+    </div>
+    <div class="col-md-3 stretch-card grid-margin grid-margin-md-0">
+        <div class="card data-icon-card-primary">
+          <div class="card-body">
+            <p class="card-title text-white">Your Number of Assigned Courses</p>                      
+            <div class="row">
+              <div class="col-8 text-white">
+                <h3>{{n_ass}}</h3>
+              </div>
+
+            </div>
+          </div>
+        </div>
+    </div>
+    <div class="col-md-3 stretch-card grid-margin grid-margin-md-0">
+        <div class="card data-icon-card-primary">
+          <div class="card-body">
+            <p class="card-title text-white">Number of Assigned Major Courses</p>                      
+            <div class="row">
+              <div class="col-8 text-white">
+                <h3>{{major}}</h3>
+              </div>
+
+            </div>
+          </div>
+        </div>
+    </div>
+    </div>
+    </div>
+
+</div>
+<div class="row">
+    <div class="col-md-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <p class="card-title">Course Wise Student Participation Pie Chart</p>
+                </div>
+                <p class="font-weight-500">
+                    Here is the Pie Chart Of Student Participation of Your Courses
+                </p>
+                <div id="sales-legend" class="chartjs-legend mt-4 mb-2"></div>
+                <canvas id="pieChart" data-url="{% url 'course_wise_participation' %}"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- <div class="col-md-6 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <p class="card-title">Skill Set Chart</p>
+                    <a href="{% url 'full_skillset' %}" class="text-info">View Full Screen</a>
+                </div>
+                <canvas id="barChartH" data-url="{% url 'get_subtype' %}"></canvas>
+            </div>
+        </div>
+    </div> -->
+</div>
+<div class="row">
+    <div class="col-md-6 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <p class="card-title">Course Wise Performances Of students of your Courses</p>
+                </div>
+                <p class="font-weight-500">
+                    Here is the Coursewise Performance of Students that you are conducting
+                </p>
+                <div id="sales-legend" class="chartjs-legend mt-4 mb-2"></div>
+                <canvas id="barChartH" data-url="{% url 'course_wise_performance' %}"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <p class="card-title">Session Wise Courses</p>
+                </div>
+                <p class="font-weight-500">
+                    Here is the sessionwise courses you are conducting
+                </p>
+                <div id="sales-legend" class="chartjs-legend mt-4 mb-2"></div>
+                <canvas id="barChart1" data-url="{% url 'session_wise_courses' %}"></canvas>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+
+
+<div class="row">
+    <div class="col-md-6 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <p class="card-title">Ratings of your teaching for the courses you have conducted  </p>
+                </div>
+                <p class="font-weight-500">
+                    Here is the Coursewise ratings of your teaching given by the student's that are registered to your course
+                </p>
+                <div id="sales-legend" class="chartjs-legend mt-4 mb-2"></div>
+                <canvas id="barChartH1" data-url="{% url 'get_ratings_teacher' %}"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <p class="card-title">List of the courses you are teaching</p>
+            <p class="card-description">
+              This is complete list of courses that you have been Assigned by Admins 
+            </p>
+            <div class="table-responsive pt-3">
+              <table class="table table-bordered table-hover">
+                <table id="table" data-toggle="table" data-url='http://127.0.0.1:8000/teacher_subject_list/'>
+                  <thead class = "thead">
+                    <tr>
+                      <th data-field="cc">
+                        Course Code
+                      </th>
+                      <th data-field="name">
+                        Subject's Name
+                      </th>
+
+                      <th data-field="student_dept">
+                        Student's Department
+                      </th>
+                      <th data-field="subtype">
+                        Genre
+                      </th>
+
+  
+                    </tr>
+                  </thead>
+                </table>
+  
+              </table>
+            </div>
+          </div>
+        </div>
+  
+      </div>
+
+
+
+
+</div>
+
+
+
+</div>
+</div>
+</div>
+
+
+
+
+
+
+</div>
+</div>
+
+<!-- content-wrapper ends -->
+<!-- partial:partials/_footer.html -->
+<!-- partial -->
+</div>
+<!-- main-panel ends -->
+
+<!-- container-scroller -->
+{%endblock%}

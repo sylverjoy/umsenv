@@ -1,0 +1,31 @@
+{%extends 'main/main_home_teachers.html'%} {%block content%}
+
+<div class="main-panel">
+  <div class="content-wrapperteacher">
+    {% include 'main/message.html' %}
+    <div class="row">
+      <div class="col-md-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title">SELECT COURSE</h4>
+            <p class="card-description">Select A Course from what you want to delete a result</p>
+            <form action="" method="POST" class="forms-sample">
+              {% csrf_token %}
+              <div class="form-group">
+<select name="course_code"  class="form-control form-control-lg" id="cars">
+  {%for c in data%}
+  <option value="{{c.course_code}},{{c.student_dept}}"+ {% if c in selected_values %} selected {% endif %}>{{c.course_code}} for ({{c.student_dept}}) Department</option>
+  {% endfor %}
+</select>
+              </div>
+              <button type="submit" class="btn btn-primary mr-2">Submit</button>
+              <button class="btn btn-light">Cancel</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{%endblock%}
