@@ -1,4 +1,7 @@
 import json
+import xlsxwriter
+import io
+import openpyxl
 from django.contrib.auth.models import Group
 import requests
 from django.contrib import messages
@@ -1165,6 +1168,137 @@ def add_j(request):
 
 
     return render(request,'teacher_template/add_json.html',context)
+
+
+##Extracting result template
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['teacher'])
+def extract_temp(request):
+    t_id = str(request.user.teacher.teacher_id)
+    print(t_id)
+    data = AssignedTeacher2.objects.filter(teacher_id = t_id)
+
+    context={'course':data} 
+    if request.method == 'POST':
+        code = request.POST.get('course_code')
+        xx =code.split(",")
+        print(xx)
+        course_cd = xx[0]
+        dept_id =xx[1]
+
+        matricules = []
+        names = []
+        fields = ["Matricule", "Names", "CA", "Harmonised", "Attendance"]
+
+        register1 = RegisterTable.objects.filter(dept_id = dept_id, subject_id = course_cd).all()
+        for r in register1:
+            matricules.append(r.student)
+
+            n = Student.objects.filter(registration_number = r.student).first().name
+            names.append(n)
+
+        wb_name = 'Results_' + str(course_cd) + '.xlsx'
+
+        output = io.BytesIO()
+        wb = xlsxwriter.Workbook(output)
+        ws = wb.add_worksheet('Sheet1')
+        
+        r1 = 0
+        c1 = 0
+
+        for f in fields:
+            ws.write(r1, c1, f)
+            c1+=1
+        r2 = 1
+        c2 = 0
+
+        for m in matricules:
+            for n in names:
+                ws.write(r2, c2, str(m))
+                ws.write(r2,c2 + 1, str(n))
+                r2+=1
+
+        wb.close()
+        
+        output.seek(0)
+
+        response = HttpResponse(
+            output,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = "attachment; filename=%s" % wb_name
+
+        return response
+            
+
+    return render(request,'teacher_template/extract_temp.html',context)
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['teacher'])
+def add_excel(request):
+    t_id = str(request.user.teacher.teacher_id)
+    print(t_id)
+    data = AssignedTeacher2.objects.filter(teacher_id = t_id)
+
+    context={'course':data} 
+    if request.method == 'POST' and request.FILES['myfile']:
+        myfile = request.FILES['myfile']
+        code = request.POST.get('course_code')
+        xx =code.split(",")
+        print(xx)
+        course_cd = xx[0]
+        dept_id =xx[1]
+
+        wb = openpyxl.load_workbook(myfile)
+        ws = wb["Sheet1"]
+        print(ws)
+
+        excel_data = []
+
+        for r in ws.iter_rows():
+            row_data = []
+            for cell in r:
+                row_data.append(str(cell.value))
+            excel_data.append(row_data)
+        
+        print(excel_data)
+        
+        for i in range(1, len(excel_data)):
+            sub = Result(
+                    course_code =course_cd,
+                    theory_marks = excel_data[i][2],
+                    term_test = excel_data[i][3],
+                    attendence = excel_data[i][4],
+                    dept = dept_id,
+                    student_id = excel_data[i][0],
+                    total = round(((float(excel_data[i][2]))+(float(excel_data[i][3]))+float(excel_data[i][4]))/20),
+                )
+            sub.save()
+
+        messages.success(request,"Successfully Added Results for %s course"% (course_cd))
+        return redirect('home') 
+    return render(request,'teacher_template/add_json.html',context)
+
+'''       
+            sub = Result(
+                course_code =course,
+                theory_marks = theory_mar,
+                term_test = term_tes,
+                attendence = attendence,
+                dept = dept_id,
+                student_id = regi,
+                total = total_marks,
+            )
+            sub.save()
+            messages.success(request," %s student's  %s course's result added "% (regi, course))
+            
+        messages.success(request,"Successfully Added Result for %s course"% (course))  '''
+        
+            
+
+
+
+    
 
 
 @login_required(login_url = 'login')
