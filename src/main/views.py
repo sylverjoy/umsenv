@@ -1481,6 +1481,100 @@ def subject_ranksheet_teacher(request):
         return render(request, 'teacher_template/course_result2.html',context)
     return render(request, 'teacher_template/course_result.html',context)
 
+#______________________________Extract Results____________________________________
+@login_required(login_url = 'login')
+def extract_results(request):
+    #t_id = str(request.user.admin.admin_id)
+    #print(t_id)
+    #data = AssignedTeacher2.objects.filter(teacher_id = t_id)
+
+    context={'course':[]} 
+    if request.method == 'POST' and request.FILES['myfile']:
+        myfile = request.FILES['myfile']
+        code = request.POST.get('course_code')
+        xx =code.split(",")
+        print(xx)
+        course_cd = xx[0]
+        dept_id =xx[1]
+        fs = FileSystemStorage()
+        filename = fs.save(myfile.name, myfile)
+        module_dir = 'C:\\Users\\neyamul\\Projects\\university_management_system_extend\\university_management_system\\media'
+        file_path =os.path.join(module_dir, filename)
+
+        f =open(file_path)
+          
+        y=json.load(f)
+
+
+        for i in range(0, len(y)):
+            
+            course = course_cd
+            dept = dept_id
+            regi = y[i]["student_id"]
+            theory_mar =y[i]["theory_marks"]
+            term_tes =y[i]["term_test"]
+            attendence = y[i]["attendence"]
+
+            total_marks = round((float(theory_mar)/100.0)*70+(float(term_tes)/30.0)*20+attendence)
+
+            register1 = RegisterTable.objects.filter(student_id = regi, dept_id = dept, subject_id = course_cd).first()
+
+            if register1== None:
+                messages.error(request," %s student did not sent  register request for %s course "% (regi, course_cd))
+                continue
+            
+            if register1.status == 'Pending':
+                messages.error(request," %s student registration for %s course is pending, Approve first "% (regi, course_cd))
+                continue
+
+            if register1.status == 'Rejected':
+                messages.error(request," %s student registration for %s course is Rejected "% (regi, course_cd))
+                continue
+
+
+
+
+
+            cd = Result.objects.filter(student_id = regi, course_code = course).first()
+            if cd != None:
+                messages.error(request," %s student's  %s course's result already here "% (regi, course))
+                continue
+            
+            sd = Student.objects.filter(registration_number = regi).first()
+            if sd == None:
+                messages.error(request," %s student is not registered in %s Department "% (regi, dept_id))
+                continue
+            # sb = Subject.objects.filter(course_code = course).first()
+            # if sb == None:
+            #     messages.error(request," %s course is not registered "% (course))
+            #     continue
+            # cursor.execute('''INSERT INTO main_result (course_code, marks, attendence, student_id)
+            # VALUES (%s,%s,%s,%s );'''% (course, marks, attendence, regi))
+            sub = Result(
+                course_code =course,
+                theory_marks = theory_mar,
+                term_test = term_tes,
+                attendence = attendence,
+                dept = dept_id,
+                student_id = regi,
+                total = total_marks,
+                
+
+
+            )
+            sub.save()
+            messages.success(request," %s student's  %s course's result added "% (regi, course))
+            
+        messages.success(request,"Successfully Added Result for %s course"% (course))  
+        return redirect('home') 
+            
+
+
+
+    return render(request,'admin_template/extract_results.html',context)
+   
+#__________________________________________________EXTRACT RESULTS END_____________________________________________________
+
 def delete_result(request):
     t_id = str(request.user.teacher.teacher_id)
     data = AssignedTeacher2.objects.filter(teacher_id = t_id)
