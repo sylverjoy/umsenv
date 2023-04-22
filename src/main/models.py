@@ -14,7 +14,6 @@ class Dept(models.Model):
     def __str__(self):
         return self.dept_id
 
-
 class Student(models.Model):
     user = models.OneToOneField(User, null = True, on_delete= models.CASCADE)
     registration_number = models.CharField(max_length= 200, null=False, primary_key=True)
@@ -24,6 +23,7 @@ class Student(models.Model):
     name = models.CharField(max_length= 200, null= True)
     phone = models.CharField(max_length= 200, null = True)
     profile_pic = models.ImageField(null = True, blank = True)
+    level = models.CharField(max_length= 200, null= True)
     
     
 
@@ -83,6 +83,7 @@ class Subject(models.Model):
     session = models.CharField(max_length= 200, null = True)
     subtype = models.CharField(max_length= 200, null=True)
     dept =models.ForeignKey(Dept, on_delete=models.CASCADE)
+    level = models.CharField(max_length= 200, null= True)
 
 class RegisterTable(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
