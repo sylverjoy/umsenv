@@ -1,4 +1,7 @@
 import json
+import xlsxwriter
+import io
+import openpyxl
 from django.contrib.auth.models import Group
 import requests
 from django.contrib import messages
@@ -438,11 +441,11 @@ def course_wise_performance(request, *args, **kwargs):
 def session_wise_courses(request, *args, **kwargs):
     t_id = str(request.user.teacher.teacher_id)
     attendance = Result.objects.raw('''
-    SELECT 1 as id, session as sn , COUNT(*) as cnt FROM
+    SELECT 1 as id, semester as sn , COUNT(*) as cnt FROM
     public.main_assignedteacher2
     JOIN main_subject ON main_assignedteacher2.course_code = main_subject.course_code
 	where main_assignedteacher2.teacher_id=%s
-	group by session;''',[t_id])
+	group by semester;''',[t_id])
     data =[]
     labels =[]
 
@@ -938,7 +941,7 @@ def update_result(request, result_id, course_code):
         tt = form.instance.term_test
         aa = form.instance.attendence
         theory= form.instance.theory_marks
-        form.instance.total = round(((theory)/100.0)*70.0+ (tt/30.0)*20.0+aa)
+        form.instance.total = round((theory + tt +aa)/5)
         form.save()
         messages.success(request,"Marks Edited %s Student's %s Course"%(regi,course_id))
         return redirect('home')
@@ -1035,7 +1038,8 @@ def add_result(request, dept, course_id):
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['admin'])
 def add_subject(request):
-    context = {'page_title':'add subject'}
+
+    ''' context = {'page_title':'add subject'}
     if request.method == 'POST':
         dep_id = request.POST.get('dept_id')
         c_id = request.POST.get('course_code')
@@ -1068,7 +1072,18 @@ def add_subject(request):
             if dep == None:
                 messages.error(request, " %s Dept is not registered. Register The Department First From Here"%(dep_id))
                 return redirect('add_dept')
-            messages.error(request, "Could'nt add subjects.. Subject is Alraeady registered")
+            messages.error(request, "Could'nt add subjects.. Subject is Alraeady registered") '''
+    
+    subject_form = AddSubjectForm(request.POST or None, request.FILES or None)
+    context = {'subject_form': subject_form, 'page_title':'add subject'}
+    if request.method == 'POST':
+        if subject_form.is_valid():
+            subject = subject_form.save()
+            subject.save()
+            
+            messages.success(request, "Successfully Added Subject")
+        else:
+            messages.error(request, "Could Not Add")
   
     return render(request, 'admin_template/add_subject.html',context)
 
@@ -1165,6 +1180,137 @@ def add_j(request):
 
 
     return render(request,'teacher_template/add_json.html',context)
+
+
+##Extracting result template
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['teacher'])
+def extract_temp(request):
+    t_id = str(request.user.teacher.teacher_id)
+    print(t_id)
+    data = AssignedTeacher2.objects.filter(teacher_id = t_id)
+
+    context={'course':data} 
+    if request.method == 'POST':
+        code = request.POST.get('course_code')
+        xx =code.split(",")
+        print(xx)
+        course_cd = xx[0]
+        dept_id =xx[1]
+
+        matricules = []
+        names = []
+        fields = ["Matricule", "Names", "CA", "Harmonised", "Attendance"]
+
+        register1 = RegisterTable.objects.filter(dept_id = dept_id, subject_id = course_cd).all()
+        for r in register1:
+            matricules.append(r.student)
+
+            n = Student.objects.filter(registration_number = r.student).first().name
+            names.append(n)
+
+        wb_name = 'Results_' + str(course_cd) + '.xlsx'
+
+        output = io.BytesIO()
+        wb = xlsxwriter.Workbook(output)
+        ws = wb.add_worksheet('Sheet1')
+        
+        r1 = 0
+        c1 = 0
+
+        for f in fields:
+            ws.write(r1, c1, f)
+            c1+=1
+        r2 = 1
+        c2 = 0
+
+        import itertools
+        for (m, n) in zip(matricules, names):
+            ws.write(r2, c2, str(m))
+            ws.write(r2,c2 + 1, str(n))
+            r2+=1
+
+        wb.close()
+        
+        output.seek(0)
+
+        response = HttpResponse(
+            output,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = "attachment; filename=%s" % wb_name
+
+        return response
+            
+
+    return render(request,'teacher_template/extract_temp.html',context)
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['teacher'])
+def add_excel(request):
+    t_id = str(request.user.teacher.teacher_id)
+    print(t_id)
+    data = AssignedTeacher2.objects.filter(teacher_id = t_id)
+
+    context={'course':data} 
+    if request.method == 'POST' and request.FILES['myfile']:
+        myfile = request.FILES['myfile']
+        code = request.POST.get('course_code')
+        xx =code.split(",")
+        print(xx)
+        course_cd = xx[0]
+        dept_id =xx[1]
+
+        wb = openpyxl.load_workbook(myfile)
+        ws = wb["Sheet1"]
+        print(ws)
+
+        excel_data = []
+
+        for r in ws.iter_rows():
+            row_data = []
+            for cell in r:
+                row_data.append(str(cell.value))
+            excel_data.append(row_data)
+        
+        print(excel_data)
+        
+        for i in range(1, len(excel_data)):
+            sub = Result(
+                    course_code =course_cd,
+                    theory_marks = excel_data[i][2],
+                    term_test = excel_data[i][3],
+                    attendence = excel_data[i][4],
+                    dept = dept_id,
+                    student_id = excel_data[i][0],
+                    total = round(((float(excel_data[i][2]))+(float(excel_data[i][3]))+float(excel_data[i][4]))/5),
+                )
+            sub.save()
+
+        messages.success(request,"Successfully Added Results for %s course"% (course_cd))
+        return redirect('home') 
+    return render(request,'teacher_template/add_json.html',context)
+
+'''       
+            sub = Result(
+                course_code =course,
+                theory_marks = theory_mar,
+                term_test = term_tes,
+                attendence = attendence,
+                dept = dept_id,
+                student_id = regi,
+                total = total_marks,
+            )
+            sub.save()
+            messages.success(request," %s student's  %s course's result added "% (regi, course))
+            
+        messages.success(request,"Successfully Added Result for %s course"% (course))  '''
+        
+            
+
+
+
+    
 
 
 @login_required(login_url = 'login')
@@ -1470,9 +1616,9 @@ def subject_ranksheet_teacher(request):
 
         subject = Subject.objects.get(course_code = course_id)
         subject_name = subject.subject_name
-        session = subject.session
+        semester = subject.semester
         subject_dept = subject.dept_id
-        context={'data':marksObj,'course_id':course_id,'subject_name':subject_name,'session':session,
+        context={'data':marksObj,'course_id':course_id,'subject_name':subject_name,'session':semester,
                 'subject_dept':subject_dept, 'student_dept': dept_id
         
         
@@ -1480,6 +1626,108 @@ def subject_ranksheet_teacher(request):
         } 
         return render(request, 'teacher_template/course_result2.html',context)
     return render(request, 'teacher_template/course_result.html',context)
+
+#______________________________Extract Results____________________________________
+@login_required(login_url = 'login')
+def extract_results(request):
+    
+    data = Dept.objects.all()
+
+    context={'dept':data, 'level': ['HND1', 'HND2']} 
+
+    if request.method == 'POST':
+        dept_id = request.POST.get('dept')
+        level = request.POST.get('level')
+
+        if level == "HND1":
+            lev = 'L1'
+        elif level == "HND2":
+            lev == 'L2'
+
+        print(dept_id)
+        print(lev)
+
+        matricules = []
+        names = []
+        fields = ["Matricule", "Names"]
+        f_results = []
+
+        students = Student.objects.filter(dept = dept_id, level = lev).all()
+        print(students)
+        for r in students:
+            matricules.append(r.registration_number)
+
+            names.append(r.name)
+        
+        subjects = Subject.objects.filter(dept = dept_id, level = lev).all()
+        print(subjects)
+        for s in subjects:
+            fields.append(s.subject_name)
+
+            res = []
+            results = Result.objects.filter(course_code = s.course_code).all()
+            for r in results:
+                res.append(r.total)
+
+            f_results.append(res)
+        
+        print(matricules)
+        print(names)
+        print(fields)
+        print(f_results)
+            
+
+
+        wb_name = 'Results_' + str(dept_id) + '_' + str(level) + '.xlsx'
+
+        output = io.BytesIO()
+        wb = xlsxwriter.Workbook(output)
+        ws = wb.add_worksheet('Sheet1')
+        
+        r1 = 0
+        c1 = 0
+
+        for f in fields:
+            ws.write(r1, c1, f)
+            c1+=1
+        r2 = 1
+        c2 = 0
+
+        import itertools
+        for (m, n) in zip(matricules, names):
+            ws.write(r2, c2, str(m))
+            ws.write(r2,c2 + 1, str(n))
+            r2+=1
+
+        
+        c3 = 2
+        for i in range(0, len(f_results)):
+            r3 = 1
+            for j in range(0, len(matricules)):
+                ws.write(r3,c3, f_results[i][j])
+                r3+=1
+            c3+=1
+        
+
+
+        wb.close()
+        
+        output.seek(0)
+
+        response = HttpResponse(
+            output,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = "attachment; filename=%s" % wb_name
+
+        return response
+            
+
+
+
+    return render(request,'admin_template/extract_results.html',context)
+   
+#__________________________________________________EXTRACT RESULTS END_____________________________________________________
 
 def delete_result(request):
     t_id = str(request.user.teacher.teacher_id)
@@ -1517,6 +1765,8 @@ def delete_result2(request, dept, course_id):
 
         messages.success(request,"Successfully Deleted %s student's %s Course Result"%(xx[0],xx[1]))
         return redirect('home')
+    
+    return render(request,'teacher_template/delete_result.html')
 
 def delete_student(request):
     data = Student.objects.all()
@@ -1597,7 +1847,7 @@ class GeneratePdf2(View):
         dept_name = Dept.objects.get(dept_id = did).name
         subject_name = Subject.objects.get(course_code = cid).subject_name 
         credit = Subject.objects.get(course_code = cid).credit 
-        session  = Subject.objects.get(course_code = cid).session
+        session  = Subject.objects.get(course_code = cid).semester
 
         module_dir = os.path.dirname(__file__)  # get current directory
         file_path1 = os.path.join(module_dir, 'templates/teacher_template/generate_result_pdf_temp.html')

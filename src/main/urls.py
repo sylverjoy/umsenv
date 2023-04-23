@@ -12,6 +12,8 @@ urlpatterns = [
     path("add_subject/",views.add_subject, name ='add_subject'),
     path("get_att/",views.get_att, name ='get_att'),
     path("add_j/", views.add_j, name ='add_j'),
+    path("add_excel/", views.add_excel, name ='add_excel'),
+    path("extract_temp/", views.extract_temp, name ='extract_temp'),
     path("get_subtype/",views.get_subtype, name ='get_subtype'),
     path("full_attendance/",views.full_attendance, name ='full_attendance'),
     path("full_marksheet/",views.full_marksheet, name ='full_marksheet'),
@@ -52,6 +54,7 @@ urlpatterns = [
     path('delete_result2/<dept>/<course_id>', views.delete_result2,name ="delete_result2"),
     path('teacher_subject_list/', views.teacher_subject_list,name ="teacher_subject_list"),
     path('delete_student/', views.delete_student,name ="delete_student"),
+    path('extract_results/', views.extract_results,name ="extract_results"),
     path('remove_teacher/', views.remove_teacher,name ="remove_teacher"),
 
 
