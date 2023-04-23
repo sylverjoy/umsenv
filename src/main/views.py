@@ -38,25 +38,28 @@ from reportlab.lib.pagesizes import letter
 from django.db import connections
 import os
 from django.db.models import Avg
+
+from django.contrib.auth.models import User
+
  
 def cal_cg(marks):
-    if marks>=80:
+    if marks>=16:
         return 4.0
-    elif marks>=75:
+    elif marks>=15:
         return 3.75
-    elif marks>=70:
+    elif marks>=14:
         return 3.5
-    elif marks>=65:
+    elif marks>=13:
         return 3.25
-    elif marks>=60:
+    elif marks>=12:
         return 3.00
-    elif marks>=55:
+    elif marks>=11:
         return 2.75
-    elif marks>=50:
+    elif marks>=10:
         return 2.50
-    elif marks>=45:
+    elif marks>=9:
         return 2.25
-    elif marks>=40:
+    elif marks>=8:
         return 2.00
     else:
         return 0.00
@@ -118,16 +121,7 @@ def registerPageTeacher(request):
             teacher = teacher_form.save()
             teacher.user =user
             teacher.save()
-            # username = student_form.cleaned_data.get('username')
-            # email = student_form.cleaned_data.get('email')
-            # password1 = student_form.cleaned_data.get('password1')
-            # password2 = student_form.cleaned_data.get('password2')
-            # name = student_form.cleaned_data.get('name')
-            # name = student_form.cleaned_data.get('phone')
-            # passport = request.FILES['profile_pic']
-            # fs = FileSystemStorage()
-            # filename = fs.save(passport.name, passport)
-            # passport_url = fs.url(filename)
+            
             group = Group.objects.get(name = 'teacher')
             user.groups.add(group)
             messages.success(request, "Successfully Teacher Added")
@@ -149,16 +143,7 @@ def registerPage(request):
             admin = admin_form.save()
             admin.user =user
             admin.save()
-            # username = student_form.cleaned_data.get('username')
-            # email = student_form.cleaned_data.get('email')
-            # password1 = student_form.cleaned_data.get('password1')
-            # password2 = student_form.cleaned_data.get('password2')
-            # name = student_form.cleaned_data.get('name')
-            # name = student_form.cleaned_data.get('phone')
-            # passport = request.FILES['profile_pic']
-            # fs = FileSystemStorage()
-            # filename = fs.save(passport.name, passport)
-            # passport_url = fs.url(filename)
+            
             group = Group.objects.get(name = 'admin')
             user.groups.add(group)
         else:
@@ -185,7 +170,7 @@ def home(request):
     dept_cnt = Dept.objects.all().count()
     admin_cnt = AdminUser.objects.all().count()
     sub_cnt = Subject.objects.all().count()
-    # overall_rate =Rating.objects.aggregate(Avg('rating'))
+    overall_rate =Rating.objects.aggregate(Avg('rating'))
     hi = Result.objects.raw ('''
     SELECT 1 as id,dept, AVG(total) as avg from main_result group by dept ORDER BY avg DESC  LIMIT 1;
     
@@ -207,7 +192,7 @@ def home(request):
 
     
     
-    #print(overall_rate)
+    print(overall_rate)
 
     context = {'name':name,
                 'stu':stu_cnt,
@@ -215,65 +200,13 @@ def home(request):
                 'dept': dept_cnt,
                 'admin_cnt': admin_cnt,
                 'sub_cnt':sub_cnt,
-    #            'overall_rate': round(overall_rate['rating__avg'],2),
+                'overall_rate': round(overall_rate['rating__avg'],2),
                 'hi_dept': hi_dept,
                 'hi_mark':hi_mark,
                 'low_dept': low_dept,
                 'low_mark':low_mark,                
 
-
-
-
-
-
-
-
-
-
-
-
-    
-    
-    
     }
-    # name = request.user.adminuser.name
-    # std1  = Subject.objects.raw('''
-    #     SELECT 1 as id, COUNT(*) as cnt
-    #     FROM main_student; ''')
-    # sub2  =  Subject.objects.raw('''
-    #     SELECT 1 as id, COUNT(*) as cnt
-    #     FROM main_subject; ''')
-    # admin_cnt2 =  Subject.objects.raw('''
-    #     SELECT 1 as id, COUNT(*) as cnt
-    #     FROM main_adminuser; ''')
-    
-    # dept_cnt =  Subject.objects.raw('''
-    #     SELECT 1 as id, COUNT(*) as cnt
-    #     FROM main_student group by dept; ''')
-    # cnt1 =0
-    # for i in std1:
-    #     std = i.cnt
-    # for i in sub2:
-    #     sub = i.cnt
-    # for i in admin_cnt2:
-    #     admin_cnt = i.cnt
-    # for i in dept_cnt:
-    #     cnt1=cnt1+1
-
-
-
-
-
-    # context = { 'name':name,
-    #              'std': std,
-    #              'admin_cnt':admin_cnt,
-    #              'dept_cnt': dept_cnt,
-    #              'sub':sub,
-    #              'cnt1':cnt1
-
-
-
-    # }
     return render(request,'admin_template/index.html',context)
 
 @login_required(login_url = 'login')
@@ -300,7 +233,7 @@ def studentHome(request):
         remain_credit_percent= 100
         current_cgpa =0
         degree_status = "INCOMPLETE"
-        remain = "Need to pass "+ str(remain_credit) +" more credits to get a degreee" 
+        remain = "Need to pass "+ str(remain_credit) +" more credits to get a degree" 
     
     else:
         credits = Subject.objects.raw('''
@@ -315,7 +248,7 @@ def studentHome(request):
         FROM public.main_student JOIN public.main_result ON
         main_student.registration_number = main_result.student_id
         JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-        where main_student.registration_number=%s and total>=40;''',[regi])[0].sum
+        where main_student.registration_number=%s and total>=8;''',[regi])[0].sum
         degree_status = ""
 
  
@@ -326,7 +259,7 @@ def studentHome(request):
         FROM public.main_student JOIN public.main_result ON
         main_student.registration_number = main_result.student_id
         JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-        where main_student.registration_number=%s and total>=40;''',[regi])
+        where main_student.registration_number=%s and total>=8;''',[regi])
         upper =0
         lower = 0
         for k in cgpa:
@@ -339,7 +272,7 @@ def studentHome(request):
 
         percent_registered = ((credits)*100)/160
 
-        remain_credit = 160- credits_passed
+        remain_credit = 160 - credits_passed
 
         remain_credit_percent = ((remain_credit)*100)/160
         remain =""
@@ -348,7 +281,7 @@ def studentHome(request):
             remain = "Need to pass "+ str(remain_credit) +" more credits to get a degreee" 
         else:
             degree_status = "COMPLETE"
-            remain = "Congratulations!!! You are a SUST "+ str(dept) +" Graduate"  
+            remain = "Congratulations!!! You are a YIBS "+ str(dept) +" Graduate"  
 
         attendance = Result.objects.raw('''
         SELECT 1 as id, subject_name as sn , attendence as attend FROM
@@ -607,36 +540,6 @@ def teacher_subject_list(request):
 def get_subtype_networking_marks(request, *args, **kwargs):
     regi = request.user.student.registration_number
     subtype = "Networking"
-    # subtype = Result.objects.raw('''
-    # SELECT 1 as id, subtype, SUM(marks) as sum_marks, count(subtype) as cnt FROM
-    # public.main_student JOIN public.main_result ON
-    # main_student.registration_number = main_result.student_id
-    # JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-	# where registration_number = %s and marks>=40
-    # group by subtype;''',[regi])
-
-    # marksObj = Result.objects.raw('''
-    # SELECT 1 as id, subject_name, main_subject.course_code as cc, marks FROM
-    # public.main_student JOIN public.main_result ON
-    # main_student.registration_number = main_result.student_id
-    # JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-	# where registration_number = %s and subtype = 'Networking';''',[regi])
-    
-
-    # subject_name =[]
-    # course_code =[]
-    # marks = []
-    # attr = []
-    # attr.append("subject_name")
-    # attr.append("course_code")
-    # attr.append("marks")
-    # json_res =[]
-    # for i in marksObj:
-    #     obj = {}
-    #     obj[attr[0]] = i.subject_name
-    #     obj[attr[1]] = i.cc
-    #     obj[attr[2]]= i.marks
-    #     json_res.append(obj) 
     
     json_res = getting_json(subtype, regi)
         
@@ -1291,22 +1194,57 @@ def add_excel(request):
         return redirect('home') 
     return render(request,'teacher_template/add_json.html',context)
 
-'''       
-            sub = Result(
-                course_code =course,
-                theory_marks = theory_mar,
-                term_test = term_tes,
-                attendence = attendence,
-                dept = dept_id,
-                student_id = regi,
-                total = total_marks,
-            )
-            sub.save()
-            messages.success(request," %s student's  %s course's result added "% (regi, course))
-            
-        messages.success(request,"Successfully Added Result for %s course"% (course))  '''
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])         
+def add_students(request):
+    data = Dept.objects.all()
+    context={'course':data} 
+    if request.method == 'POST' and request.FILES['myfile']:
+        myfile = request.FILES['myfile']
+        dept_id = request.POST.get('dept')
+        dept = Dept.objects.filter(dept_id = dept_id).first()
+
+        print(dept.dept_id)
+
+        wb = openpyxl.load_workbook(myfile)
+        ws = wb["Sheet1"]
+        print(ws)
+
+        excel_data = []
+
+        for r in ws.iter_rows():
+            row_data = []
+            for cell in r:
+                row_data.append(str(cell.value))
+            excel_data.append(row_data)
         
+        print(excel_data)
+        
+        for i in range(1, len(excel_data)):
+            user = User(
+                username = excel_data[i][0],
+                email = excel_data[i][1],
+                password = excel_data[i][2],
+            )
+            user.save()
             
+            import pandas as pd
+            stud = Student(
+                    user = user,
+                    registration_number = excel_data[i][5],
+                    dept = dept,
+                    name = excel_data[i][3],
+                    phone = excel_data[i][4],
+                    level = excel_data[i][8],
+                    dob = pd.to_datetime(excel_data[i][6]).date(),
+                    pob = excel_data[i][7],
+                )
+            stud.save()
+
+        messages.success(request,"Successfully Added Students for %s Department"% (dept_id))
+        return redirect('home') 
+    return render(request,'student_template/add_students.html',context)  
 
 
 
@@ -1390,6 +1328,7 @@ def student_sub_register(request):
     dept_name = request.user.student.dept
     dpt_name =str(dept_name)
     regi = str(request.user.student.registration_number)
+    lev = str(request.user.student.level)
 
 
     data = AssignedTeacher2.objects.raw('''
@@ -1642,14 +1581,19 @@ def extract_results(request):
         if level == "HND1":
             lev = 'L1'
         elif level == "HND2":
-            lev == 'L2'
+            lev = 'L2'
+        elif level == "BTECH":
+            lev = 'L3'
+
 
         print(dept_id)
         print(lev)
 
         matricules = []
         names = []
-        fields = ["Matricule", "Names"]
+        dobs = []
+        pobs = []
+        fields = ["Matricule", "Names", "Date of Birth", "Place of Birth"]
         f_results = []
 
         students = Student.objects.filter(dept = dept_id, level = lev).all()
@@ -1658,6 +1602,8 @@ def extract_results(request):
             matricules.append(r.registration_number)
 
             names.append(r.name)
+            dobs.append(r.dob)
+            pobs.append(r.pob)
         
         subjects = Subject.objects.filter(dept = dept_id, level = lev).all()
         print(subjects)
@@ -1667,7 +1613,10 @@ def extract_results(request):
             res = []
             results = Result.objects.filter(course_code = s.course_code).all()
             for r in results:
-                res.append(r.total)
+                if level == "BTECH":
+                    res.append(r.total*5)
+                else:
+                    res.append(r.total)
 
             f_results.append(res)
         
@@ -1694,13 +1643,15 @@ def extract_results(request):
         c2 = 0
 
         import itertools
-        for (m, n) in zip(matricules, names):
+        for (m, n, d, p ) in zip(matricules, names, dobs, pobs):
             ws.write(r2, c2, str(m))
             ws.write(r2,c2 + 1, str(n))
+            ws.write(r2,c2 + 2, str(d))
+            ws.write(r2,c2 + 3, str(p))
             r2+=1
 
         
-        c3 = 2
+        c3 = 4
         for i in range(0, len(f_results)):
             r3 = 1
             for j in range(0, len(matricules)):

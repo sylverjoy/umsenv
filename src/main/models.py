@@ -23,7 +23,9 @@ class Student(models.Model):
     name = models.CharField(max_length= 200, null= True)
     phone = models.CharField(max_length= 200, null = True)
     profile_pic = models.ImageField(null = True, blank = True)
-    level = models.CharField(max_length= 200, null= True, choices= [('L1', 'HND1'), ('L2', 'HND2') ])
+    level = models.CharField(max_length= 200, null= True, choices= [('L1', 'HND1'), ('L2', 'HND2'), ('L3', 'BTECH')  ])
+    dob = models.DateField(null = True, blank = True)
+    pob = models.CharField(max_length= 200, null= True)
     
     
 
@@ -83,7 +85,7 @@ class Subject(models.Model):
     semester = models.CharField(max_length= 200, null = True, choices= [('S1', 'Semester1'), ('S2', 'Semester 2') ])
     subtype = models.CharField(max_length= 200, null=True)
     dept =models.ForeignKey(Dept, on_delete=models.CASCADE)
-    level = models.CharField(max_length= 200, null= True, choices= [('L1', 'HND1'), ('L2', 'HND2') ])
+    level = models.CharField(max_length= 200, null= True, choices= [('L1', 'HND1'), ('L2', 'HND2'), ('L3', 'BTECH') ])
 
 class RegisterTable(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
