@@ -34,6 +34,10 @@ class StudentForm(ModelForm):
         self.fields['dept'].widget.attrs['placeholder'] = 'Department'
         self.fields['level'].widget.attrs['class'] = 'form-control'
         self.fields['level'].widget.attrs['placeholder'] = 'Level'
+        self.fields['dob'].widget.attrs['class'] = 'form-control'
+        self.fields['dob'].widget.attrs['placeholder'] = 'Date of Birth'
+        self.fields['pob'].widget.attrs['class'] = 'form-control'
+        self.fields['pob'].widget.attrs['placeholder'] = 'Place of Birth'
         # self.fields['profile_pic'].widget.attrs['class'] = 'file-upload-default'
         # self.fields['profile_pic'].widget.attrs['class'] = 'form-control file-upload-info'
         # self.fields['profile_pic'].widget.attrs['disabled placeholder'] = "Upload Image"

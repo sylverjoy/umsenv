@@ -38,25 +38,28 @@ from reportlab.lib.pagesizes import letter
 from django.db import connections
 import os
 from django.db.models import Avg
+
+from django.contrib.auth.models import User
+
  
 def cal_cg(marks):
-    if marks>=80:
+    if marks>=16:
         return 4.0
-    elif marks>=75:
+    elif marks>=15:
         return 3.75
-    elif marks>=70:
+    elif marks>=14:
         return 3.5
-    elif marks>=65:
+    elif marks>=13:
         return 3.25
-    elif marks>=60:
+    elif marks>=12:
         return 3.00
-    elif marks>=55:
+    elif marks>=11:
         return 2.75
-    elif marks>=50:
+    elif marks>=10:
         return 2.50
-    elif marks>=45:
+    elif marks>=9:
         return 2.25
-    elif marks>=40:
+    elif marks>=8:
         return 2.00
     else:
         return 0.00
@@ -82,9 +85,6 @@ def cal_cgname(cg):
         return "C-"
     elif cg == 0.00:
         return "F"
-
-
-
 
 
 ##-----------------------------LOG IN AND REGISTER--------------------------------------------------------###
@@ -118,16 +118,7 @@ def registerPageTeacher(request):
             teacher = teacher_form.save()
             teacher.user =user
             teacher.save()
-            # username = student_form.cleaned_data.get('username')
-            # email = student_form.cleaned_data.get('email')
-            # password1 = student_form.cleaned_data.get('password1')
-            # password2 = student_form.cleaned_data.get('password2')
-            # name = student_form.cleaned_data.get('name')
-            # name = student_form.cleaned_data.get('phone')
-            # passport = request.FILES['profile_pic']
-            # fs = FileSystemStorage()
-            # filename = fs.save(passport.name, passport)
-            # passport_url = fs.url(filename)
+            
             group = Group.objects.get(name = 'teacher')
             user.groups.add(group)
             messages.success(request, "Successfully Teacher Added")
@@ -149,16 +140,7 @@ def registerPage(request):
             admin = admin_form.save()
             admin.user =user
             admin.save()
-            # username = student_form.cleaned_data.get('username')
-            # email = student_form.cleaned_data.get('email')
-            # password1 = student_form.cleaned_data.get('password1')
-            # password2 = student_form.cleaned_data.get('password2')
-            # name = student_form.cleaned_data.get('name')
-            # name = student_form.cleaned_data.get('phone')
-            # passport = request.FILES['profile_pic']
-            # fs = FileSystemStorage()
-            # filename = fs.save(passport.name, passport)
-            # passport_url = fs.url(filename)
+            
             group = Group.objects.get(name = 'admin')
             user.groups.add(group)
         else:
@@ -172,9 +154,6 @@ def logoutPage(request):
 ##-----------------------------------------------LOG IN END -------------------------------------------------------###
 
 
-
-
-
 ##----------------------------------------------- HOME PAGE ----------------------------------------------------------##
 @login_required(login_url = 'login')
 @allowed_users_home(allowed_roles=['admin', 'teacher'])
@@ -185,7 +164,7 @@ def home(request):
     dept_cnt = Dept.objects.all().count()
     admin_cnt = AdminUser.objects.all().count()
     sub_cnt = Subject.objects.all().count()
-    # overall_rate =Rating.objects.aggregate(Avg('rating'))
+    overall_rate =Rating.objects.aggregate(Avg('rating'))
     hi = Result.objects.raw ('''
     SELECT 1 as id,dept, AVG(total) as avg from main_result group by dept ORDER BY avg DESC  LIMIT 1;
     
@@ -207,7 +186,7 @@ def home(request):
 
     
     
-    #print(overall_rate)
+    print(overall_rate)
 
     context = {'name':name,
                 'stu':stu_cnt,
@@ -215,65 +194,13 @@ def home(request):
                 'dept': dept_cnt,
                 'admin_cnt': admin_cnt,
                 'sub_cnt':sub_cnt,
-    #            'overall_rate': round(overall_rate['rating__avg'],2),
+                'overall_rate': round(overall_rate['rating__avg'],2),
                 'hi_dept': hi_dept,
                 'hi_mark':hi_mark,
                 'low_dept': low_dept,
                 'low_mark':low_mark,                
 
-
-
-
-
-
-
-
-
-
-
-
-    
-    
-    
     }
-    # name = request.user.adminuser.name
-    # std1  = Subject.objects.raw('''
-    #     SELECT 1 as id, COUNT(*) as cnt
-    #     FROM main_student; ''')
-    # sub2  =  Subject.objects.raw('''
-    #     SELECT 1 as id, COUNT(*) as cnt
-    #     FROM main_subject; ''')
-    # admin_cnt2 =  Subject.objects.raw('''
-    #     SELECT 1 as id, COUNT(*) as cnt
-    #     FROM main_adminuser; ''')
-    
-    # dept_cnt =  Subject.objects.raw('''
-    #     SELECT 1 as id, COUNT(*) as cnt
-    #     FROM main_student group by dept; ''')
-    # cnt1 =0
-    # for i in std1:
-    #     std = i.cnt
-    # for i in sub2:
-    #     sub = i.cnt
-    # for i in admin_cnt2:
-    #     admin_cnt = i.cnt
-    # for i in dept_cnt:
-    #     cnt1=cnt1+1
-
-
-
-
-
-    # context = { 'name':name,
-    #              'std': std,
-    #              'admin_cnt':admin_cnt,
-    #              'dept_cnt': dept_cnt,
-    #              'sub':sub,
-    #              'cnt1':cnt1
-
-
-
-    # }
     return render(request,'admin_template/index.html',context)
 
 @login_required(login_url = 'login')
@@ -296,11 +223,11 @@ def studentHome(request):
         credits_passed = 0
         percent_passed_credit = 0
         percent_registered = 0
-        remain_credit =160
+        remain_credit = 60
         remain_credit_percent= 100
         current_cgpa =0
         degree_status = "INCOMPLETE"
-        remain = "Need to pass "+ str(remain_credit) +" more credits to get a degreee" 
+        remain = "Need to pass "+ str(remain_credit) +" more credits to get a degree" 
     
     else:
         credits = Subject.objects.raw('''
@@ -315,7 +242,7 @@ def studentHome(request):
         FROM public.main_student JOIN public.main_result ON
         main_student.registration_number = main_result.student_id
         JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-        where main_student.registration_number=%s and total>=40;''',[regi])[0].sum
+        where main_student.registration_number=%s and total>=8;''',[regi])[0].sum
         degree_status = ""
 
  
@@ -326,7 +253,7 @@ def studentHome(request):
         FROM public.main_student JOIN public.main_result ON
         main_student.registration_number = main_result.student_id
         JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-        where main_student.registration_number=%s and total>=40;''',[regi])
+        where main_student.registration_number=%s and total>=8;''',[regi])
         upper =0
         lower = 0
         for k in cgpa:
@@ -334,21 +261,21 @@ def studentHome(request):
             lower =lower + k.credit
         
         current_cgpa = round(upper/lower,2)
-        percent_passed_credit = ((credits_passed)*100)/160
+        percent_passed_credit = ((credits_passed)*100)/60
 
 
-        percent_registered = ((credits)*100)/160
+        percent_registered = ((credits)*100)/60
 
-        remain_credit = 160- credits_passed
+        remain_credit = 60 - credits_passed
 
-        remain_credit_percent = ((remain_credit)*100)/160
+        remain_credit_percent = ((remain_credit)*100)/60
         remain =""
-        if(credits_passed<160):
+        if(credits_passed<60):
             degree_status = "INCOMPLETE"
             remain = "Need to pass "+ str(remain_credit) +" more credits to get a degreee" 
         else:
             degree_status = "COMPLETE"
-            remain = "Congratulations!!! You are a SUST "+ str(dept) +" Graduate"  
+            remain = "Congratulations!!! You are a YIBS "+ str(dept) +" Graduate"  
 
         attendance = Result.objects.raw('''
         SELECT 1 as id, subject_name as sn , attendence as attend FROM
@@ -607,36 +534,6 @@ def teacher_subject_list(request):
 def get_subtype_networking_marks(request, *args, **kwargs):
     regi = request.user.student.registration_number
     subtype = "Networking"
-    # subtype = Result.objects.raw('''
-    # SELECT 1 as id, subtype, SUM(marks) as sum_marks, count(subtype) as cnt FROM
-    # public.main_student JOIN public.main_result ON
-    # main_student.registration_number = main_result.student_id
-    # JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-	# where registration_number = %s and marks>=40
-    # group by subtype;''',[regi])
-
-    # marksObj = Result.objects.raw('''
-    # SELECT 1 as id, subject_name, main_subject.course_code as cc, marks FROM
-    # public.main_student JOIN public.main_result ON
-    # main_student.registration_number = main_result.student_id
-    # JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-	# where registration_number = %s and subtype = 'Networking';''',[regi])
-    
-
-    # subject_name =[]
-    # course_code =[]
-    # marks = []
-    # attr = []
-    # attr.append("subject_name")
-    # attr.append("course_code")
-    # attr.append("marks")
-    # json_res =[]
-    # for i in marksObj:
-    #     obj = {}
-    #     obj[attr[0]] = i.subject_name
-    #     obj[attr[1]] = i.cc
-    #     obj[attr[2]]= i.marks
-    #     json_res.append(obj) 
     
     json_res = getting_json(subtype, regi)
         
@@ -718,21 +615,6 @@ def see_registration_status(request, *args, **kwargs):
     return JsonResponse(json_res, safe= False)
     
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #------------------------------------------------------***VIEW***-----------------------------------------------------------
 @login_required(login_url = 'login')
 def full_attendance(request):
@@ -806,7 +688,7 @@ class GeneratePdf(View):
         cgpa = 0
         status =""
         for k in data:
-            if k.total>=40:
+            if k.total>=8:
                 upper =upper+ k.credit * cal_cg(k.total)
                 lower =lower + k.credit
         
@@ -815,7 +697,7 @@ class GeneratePdf(View):
             
         else:
             cgpa = round(upper/lower, 2)
-        if lower<160:
+        if lower<60:
             status = "Incomplete"
         else:
             status = "Complete"
@@ -833,16 +715,9 @@ class GeneratePdf(View):
 
         # Converting the HTML template into a PDF file
         pdf = html_to_pdf(file_path1)
-         
-         # rendering the template
+        
+        # rendering the template
         return HttpResponse(pdf, content_type='application/pdf')
-
-
-
-
-
-
-
 
 
 ##-----------------------------------------SEARCH------------------------------------####
@@ -856,9 +731,6 @@ def search_result1(request):
 
     context = {  'data':data 
 
-
-
-
     }
     
     if request.method == 'POST':
@@ -866,7 +738,7 @@ def search_result1(request):
         xx = regi.split(',')
         return redirect(reverse('search_result', kwargs={"course_code": xx[0], "dept" : xx[1]}))
 
-       
+
     return render(request,'teacher_template/search_result1.html',context)
 
 
@@ -886,19 +758,11 @@ def search_student_registered(request):
         course_id = request.POST.get('course_code')
         xx = course_id.split(",")
         print(xx)
-        # res = Student.objects.filter(registration_number = regi).first()
-        # sub = Subject.objects.filter(course_code = course_id).first()
-        # if res == None:
-        #     messages.info(request, "The student is not registered..Register the student from here first")
-        #     return redirect(reverse('add_student'))
-        # if sub == None:
-        #     return HttpResponse("The Subject Is not Registered.. Register The Subject First")
+
         return redirect(reverse('add_result', kwargs= {"dept": xx[1], "course_id": xx[0]}))
     return render(request,'teacher_template/search_student_registered.html',context)
         
 ###-----------------------------------SEARCH END------------------------------------------------------------------------#
-
-
 
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['teacher'])
@@ -949,17 +813,6 @@ def update_result(request, result_id, course_code):
     return render (request, 'teacher_template/update_result.html',context)
 
 
-
-
-
-
-
-
-
-
-
-
-
 #----------------------------------------------** ADD ** -------------------------------------------------------------------------------------------------------
 
 
@@ -975,16 +828,7 @@ def add_student(request):
             student = student_form.save()
             student.user =user
             student.save()
-            # username = student_form.cleaned_data.get('username')
-            # email = student_form.cleaned_data.get('email')
-            # password1 = student_form.cleaned_data.get('password1')
-            # password2 = student_form.cleaned_data.get('password2')
-            # name = student_form.cleaned_data.get('name')
-            # name = student_form.cleaned_data.get('phone')
-            # passport = request.FILES['profile_pic']
-            # fs = FileSystemStorage()
-            # filename = fs.save(passport.name, passport)
-            # passport_url = fs.url(filename)
+            
             group = Group.objects.get(name = 'student')
             user.groups.add(group)
             messages.success(request, "Successfully Student Added")
@@ -992,24 +836,6 @@ def add_student(request):
             messages.error(request, "Could Not Add")
     return render(request, 'student_template/add_student.html',context)
 
-
-
-# @login_required(login_url = 'login')
-# @allowed_users(allowed_roles=['teacher'])
-# def add_result(request, dept, course_id):
-#     stu =  get_object_or_404(Student, registration_number = regi)
-#     res = Result.objects.filter(student_id = regi, course_code = course_id).first()
-#     if res != None:
-#         obj = Result.objects.get(student_id = regi ,course_code = course_id)
-#         id = obj.id
-#         messages.info(request, "Result Already Exist, You Can Update That Result Here")
-#         return redirect(reverse('update_result', kwargs= {"result_id": id}))
-
-#     form = AddResultForm(request.POST or None, initial ={'student': stu, 'course_code': course_id })
-#     context = {'form':form, 'regi': regi, 'course_id': course_id}
-#     if form.is_valid():
-#         form.save()
-#     return render(request, 'admin_template/add_result.html',context)
 
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['teacher'])
@@ -1028,52 +854,12 @@ def add_result(request, dept, course_id):
         else:
             return redirect(reverse('add_result2', kwargs= {"regi": regi, "cour_id": course_id}))
 
-    # form = AddResultForm(request.POST or None, initial ={'student': stu, 'course_code': course_id })
-    # context = {'form':form, 'regi': regi, 'course_id': course_id}
-    # if form.is_valid():
-    #     form.save()
     return render(request, 'teacher_template/add_result.html',context)
 
 
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['admin'])
 def add_subject(request):
-
-    ''' context = {'page_title':'add subject'}
-    if request.method == 'POST':
-        dep_id = request.POST.get('dept_id')
-        c_id = request.POST.get('course_code')
-        sub_name = request.POST.get('subject_name')
-        sess = request.POST.get('session')
-        cred = float(request.POST.get('credit'))
-        genre = request.POST.get('genre')
-        
-        sub = Subject.objects.filter(course_code = c_id).first()
-        dep = Dept.objects.filter(dept_id = dep_id).first()
-        
-        if sub == None and dep != None:
-            subObj = Subject(
-                course_code = c_id,
-                subject_name = sub_name,
-                credit = cred,
-                session = sess,
-                subtype = genre,
-                dept_id = dep_id,
-
-
-
-
-
-            )
-            subObj.save()
-                
-            messages.success(request, "Subject Successfully Added")
-        else:
-            if dep == None:
-                messages.error(request, " %s Dept is not registered. Register The Department First From Here"%(dep_id))
-                return redirect('add_dept')
-            messages.error(request, "Could'nt add subjects.. Subject is Alraeady registered") '''
-    
     subject_form = AddSubjectForm(request.POST or None, request.FILES or None)
     context = {'subject_form': subject_form, 'page_title':'add subject'}
     if request.method == 'POST':
@@ -1084,7 +870,7 @@ def add_subject(request):
             messages.success(request, "Successfully Added Subject")
         else:
             messages.error(request, "Could Not Add")
-  
+
     return render(request, 'admin_template/add_subject.html',context)
 
 
@@ -1110,7 +896,7 @@ def add_j(request):
         file_path =os.path.join(module_dir, filename)
 
         f =open(file_path)
-          
+        
         y=json.load(f)
 
 
@@ -1139,10 +925,6 @@ def add_j(request):
                 messages.error(request," %s student registration for %s course is Rejected "% (regi, course_cd))
                 continue
 
-
-
-
-
             cd = Result.objects.filter(student_id = regi, course_code = course).first()
             if cd != None:
                 messages.error(request," %s student's  %s course's result already here "% (regi, course))
@@ -1152,12 +934,7 @@ def add_j(request):
             if sd == None:
                 messages.error(request," %s student is not registered in %s Department "% (regi, dept_id))
                 continue
-            # sb = Subject.objects.filter(course_code = course).first()
-            # if sb == None:
-            #     messages.error(request," %s course is not registered "% (course))
-            #     continue
-            # cursor.execute('''INSERT INTO main_result (course_code, marks, attendence, student_id)
-            # VALUES (%s,%s,%s,%s );'''% (course, marks, attendence, regi))
+            
             sub = Result(
                 course_code =course,
                 theory_marks = theory_mar,
@@ -1166,8 +943,6 @@ def add_j(request):
                 dept = dept_id,
                 student_id = regi,
                 total = total_marks,
-                
-
 
             )
             sub.save()
@@ -1176,8 +951,6 @@ def add_j(request):
         messages.success(request,"Successfully Added Result for %s course"% (course))  
         return redirect('home') 
             
-
-
 
     return render(request,'teacher_template/add_json.html',context)
 
@@ -1291,26 +1064,57 @@ def add_excel(request):
         return redirect('home') 
     return render(request,'teacher_template/add_json.html',context)
 
-'''       
-            sub = Result(
-                course_code =course,
-                theory_marks = theory_mar,
-                term_test = term_tes,
-                attendence = attendence,
-                dept = dept_id,
-                student_id = regi,
-                total = total_marks,
-            )
-            sub.save()
-            messages.success(request," %s student's  %s course's result added "% (regi, course))
-            
-        messages.success(request,"Successfully Added Result for %s course"% (course))  '''
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])         
+def add_students(request):
+    data = Dept.objects.all()
+    context={'course':data} 
+    if request.method == 'POST' and request.FILES['myfile']:
+        myfile = request.FILES['myfile']
+        dept_id = request.POST.get('dept')
+        dept = Dept.objects.filter(dept_id = dept_id).first()
+
+        print(dept.dept_id)
+
+        wb = openpyxl.load_workbook(myfile)
+        ws = wb["Sheet1"]
+        print(ws)
+
+        excel_data = []
+
+        for r in ws.iter_rows():
+            row_data = []
+            for cell in r:
+                row_data.append(str(cell.value))
+            excel_data.append(row_data)
         
+        print(excel_data)
+        
+        for i in range(1, len(excel_data)):
+            user = User(
+                username = excel_data[i][0],
+                email = excel_data[i][1],
+                password = excel_data[i][2],
+            )
+            user.save()
             
+            import pandas as pd
+            stud = Student(
+                    user = user,
+                    registration_number = excel_data[i][5],
+                    dept = dept,
+                    name = excel_data[i][3],
+                    phone = excel_data[i][4],
+                    level = excel_data[i][8],
+                    dob = pd.to_datetime(excel_data[i][6]).date(),
+                    pob = excel_data[i][7],
+                )
+            stud.save()
 
-
-
-    
+        messages.success(request,"Successfully Added Students for %s Department"% (dept_id))
+        return redirect('home') 
+    return render(request,'student_template/add_students.html',context)  
 
 
 @login_required(login_url = 'login')
@@ -1327,7 +1131,6 @@ def addDept(request):
         if form.is_valid:
             form.save()
             messages.success(request,"Successfully Dept. Added")
-
 
     return render(request, 'registration_template/add_dept.html',context)
 @login_required(login_url = 'login')
@@ -1356,7 +1159,6 @@ def assign_teacher(request, dept_id):
         t_id   = request.POST.get('teacher')
         t_dept = dept_id
 
-
         assingn = AssignedTeacher2(
             student_dept =  stu_dept,
             course_code= cour_code,
@@ -1364,23 +1166,11 @@ def assign_teacher(request, dept_id):
             
             teacher_id= t_id,
 
-
-
         )
         assingn.save()
         messages.success(request,"Teacher Id : %s Is Assigned For %s Course In %s Department" %(t_id,cour_code,t_dept))
 
-
-
-
-
-
     return render(request,'admin_template/assign_teacher_dept.html',context)
-
-    
-
-
-
 
 #--------------------------------------------------------###### ADD END #######---------------------------------------------------------
 
@@ -1390,6 +1180,7 @@ def student_sub_register(request):
     dept_name = request.user.student.dept
     dpt_name =str(dept_name)
     regi = str(request.user.student.registration_number)
+    lev = str(request.user.student.level)
 
 
     data = AssignedTeacher2.objects.raw('''
@@ -1422,10 +1213,9 @@ def student_sub_register(request):
                 subject_id = course_cc,
 
 
-
             )
             ss.save()
-            messages.success(request, "It has gone for approval to Teacher")
+            messages.success(request, "Registration Successful")
             return redirect('home')
         else:
             messages.success(request, "You have already Requested for approval on this Subject. See your Registration table for Registration Status")   
@@ -1442,11 +1232,6 @@ def teacher_approve_search(request):
         course_code_dept = request.POST.get('course_code_dept')
         xx = course_code_dept.split(',')
         return redirect(reverse('teacher_approval', kwargs= {"course_code": xx[0], "student_dept": xx[1]}))
-
-
-
-
-
 
     return render(request, 'teacher_template/teacher_approve_search.html',context)
 
@@ -1486,10 +1271,6 @@ def teacher_approval(request, course_code, student_dept):
                 )
                 rate.save()
 
-
-
-
-
     return render(request, 'teacher_template/teacher_approval.html',context)
 
 
@@ -1514,16 +1295,10 @@ def student_rating(request):
         print(xx)
         Rating.objects.filter(subject_id = xx[2], student_id = regi,teacher_id = xx[1]).update(rating = int(xx[0]))
 
-
-
     context = { 'regi':regi,
                 'data':data2,
 
-
     }
-
-
-
 
     return render(request, 'student_template/student_rating.html',context)
 
@@ -1552,8 +1327,6 @@ def get_ratings_admin(request):
     SELECT 1 as id, main_rating.teacher_id as tid ,main_rating.teacher_id as nem , AVG(rating) as avg FROM
     public.main_rating JOIN main_teacher ON main_rating.teacher_id = main_teacher.teacher_id
 	group by main_rating.teacher_id ORDER BY AVG(rating) DESC;''')
-
-
 
     data =[]
     labels =[]
@@ -1603,7 +1376,7 @@ def subject_ranksheet_teacher(request):
         SELECT 1 as id,main_student.name as name, main_student.registration_number as regi, name as cgname, total as cg,
         theory_marks, term_test, attendence as attend FROM
         public.main_student JOIN public.main_result ON
-          registration_number = student_id
+        registration_number = student_id
         and  dept_id = dept
 	    where course_code = %s and dept = %s order by regi;''',[course_id, dept_id])
         cnt=1
@@ -1620,9 +1393,6 @@ def subject_ranksheet_teacher(request):
         subject_dept = subject.dept_id
         context={'data':marksObj,'course_id':course_id,'subject_name':subject_name,'session':semester,
                 'subject_dept':subject_dept, 'student_dept': dept_id
-        
-        
-        
         } 
         return render(request, 'teacher_template/course_result2.html',context)
     return render(request, 'teacher_template/course_result.html',context)
@@ -1633,7 +1403,7 @@ def extract_results(request):
     
     data = Dept.objects.all()
 
-    context={'dept':data, 'level': ['HND1', 'HND2']} 
+    context={'dept':data, 'level': ['HND1', 'HND2', 'BTECH']} 
 
     if request.method == 'POST':
         dept_id = request.POST.get('dept')
@@ -1642,14 +1412,19 @@ def extract_results(request):
         if level == "HND1":
             lev = 'L1'
         elif level == "HND2":
-            lev == 'L2'
+            lev = 'L2'
+        elif level == "BTECH":
+            lev = 'L3'
+
 
         print(dept_id)
         print(lev)
 
         matricules = []
         names = []
-        fields = ["Matricule", "Names"]
+        dobs = []
+        pobs = []
+        fields = ["Matricule", "Names", "Date of Birth", "Place of Birth"]
         f_results = []
 
         students = Student.objects.filter(dept = dept_id, level = lev).all()
@@ -1658,6 +1433,8 @@ def extract_results(request):
             matricules.append(r.registration_number)
 
             names.append(r.name)
+            dobs.append(r.dob)
+            pobs.append(r.pob)
         
         subjects = Subject.objects.filter(dept = dept_id, level = lev).all()
         print(subjects)
@@ -1667,7 +1444,10 @@ def extract_results(request):
             res = []
             results = Result.objects.filter(course_code = s.course_code).all()
             for r in results:
-                res.append(r.total)
+                if level == "BTECH":
+                    res.append(r.total*5)
+                else:
+                    res.append(r.total)
 
             f_results.append(res)
         
@@ -1676,7 +1456,6 @@ def extract_results(request):
         print(fields)
         print(f_results)
             
-
 
         wb_name = 'Results_' + str(dept_id) + '_' + str(level) + '.xlsx'
 
@@ -1694,13 +1473,15 @@ def extract_results(request):
         c2 = 0
 
         import itertools
-        for (m, n) in zip(matricules, names):
+        for (m, n, d, p ) in zip(matricules, names, dobs, pobs):
             ws.write(r2, c2, str(m))
             ws.write(r2,c2 + 1, str(n))
+            ws.write(r2,c2 + 2, str(d))
+            ws.write(r2,c2 + 3, str(p))
             r2+=1
 
         
-        c3 = 2
+        c3 = 4
         for i in range(0, len(f_results)):
             r3 = 1
             for j in range(0, len(matricules)):
@@ -1721,12 +1502,9 @@ def extract_results(request):
         response["Content-Disposition"] = "attachment; filename=%s" % wb_name
 
         return response
-            
-
-
 
     return render(request,'admin_template/extract_results.html',context)
-   
+
 #__________________________________________________EXTRACT RESULTS END_____________________________________________________
 
 def delete_result(request):
@@ -1738,18 +1516,8 @@ def delete_result(request):
         course_id = request.POST.get('course_code')
         xx = course_id.split(",")
         print(xx)
-        # res = Student.objects.filter(registration_number = regi).first()
-        # sub = Subject.objects.filter(course_code = course_id).first()
-        # if res == None:
-        #     messages.info(request, "The student is not registered..Register the student from here first")
-        #     return redirect(reverse('add_student'))
-        # if sub == None:
-        #     return HttpResponse("The Subject Is not Registered.. Register The Subject First")
+        
         return redirect(reverse('delete_result2', kwargs= {"dept": xx[1], "course_id": xx[0]}))
-
-    
-
-
 
     return render(request,'teacher_template/delete_result.html',context)
 
@@ -1773,15 +1541,13 @@ def delete_student(request):
 
     if request.method == 'POST':
         regi = request.POST.get('course_code')
-       
+    
         uid = Student.objects.get(registration_number = regi).user_id
         Student.objects.filter(registration_number = regi).delete()
         User.objects.filter(id = uid).delete()
 
         messages.success(request,"Successfully Deleted %s student"%(regi))
         return redirect('home')
-
-
 
     context ={
         'data':data
@@ -1795,7 +1561,7 @@ def remove_teacher(request):
 
     if request.method == 'POST':
         regi = request.POST.get('course_code')
-       
+    
         uid = Teacher.objects.get(teacher_id = regi).user_id
         Student.objects.filter(teacher_id = regi).delete()
         User.objects.filter(id = uid).delete()
@@ -1812,11 +1578,6 @@ def remove_teacher(request):
     }
     return render(request,'admin_template/remove_teacher.html',context)
 
-    
-
-
-    
-
 class GeneratePdf2(View):
     course_id = None
     dept_id = None
@@ -1832,7 +1593,7 @@ class GeneratePdf2(View):
         SELECT 1 as id,main_student.name as name, main_student.registration_number as regi, name as cgname, total as cg,
         theory_marks, term_test, attendence as attend FROM
         public.main_student JOIN public.main_result ON
-          registration_number = student_id
+        registration_number = student_id
         and  dept_id = dept
 	    where course_code = %s and dept = %s order by regi;''',[cid, did])
         cnt=1
@@ -1858,29 +1619,7 @@ class GeneratePdf2(View):
 
         # Converting the HTML template into a PDF file
         pdf = html_to_pdf(file_path1)
-         
-         # rendering the template
+
+        # rendering the template
         return HttpResponse(pdf, content_type='application/pdf')
-
-    
-
-
-
-
-
-        
-
-
- 
-
-
-
-
-
-    
-
-
-
-    
-
 
