@@ -1403,7 +1403,7 @@ def extract_results(request):
     
     data = Dept.objects.all()
 
-    context={'dept':data, 'level': ['HND1', 'HND2']} 
+    context={'dept':data, 'level': ['HND1', 'HND2', 'BTECH']} 
 
     if request.method == 'POST':
         dept_id = request.POST.get('dept')
