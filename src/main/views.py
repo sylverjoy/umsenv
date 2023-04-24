@@ -223,7 +223,7 @@ def studentHome(request):
         credits_passed = 0
         percent_passed_credit = 0
         percent_registered = 0
-        remain_credit =160
+        remain_credit = 60
         remain_credit_percent= 100
         current_cgpa =0
         degree_status = "INCOMPLETE"
@@ -261,16 +261,16 @@ def studentHome(request):
             lower =lower + k.credit
         
         current_cgpa = round(upper/lower,2)
-        percent_passed_credit = ((credits_passed)*100)/160
+        percent_passed_credit = ((credits_passed)*100)/60
 
 
-        percent_registered = ((credits)*100)/160
+        percent_registered = ((credits)*100)/60
 
-        remain_credit = 160 - credits_passed
+        remain_credit = 60 - credits_passed
 
-        remain_credit_percent = ((remain_credit)*100)/160
+        remain_credit_percent = ((remain_credit)*100)/60
         remain =""
-        if(credits_passed<160):
+        if(credits_passed<60):
             degree_status = "INCOMPLETE"
             remain = "Need to pass "+ str(remain_credit) +" more credits to get a degreee" 
         else:
@@ -688,7 +688,7 @@ class GeneratePdf(View):
         cgpa = 0
         status =""
         for k in data:
-            if k.total>=40:
+            if k.total>=8:
                 upper =upper+ k.credit * cal_cg(k.total)
                 lower =lower + k.credit
         
@@ -697,7 +697,7 @@ class GeneratePdf(View):
             
         else:
             cgpa = round(upper/lower, 2)
-        if lower<160:
+        if lower<60:
             status = "Incomplete"
         else:
             status = "Complete"
@@ -1215,7 +1215,7 @@ def student_sub_register(request):
 
             )
             ss.save()
-            messages.success(request, "It has gone for approval to Teacher")
+            messages.success(request, "Registration Successful")
             return redirect('home')
         else:
             messages.success(request, "You have already Requested for approval on this Subject. See your Registration table for Registration Status")   

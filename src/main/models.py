@@ -90,7 +90,7 @@ class Subject(models.Model):
 class RegisterTable(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject,on_delete=models.CASCADE)
-    status = models.CharField(max_length= 200, default= "Pending")
+    status = models.CharField(max_length= 200, default= "Approved")
     dept =models.ForeignKey(Dept, on_delete=models.CASCADE)
     class Meta:
         unique_together = (("student","subject"))
@@ -115,7 +115,7 @@ class Rating(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     rating  = models.IntegerField(default = '3')
-    class Metha:
+    class Meta:
         unique_together = (("student","subject"))
 
 
