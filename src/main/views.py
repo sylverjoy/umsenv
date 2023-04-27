@@ -187,6 +187,10 @@ def home(request):
     
     
     print(overall_rate)
+    
+    if overall_rate is None:
+        overall_rate = {'rating__avg': 0 }
+    
 
     context = {'name':name,
                 'stu':stu_cnt,
