@@ -121,9 +121,9 @@ def registerPageTeacher(request):
             
             group = Group.objects.get(name = 'teacher')
             user.groups.add(group)
-            messages.success(request, "Successfully Teacher Added")
+            messages.success(request, "Successfully Added Teacher")
         else:
-            messages.success(request, "Teacher Couldn't  Added")
+            messages.success(request, "Teacher Couldn't Be Added")
             
             
     return render(request, 'registration_template/add_teacher.html',context)
@@ -143,8 +143,9 @@ def registerPage(request):
             
             group = Group.objects.get(name = 'admin')
             user.groups.add(group)
-        else:
             messages.success(request, "Successfully Admin Added")
+        else:
+            messages.success(request, "Admin Couldn't Be Added")
     return render(request, 'registration_template/add_admin.html',context)
 
 def logoutPage(request):
@@ -188,7 +189,7 @@ def home(request):
     
     print(overall_rate)
     
-    if overall_rate is None:
+    if overall_rate['rating__avg'] is None:
         overall_rate = {'rating__avg': 0 }
     
 
@@ -213,7 +214,8 @@ def studentHome(request):
     name = request.user.student.name
     regi = request.user.student.registration_number
     dept = request.user.student.dept
-    res = Result.objects.filter(student_id = regi).first()
+    res = RegisterTable.objects.filter(student_id = regi)
+    print(res)
     Subject.objects.raw('''
         SELECT 1 as id, SUM(credit)
         FROM public.main_student JOIN public.main_result ON
@@ -234,12 +236,19 @@ def studentHome(request):
         remain = "Need to pass "+ str(remain_credit) +" more credits to get a degree" 
     
     else:
-        credits = Subject.objects.raw('''
-        SELECT 1 as course_code, SUM(credit)
-        FROM public.main_student JOIN public.main_result ON
-        main_student.registration_number = main_result.student_id
-        JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-        where main_student.registration_number=%s;''',[regi])[0].sum
+        credits = 0
+        for r in res:
+            sub = Subject.objects.filter(course_code = r.subject.course_code).first()
+            print(sub)
+            print(sub.credit)
+            credits += sub.credit
+        print(credits)
+        #credits = Subjects.objects.raw('''
+        #SELECT 1 as course_code, SUM(credit)
+        #FROM public.main_student JOIN public.main_result ON
+        #main_student.registration_number = main_result.student_id
+        #JOIN public.main_subject ON main_result.course_code = main_subject.course_code
+        #where main_student.registration_number=%s;''',[regi])[0].sum
 
         credits_passed = Subject.objects.raw('''
         SELECT 1 as course_code, SUM(credit)
@@ -263,7 +272,13 @@ def studentHome(request):
         for k in cgpa:
             upper =upper+ k.credit * cal_cg(k.total)
             lower =lower + k.credit
+
+        if lower == 0:
+            lower = 1
         
+        if credits_passed is None:
+            credits_passed = 0
+
         current_cgpa = round(upper/lower,2)
         percent_passed_credit = ((credits_passed)*100)/60
 
@@ -1163,16 +1178,23 @@ def assign_teacher(request, dept_id):
         t_id   = request.POST.get('teacher')
         t_dept = dept_id
 
-        assingn = AssignedTeacher2(
-            student_dept =  stu_dept,
-            course_code= cour_code,
-            dept_id = t_dept,
-            
-            teacher_id= t_id,
+        exists = AssignedTeacher2.objects.filter(course_code = cour_code, teacher_id = t_id).first()
 
-        )
-        assingn.save()
-        messages.success(request,"Teacher Id : %s Is Assigned For %s Course In %s Department" %(t_id,cour_code,t_dept))
+        print(exists)
+        if exists:
+            messages.success(request,"Teacher already assigned to this course")
+        else:
+
+            assingn = AssignedTeacher2(
+                student_dept =  stu_dept,
+                course_code= cour_code,
+                dept_id = t_dept,
+                
+                teacher_id= t_id,
+
+            )
+            assingn.save()
+            messages.success(request,"Teacher Id : %s Is Assigned For %s Course In %s Department" %(t_id,cour_code,t_dept))
 
     return render(request,'admin_template/assign_teacher_dept.html',context)
 
@@ -1186,6 +1208,8 @@ def student_sub_register(request):
     regi = str(request.user.student.registration_number)
     lev = str(request.user.student.level)
 
+    print(lev)
+
 
     data = AssignedTeacher2.objects.raw('''
         SELECT 1 as id, course_code as cc, teacher_id as tid ,dept_id as did, dept_id as tname FROM main_assignedteacher2
@@ -1198,7 +1222,7 @@ def student_sub_register(request):
         teacher_name = Teacher.objects.get(teacher_id = i.tid).name
         i.tname = teacher_name
         if ctt != None:
-            i.tname = i.tname + "-->Already Requested."
+            i.tname = i.tname + "-->Already Registered."
             
     context = {'data':data}
 
@@ -1219,6 +1243,19 @@ def student_sub_register(request):
 
             )
             ss.save()
+
+            tid = AssignedTeacher2.objects.filter(course_code = course_cc).first().teacher.teacher_id
+
+            print(tid)
+
+            rr = Rating.objects.filter(student_id = regi , subject_id = course_cc, teacher_id = tid).first()
+            if rr == None:
+                rate = Rating(
+                    student_id = regi,
+                    subject_id = course_cc,
+                    teacher_id = tid,
+                )
+                rate.save()
             messages.success(request, "Registration Successful")
             return redirect('home')
         else:
@@ -1567,7 +1604,7 @@ def remove_teacher(request):
         regi = request.POST.get('course_code')
     
         uid = Teacher.objects.get(teacher_id = regi).user_id
-        Student.objects.filter(teacher_id = regi).delete()
+        Teacher.objects.filter(teacher_id = regi).delete()
         User.objects.filter(id = uid).delete()
 
         messages.success(request,"Successfully Deleted %s Teacher"%(regi))

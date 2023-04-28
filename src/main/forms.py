@@ -35,7 +35,7 @@ class StudentForm(ModelForm):
         self.fields['level'].widget.attrs['class'] = 'form-control'
         self.fields['level'].widget.attrs['placeholder'] = 'Level'
         self.fields['dob'].widget.attrs['class'] = 'form-control'
-        self.fields['dob'].widget.attrs['placeholder'] = 'Date of Birth'
+        self.fields['dob'].widget.attrs['placeholder'] = 'Date of Birth in format yyyy-mm-dd'
         self.fields['pob'].widget.attrs['class'] = 'form-control'
         self.fields['pob'].widget.attrs['placeholder'] = 'Place of Birth'
         # self.fields['profile_pic'].widget.attrs['class'] = 'file-upload-default'
@@ -44,7 +44,7 @@ class StudentForm(ModelForm):
 
     class Meta:
         model = Student
-        fields = ['name','phone','registration_number','dept','level','profile_pic',]
+        fields = ['name','phone','registration_number','dept','level','dob','pob','profile_pic',]
 
 
 

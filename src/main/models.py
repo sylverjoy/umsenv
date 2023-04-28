@@ -22,7 +22,7 @@ class Student(models.Model):
     # is_student = models.BooleanField(default= False)
     name = models.CharField(max_length= 200, null= True)
     phone = models.CharField(max_length= 200, null = True)
-    profile_pic = models.ImageField(null = True, blank = True)
+    profile_pic = models.ImageField(null = True, blank = True, default= '0000.jpeg')
     level = models.CharField(max_length= 200, null= True, choices= [('L1', 'HND1'), ('L2', 'HND2'), ('L3', 'BTECH')  ])
     dob = models.DateField(null = True, blank = True)
     pob = models.CharField(max_length= 200, null= True)
@@ -38,7 +38,7 @@ class AdminUser(models.Model):
     # is_student = models.BooleanField(default= False)
     name = models.CharField(max_length= 200, null= True)
     phone = models.CharField(max_length= 200, null = True)
-    profile_pic = models.ImageField(null = True, blank = True)
+    profile_pic = models.ImageField(null = True, blank = True, default="0000.jpeg")
 
     def __str__(self):
         return self.name
@@ -51,7 +51,7 @@ class Teacher(models.Model):
     dept = models.ForeignKey(Dept, on_delete=models.CASCADE)
     teacher_id = models.CharField(max_length= 200, null=False, primary_key=True)
     phone = models.CharField(max_length= 200, null = True)
-    profile_pic = models.ImageField(null = True, blank = True)
+    profile_pic = models.ImageField(null = True, blank = True, default="0000.jpeg")
 
     def __str__(self):
         return self.name
@@ -74,7 +74,7 @@ class AssignedTeacher2(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = (("student_dept","course_code"))
+        unique_together = (("teacher","course_code"))
 
 
 

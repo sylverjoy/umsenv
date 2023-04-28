@@ -2,7 +2,7 @@
 
 <div class="main-panel">
     <div class="content-wrapper">
-      {% include 'main/message.html' %}
+    {% include 'main/message.html' %}
 
 
         <div class="row">
@@ -21,7 +21,7 @@
         </div>
         <div class="row">
             
-            {%for c  in data%} 
+            {%for c in data%} 
             <div class="col-md-12 grid-margin stretch-card">
                 
                 
@@ -32,14 +32,14 @@
                     <div class="col-sm" align ="center">
                         <!-- <blockquote class="blockquote">
                             <p class="mb-0">Student Registration: {{c.student_id}}</p>
-                          </blockquote> -->
-                          Course Code : {{c.cc}}<br>
-                          Teacher's Name :     {{c.name}}             <br>
-                          Teacher's ID: {{c.tid}}<br>
-                          Teachers Phone:   {{c.phone}}   <br>
-                          
+                        </blockquote> -->
+                        Course Code : {{c.cc}}<br>
+                        Teacher's Name :     {{c.name}}             <br>
+                        Teacher's ID: {{c.tid}}<br>
+                        Teachers Phone:   {{c.phone}}   <br>
+                        
                     
-                     
+                    
                     </div>
                      <div class="col-sm">
                         <img src="/media/{{c.profile_pic}}" width="120"/>
