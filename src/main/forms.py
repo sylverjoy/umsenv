@@ -77,10 +77,8 @@ class UpdateForm(ModelForm):
         self.fields['course_code'].widget.attrs['hidden'] = True
         self.fields['theory_marks'].widget.attrs['class'] = 'form-control'
         self.fields['term_test'].widget.attrs['class'] = 'form-control'
-        self.fields['attendence'].widget.attrs['class'] = 'form-control'
         #self.fields['total'].widget.attrs['class'] = 'form-control'
         self.fields['total'].widget.attrs['hidden'] = True
-        self.fields['dept'].widget.attrs['hidden'] = True
         #self.fields['dept'].widget.attrs['class'] = 'form-control'
     class Meta:
         model = Result
@@ -145,13 +143,58 @@ class TeacherForm(ModelForm):
 class DepartmentForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(DepartmentForm, self).__init__(*args, **kwargs)
+        self.fields['school'].widget.attrs['class'] = 'form-control'
+        self.fields['school'].widget.attrs['placeholder'] = "School to which the Department Belongs"
         self.fields['name'].widget.attrs['class'] = 'form-control'
         self.fields['name'].widget.attrs['placeholder'] = "Department Name"
         self.fields['dept_id'].widget.attrs['class'] = 'form-control'
         self.fields['dept_id'].widget.attrs['placeholder'] = "Department ID"
     class Meta:
         model = Dept
-        fields = ['name','dept_id',]
+        fields = ['school','name','dept_id',]
+
+class SchoolForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(SchoolForm, self).__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs['class'] = 'form-control'
+        self.fields['name'].widget.attrs['placeholder'] = "School Name"
+        self.fields['school_id'].widget.attrs['class'] = 'form-control'
+        self.fields['school_id'].widget.attrs['placeholder'] = "School ID"
+    class Meta:
+        model = School
+        fields = ['name','school_id',]
+
+class DegreeForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(DegreeForm, self).__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs['class'] = 'form-control'
+        self.fields['name'].widget.attrs['placeholder'] = "Degree Name"
+        self.fields['deg_id'].widget.attrs['class'] = 'form-control'
+        self.fields['deg_id'].widget.attrs['placeholder'] = "Degree ID"
+        self.fields['total_credits'].widget.attrs['class'] = 'form-control'
+        self.fields['total_credits'].widget.attrs['placeholder'] = "Total Number of credits required to complete degree"
+    class Meta:
+        model = Degree
+        fields = '__all__'
+
+class SSForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(SSForm, self).__init__(*args, **kwargs)
+        self.fields['session'].widget.attrs['class'] = 'form-control'
+        self.fields['session'].widget.attrs['placeholder'] = "Session  e.g 2022/2023"
+        self.fields['semester'].widget.attrs['class'] = 'form-control'
+        self.fields['semester'].widget.attrs['placeholder'] = "Semester"
+        self.fields['ss_id'].widget.attrs['class'] = 'form-control'
+        self.fields['ss_id'].widget.attrs['placeholder'] = "Semester ID e.g S1/22/23 for Semester 1 of 2022/2023 Session"
+        self.fields['semester_start'].widget.attrs['class'] = 'form-control'
+        self.fields['semester_start'].widget.attrs['placeholder'] = "Semester Start  in format yyyy-mm-dd"
+        self.fields['semester_end'].widget.attrs['class'] = 'form-control'
+        self.fields['semester_end'].widget.attrs['placeholder'] = "Semester End  in format yyyy-mm-dd"
+        self.fields['ca_deadline'].widget.attrs['class'] = 'form-control'
+        self.fields['ca_deadline'].widget.attrs['placeholder'] = "Deadline for teachers to submit CAs in format yyyy-mm-dd"
+    class Meta:
+        model = SemesterSession
+        fields = ['session','semester','ss_id','semester_start','semester_end','ca_deadline']
 
     
 

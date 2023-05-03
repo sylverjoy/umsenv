@@ -162,7 +162,7 @@ def home(request):
     name = str(request.user.adminuser.name)
     stu_cnt = Student.objects.all().count()
     teacher_cnt =Teacher.objects.all().count()
-    dept_cnt = Dept.objects.all().count()
+    school_cnt = School.objects.all().count()
     admin_cnt = AdminUser.objects.all().count()
     sub_cnt = Subject.objects.all().count()
     overall_rate =Rating.objects.aggregate(Avg('rating'))
@@ -196,7 +196,7 @@ def home(request):
     context = {'name':name,
                 'stu':stu_cnt,
                 'teacher':teacher_cnt,
-                'dept': dept_cnt,
+                'school': school_cnt,
                 'admin_cnt': admin_cnt,
                 'sub_cnt':sub_cnt,
                 'overall_rate': round(overall_rate['rating__avg'],2),
@@ -982,7 +982,19 @@ def extract_temp(request):
     print(t_id)
     data = AssignedTeacher2.objects.filter(teacher_id = t_id)
 
-    context={'course':data} 
+    c_ss = SemesterSession.objects.filter(active = True).first()
+    print(c_ss)
+    print(c_ss.ca_deadline)
+    disabled = ""
+
+    from datetime import datetime
+    if datetime.now().date() > c_ss.ca_deadline :
+        print(True)
+
+        disabled = "disabled"
+        messages.success(request,"Deadline to Submit CA Results has passed. You can't download any templates anymore.")
+
+    context={'course':data, 'disabled': disabled} 
     if request.method == 'POST':
         code = request.POST.get('course_code')
         xx =code.split(",")
@@ -992,7 +1004,7 @@ def extract_temp(request):
 
         matricules = []
         names = []
-        fields = ["Matricule", "Names", "CA", "Harmonised", "Attendance"]
+        fields = ["Matricule", "Names", "CA"]
 
         register1 = RegisterTable.objects.filter(dept_id = dept_id, subject_id = course_cd).all()
         for r in register1:
@@ -1040,11 +1052,27 @@ def extract_temp(request):
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['teacher'])
 def add_excel(request):
+
+    c_ss = SemesterSession.objects.filter(active = True).first()
+    print(c_ss)
+    print(c_ss.ca_deadline)
+
+    disabled = ""
+
+    from datetime import datetime
+    if datetime.now().date() > c_ss.ca_deadline :
+        print(True)
+
+        disabled = "disabled"
+        messages.success(request,"Deadline to Submit CA Results has passed. You can't submit anymore.")
+
+
+
     t_id = str(request.user.teacher.teacher_id)
     print(t_id)
     data = AssignedTeacher2.objects.filter(teacher_id = t_id)
 
-    context={'course':data} 
+    context={'course':data, 'disabled': disabled} 
     if request.method == 'POST' and request.FILES['myfile']:
         myfile = request.FILES['myfile']
         code = request.POST.get('course_code')
@@ -1071,11 +1099,11 @@ def add_excel(request):
             sub = Result(
                     course_code =course_cd,
                     theory_marks = excel_data[i][2],
-                    term_test = excel_data[i][3],
-                    attendence = excel_data[i][4],
+                    #term_test = excel_data[i][3],
+                    #attendence = excel_data[i][4],
                     dept = dept_id,
                     student_id = excel_data[i][0],
-                    total = round(((float(excel_data[i][2]))+(float(excel_data[i][3]))+float(excel_data[i][4]))/5),
+                    #total = round(((float(excel_data[i][2]))+(float(excel_data[i][3]))+float(excel_data[i][4]))/5),
                 )
             sub.save()
 
@@ -1149,9 +1177,46 @@ def addDept(request):
     if request.method == 'POST':
         if form.is_valid:
             form.save()
-            messages.success(request,"Successfully Dept. Added")
+            messages.success(request,"Successfully Added Dept. ")
 
     return render(request, 'registration_template/add_dept.html',context)
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
+def addSchool(request):
+    form = SchoolForm(request.POST or None)
+    context = {'form': form, 'page_title':'add school'}
+    if request.method == 'POST':
+        if form.is_valid:
+            form.save()
+            messages.success(request,"Successfully Added School")
+
+    return render(request, 'registration_template/add_school.html',context)
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
+def addDegree(request):
+    form = DegreeForm(request.POST or None)
+    context = {'form': form, 'page_title':'add degree'}
+    if request.method == 'POST':
+        if form.is_valid:
+            form.save()
+            messages.success(request,"Successfully Added Degree")
+
+    return render(request, 'registration_template/add_deg.html',context)
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
+def addSS(request):
+    form = SSForm(request.POST or None)
+    context = {'form': form, 'page_title':'add semester session'}
+    if request.method == 'POST':
+        if form.is_valid:
+            form.save()
+            messages.success(request,"Successfully Added Semester Session")
+
+    return render(request, 'registration_template/add_ss.html',context)
+
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['admin'])
 def assign_teacher_dept_search(request):

@@ -30,7 +30,7 @@ class SemesterSession(models.Model):
     semester_start = models.DateField(null= False, default= datetime.now())
     semester_end = models.DateField(null= False, default= datetime.now())
     ca_deadline = models.DateField(null= False, default= datetime.now())
-    active = models.BooleanField(null= True, blank=True)
+    active = models.BooleanField(null= True, blank=True, default= True)
 
     def __str__(self):
         return self.ss_id
@@ -110,6 +110,7 @@ class Result(models.Model):
     theory_marks  = models.IntegerField(null = True)
     term_test  = models.IntegerField(null = True)
     total = models.FloatField(null = True)
+    dept = models.CharField(max_length=3, null= True)
     class Meta:
         unique_together = (("student","course_code"))
     
