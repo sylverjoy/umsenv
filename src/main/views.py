@@ -180,10 +180,10 @@ def home(request):
     low_mark =0
     for i in hi:
         hi_dept = i.dept
-        hi_mark = round((i.avg)/10.0, 2)
+        hi_mark = round((i.avg)/4.0, 2)
     for i in low:
         low_dept = i.dept
-        low_mark = round((i.avg)/10.0, 2)
+        low_mark = round((i.avg)/4.0, 2)
 
     
     
@@ -317,7 +317,7 @@ def studentHome(request):
     'degree_status': degree_status,
     'remain': remain,
 
-     
+    
     'data'  : data,
     
     
