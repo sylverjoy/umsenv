@@ -23,14 +23,15 @@ class Degree(models.Model):
     def __str__(self):
         return self.name
 
+
 class SemesterSession(models.Model):
-    session = models.CharField(max_length=9, null= False, blank= False)
+    session = models.CharField(max_length=9, null= False, default='2022/2023')
     semester = models.CharField(max_length= 200, null = False, choices= [('Semester 1', 'Semester 1'), ('Semester 2', 'Semester 2') ])
     ss_id = models.CharField(max_length=9, null= False, primary_key = True)
     semester_start = models.DateField(null= False, default= datetime.now())
     semester_end = models.DateField(null= False, default= datetime.now())
     ca_deadline = models.DateField(null= False, default= datetime.now())
-    active = models.BooleanField(null= True, blank=True, default= True)
+    active = models.CharField(max_length=3, null= False , choices=[('Yes', 'Yes'), ('No','No')], default= 'No')
 
     def __str__(self):
         return self.ss_id

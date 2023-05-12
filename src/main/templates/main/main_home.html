@@ -108,6 +108,12 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="{% url 'set_active_ss' %}">
+              <i class="ti-briefcase menu-icon"></i>
+              <span class="menu-title">Set Active Semester </span>
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="{% url 'add_teacher' %}">
               <i class="ti-user menu-icon"></i>
               <span class="menu-title">Add Lecturer</span>
@@ -125,7 +131,12 @@
               <span class="menu-title">Bulk Add Students</span>
             </a>
           </li>
-          
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'transfer_student' %}">
+              <i class="icon-plus menu-icon"></i>
+              <span class="menu-title">Transfer Student</span>
+            </a>
+          </li>
 
           <li class="nav-item">
             <a class="nav-link" href="{% url 'add_subject' %}">

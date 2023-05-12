@@ -1219,6 +1219,31 @@ def addSS(request):
 
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['admin'])
+def setActiveSS(request):
+    data = SemesterSession.objects.all()
+    print(data)
+
+    active = SemesterSession.objects.filter(active = 'Yes').first()
+    print(active)
+
+    SemesterSession.objects.all().update(active = 'No')
+    context = {'ss' : data, 'current': active}
+
+    if request.method == 'POST':
+        ssid = request.POST.get('ssid')
+        print(ssid)
+        SemesterSession.objects.filter(ss_id = ssid).update(active = 'Yes')
+        #print(sem)
+        #sem.active = 'Yes'
+        #sem.save()
+        messages.success(request,"Semester:  " + ssid + " is set active.")
+    
+    print(SemesterSession.objects.filter(active= "Yes").all())
+    
+    return render(request,'admin_template/set_active_ss.html', context)
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
 def assign_teacher_dept_search(request):
     data = Result.objects.raw('''
         SELECT dept_id as id FROM main_dept''')
@@ -1227,7 +1252,7 @@ def assign_teacher_dept_search(request):
     if request.method == 'POST':
         dept_id = request.POST.get('dept_id')
         return redirect(reverse('assign_teacher', kwargs={"dept_id": dept_id}))
-       
+
     return render(request,'admin_template/assign_teacher_dept_search.html',context)
 
 def assign_teacher(request, dept_id):
@@ -1262,6 +1287,31 @@ def assign_teacher(request, dept_id):
             messages.success(request,"Teacher Id : %s Is Assigned For %s Course In %s Department" %(t_id,cour_code,t_dept))
 
     return render(request,'admin_template/assign_teacher_dept.html',context)
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
+def change_stud_dept(request):
+    data1 = Student.objects.all()
+    print(data1)
+    
+    data2 = Dept.objects.all()
+    print(data2)
+
+
+    context = {'studs' : data1, 'depts': data2}
+
+    if request.method == 'POST':
+        stud = request.POST.get('stud')
+        dept = request.POST.get('dept')
+
+        d = Dept.objects.filter(dept_id = dept).first()
+        Student.objects.filter(registration_number = stud).update(dept = d)
+        #student.dept = d
+        #student.save()
+        messages.success(request,"Student:  " + stud + " transfered to " + dept + " Department")
+    
+    return render(request,'admin_template/change_stud_dept.html', context)
+
 
 #--------------------------------------------------------###### ADD END #######---------------------------------------------------------
 
@@ -1300,7 +1350,7 @@ def student_sub_register(request):
             print("kk")
             
             ss = RegisterTable(
-                 
+                
                 dept_id = dpt_name,
                 student_id = regi,
                 subject_id = course_cc,

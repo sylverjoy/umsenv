@@ -32,6 +32,8 @@ class StudentForm(ModelForm):
         self.fields['registration_number'].widget.attrs['placeholder'] = "registration_number"
         self.fields['dept'].widget.attrs['class'] = 'form-control'
         self.fields['dept'].widget.attrs['placeholder'] = 'Department'
+        self.fields['degree_pursued'].widget.attrs['class'] = 'form-control'
+        self.fields['degree_pursued'].widget.attrs['placeholder'] = 'Degree Pursued'
         self.fields['level'].widget.attrs['class'] = 'form-control'
         self.fields['level'].widget.attrs['placeholder'] = 'Level'
         self.fields['dob'].widget.attrs['class'] = 'form-control'
@@ -44,7 +46,7 @@ class StudentForm(ModelForm):
 
     class Meta:
         model = Student
-        fields = ['name','phone','registration_number','dept','level','dob','pob','profile_pic',]
+        fields = ['name','phone','registration_number','degree_pursued','dept','level','dob','pob','profile_pic',]
 
 
 
