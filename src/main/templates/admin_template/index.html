@@ -28,10 +28,12 @@
     <div class="row">
       <div class="col-md-6 mb-4 stretch-card transparent">
         <div class="card card-tale">
-          <div class="card-body">
-            <p class="mb-4">Total Students</p>
-            <p class="fs-30 mb-2">{{stu}}</p>
-          </div>
+          <a href="{% url 'all_students' %}" style="color:white;">
+            <div class="card-body">
+              <p class="mb-4">Total Students</p>
+              <p class="fs-30 mb-2">{{stu}}</p>
+            </div>
+          </a>
         </div>
       </div>
       <div class="col-md-6 mb-4 stretch-card transparent">

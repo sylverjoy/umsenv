@@ -16,7 +16,7 @@
 
                                 <select name="course_code" class="form-control form-control-lg" id="cars">
                                     {%for c in course%}
-                                    <option value="{{c.course_code}},{{c.student_dept}}" {% if c in selected_values %} selected {% endif %}>{{c.course_code}} for <br>({{c.student_dept}})</br> Department</option>
+                                    <option value="{{c.course.course_code}},{{c.course.dept}}" {% if c in selected_values %} selected {% endif %}>{{c.course.course_code}} {{c.course.subject_name}} for <br>({{c.course.dept}})</br> Department</option>
                                     {% endfor %}
                                 </select>
                             </div>

@@ -76,16 +76,6 @@ class Teacher(models.Model):
 
     def __str__(self):
         return self.name
-
-class AssignedTeacher2(models.Model):
-    student_dept = models.CharField(max_length= 3)
-    dept = models.ForeignKey(Dept,on_delete=models.CASCADE)
-    course_code = models.CharField(max_length= 200)
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = (("teacher","course_code"))
-
 class Subject(models.Model):
     course_code = models.CharField(max_length= 200, primary_key= True)
     subject_name = models.CharField(max_length= 200)
@@ -94,7 +84,14 @@ class Subject(models.Model):
     subtype = models.CharField(max_length= 200, null=True)
     dept =models.ForeignKey(Dept, on_delete=models.CASCADE)
     level = models.CharField(max_length= 200, null= True, choices= [('HND1', 'HND1'), ('HND2', 'HND2'), ('BTECH', 'BTECH') ])
-    
+
+class AssignedTeacher2(models.Model):
+    dept = models.ForeignKey(Dept,on_delete=models.CASCADE)
+    course = models.ForeignKey(Subject, on_delete=models.CASCADE, default="")
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = (("teacher","course"))
 class RegisterTable(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject,on_delete=models.CASCADE)

@@ -296,18 +296,6 @@ def studentHome(request):
             degree_status = "COMPLETE"
             remain = "Congratulations!!! You are a YIBS "+ str(dept) +" Graduate"  
 
-        attendance = Result.objects.raw('''
-        SELECT 1 as id, subject_name as sn , attendence as attend FROM
-        public.main_student JOIN public.main_result ON
-        main_student.registration_number = main_result.student_id
-        JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-        where main_student.registration_number=%s;''',[regi])
-        data = []
-        for i in attendance:
-            data.append({
-                'subject_name': i.sn,
-                'attendance'  :i.attend
-            })
     context ={'name':name, 
     'credits': credits,
     'percent_registered': percent_registered,
@@ -316,9 +304,6 @@ def studentHome(request):
     'current_cgpa': current_cgpa,
     'degree_status': degree_status,
     'remain': remain,
-
-    
-    'data'  : data,
     
     
     }
@@ -330,12 +315,10 @@ def teacher_home(request):
     dept = str(request.user.teacher.dept_id)
     t_id = str(request.user.teacher.teacher_id)
     num_of_regi_sub = AssignedTeacher2.objects.filter(teacher_id = t_id).count()
-    major_course = AssignedTeacher2.objects.filter(student_dept = dept, teacher_id = t_id).count()
     context ={ 'name':name,
                 'dept':dept,
                 't_id': t_id,
                 'n_ass': num_of_regi_sub,
-                'major': major_course
 
     }
     return render(request,'teacher_template/index.html',context)
@@ -515,34 +498,45 @@ def getting_json_result(regi):
         
     return json_res
 
+def getting_students_json():
+    Studs = Student.objects.all().order_by('dept', 'name')
+
+    attr = [] 
+    attr.append("Matricule")
+    attr.append("Name")
+    attr.append('Department')
+    attr.append("Degree Pursued")
+    attr.append("Level")
+
+    json_res = []
+    for stud in Studs:
+        obj = {}
+        obj[attr[0]] = stud.registration_number
+        obj[attr[1]] = stud.name
+        obj[attr[2]] = stud.dept.dept_id
+        obj[attr[3]] = stud.degree_pursued.deg_id
+        obj[attr[4]] = stud.level
+        json_res.append(obj)
+    
+    return json_res
+
 def teacher_subject_list(request):
 
 
     t_id  = request.user.teacher.teacher_id
 
-    data = AssignedTeacher2.objects.raw('''
-
-    SELECT 1 as id, subject_name as name, main_subject.course_code as cc, student_dept, subtype
-    FROM main_subject JOIN main_assignedteacher2 ON main_subject.course_code = main_assignedteacher2.course_code
-    where teacher_id = %s;
-    
-    
-    ''',[t_id])
-
-    
+    data = AssignedTeacher2.objects.filter(teacher = t_id)
 
     attr = []
     attr.append("name")
     attr.append("cc")
-    attr.append("student_dept")
     attr.append("subtype")
     json_res =[]
     for i in data:
         obj = {}
-        obj[attr[0]] = i.name
-        obj[attr[1]] = i.cc
-        obj[attr[2]] = i.student_dept
-        obj[attr[3]] = i.subtype
+        obj[attr[0]] = i.course.subject_name
+        obj[attr[1]] = i.course.course_code
+        obj[attr[2]] = i.course.subtype
         
         
         json_res.append(obj) 
@@ -603,6 +597,11 @@ def get_all_the_marks(request, *args, **kwargs):
     json_res = getting_json_result(regi)
     return JsonResponse(json_res, safe = False)
 
+@login_required(login_url = 'login')
+def get_all_the_students(request, *args, **kwargs):
+    json_res = getting_students_json()
+    return JsonResponse(json_res, safe = False)
+
 def see_registration_status(request, *args, **kwargs):
     regi = str(request.user.student.registration_number)
     dep = str(request.user.student.dept)
@@ -642,6 +641,10 @@ def full_attendance(request):
 @login_required(login_url = 'login')
 def full_marksheet(request):
     return render(request,'student_template/full_marksheet.html')
+
+@login_required(login_url = 'login')
+def all_students(request):
+    return render(request,'admin_template/view_studs.html')
 
 
 @login_required(login_url = 'login')
@@ -980,12 +983,16 @@ def add_j(request):
 def extract_temp(request):
     t_id = str(request.user.teacher.teacher_id)
     print(t_id)
-    data = AssignedTeacher2.objects.filter(teacher_id = t_id)
+    data1 = AssignedTeacher2.objects.filter(teacher_id = t_id)
 
-    c_ss = SemesterSession.objects.filter(active = True).first()
+    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
     print(c_ss)
     print(c_ss.ca_deadline)
     disabled = ""
+    data = []
+    for d in data1:
+        if d.course.semester == c_ss.semester :
+            data.append(d)
 
     from datetime import datetime
     if datetime.now().date() > c_ss.ca_deadline :
@@ -1006,7 +1013,7 @@ def extract_temp(request):
         names = []
         fields = ["Matricule", "Names", "CA"]
 
-        register1 = RegisterTable.objects.filter(dept_id = dept_id, subject_id = course_cd).all()
+        register1 = RegisterTable.objects.filter(subject_id = course_cd).all()
         for r in register1:
             matricules.append(r.student)
 
@@ -1053,7 +1060,7 @@ def extract_temp(request):
 @allowed_users(allowed_roles=['teacher'])
 def add_excel(request):
 
-    c_ss = SemesterSession.objects.filter(active = True).first()
+    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
     print(c_ss)
     print(c_ss.ca_deadline)
 
@@ -1231,14 +1238,14 @@ def setActiveSS(request):
 
     if request.method == 'POST':
         ssid = request.POST.get('ssid')
-        print(ssid)
-        SemesterSession.objects.filter(ss_id = ssid).update(active = 'Yes')
-        #print(sem)
-        #sem.active = 'Yes'
-        #sem.save()
-        messages.success(request,"Semester:  " + ssid + " is set active.")
+        print(SemesterSession.objects.filter(ss_id = ssid).first())
+        sem = SemesterSession.objects.filter(ss_id = ssid).first()
+        print(sem)
+        sem.active = 'Yes'
+        sem.save()
+        messages.success(request,"Semester:  " + sem.ss_id + " is set active.")
     
-    print(SemesterSession.objects.filter(active= "Yes").all())
+        print(SemesterSession.objects.filter(active= "Yes").all())
     
     return render(request,'admin_template/set_active_ss.html', context)
 
@@ -1256,19 +1263,17 @@ def assign_teacher_dept_search(request):
     return render(request,'admin_template/assign_teacher_dept_search.html',context)
 
 def assign_teacher(request, dept_id):
-    data = Result.objects.raw(''' SELECT name as n, teacher_id as id FROM main_teacher where dept_id = %s''', [dept_id])
-    student_dept = Result.objects.raw('''SELECT dept_id as id FROM main_dept''')
-    course = Result.objects.raw('''SELECT course_code as id, subject_name as name FROM main_subject where dept_id = %s''', [dept_id])
-    context = {'teacher':data, 'student_dept':student_dept, 'course': course, 'teacher_dept':dept_id}
+    data = Teacher.objects.all()
+    course = Subject.objects.filter(dept = dept_id)
+    context = {'teacher':data, 'course': course, 'teacher_dept':dept_id}
 
     if request.method == "POST":
 
-        stu_dept = request.POST.get('student_dept')
         cour_code = request.POST.get('course')
         t_id   = request.POST.get('teacher')
         t_dept = dept_id
 
-        exists = AssignedTeacher2.objects.filter(course_code = cour_code, teacher_id = t_id).first()
+        exists = AssignedTeacher2.objects.filter(course = Subject.objects.filter(course_code = cour_code).first(), teacher_id = t_id).first()
 
         print(exists)
         if exists:
@@ -1276,8 +1281,7 @@ def assign_teacher(request, dept_id):
         else:
 
             assingn = AssignedTeacher2(
-                student_dept =  stu_dept,
-                course_code= cour_code,
+                course = Subject.objects.filter(course_code = cour_code).first(),
                 dept_id = t_dept,
                 
                 teacher_id= t_id,
@@ -1312,6 +1316,35 @@ def change_stud_dept(request):
     
     return render(request,'admin_template/change_stud_dept.html', context)
 
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
+def promote_stud(request):
+    data1 = Student.objects.all()
+    print(data1)
+    
+    data2 = ['HND1','HND2','BTECH']
+    print(data2)
+
+
+    context = {'studs' : data1, 'levs': data2}
+
+    if request.method == 'POST':
+        stud = request.POST.get('stud')
+        lev = request.POST.get('lev')
+
+        if lev == 'BTECH':
+            deg = Degree.objects.filter(deg_id = lev).first()
+            Student.objects.filter(registration_number = stud).update(degree_pursued = deg)
+            Student.objects.filter(registration_number = stud).update(level = lev)
+        else :
+            deg = Degree.objects.filter(deg_id = "HND").first()
+            Student.objects.filter(registration_number = stud).update(degree_pursued = deg)
+            Student.objects.filter(registration_number = stud).update(level = lev)
+        
+        messages.success(request,"Student:  " + stud + " promoted to " + lev + " Level")
+    
+    return render(request,'admin_template/promote_stud.html', context)
+
 
 #--------------------------------------------------------###### ADD END #######---------------------------------------------------------
 
@@ -1321,23 +1354,22 @@ def student_sub_register(request):
     dept_name = request.user.student.dept
     dpt_name =str(dept_name)
     regi = str(request.user.student.registration_number)
+    sem = SemesterSession.objects.filter(active = 'Yes').first()
+
+    print(sem)
+    print(sem.semester)
     lev = str(request.user.student.level)
 
     print(lev)
 
+    data = Subject.objects.filter(dept= dept_name, level = lev, semester = sem.semester)
 
-    data = AssignedTeacher2.objects.raw('''
-        SELECT 1 as id, course_code as cc, teacher_id as tid ,dept_id as did, dept_id as tname FROM main_assignedteacher2
-	    where student_dept= %s''', [dpt_name])
-    
 
     for i in data:
-        ctt = RegisterTable.objects.filter(subject_id = i.cc, student_id = regi).first()
+        ctt = RegisterTable.objects.filter(subject_id = i.course_code, student_id = regi).first()
         
-        teacher_name = Teacher.objects.get(teacher_id = i.tid).name
-        i.tname = teacher_name
         if ctt != None:
-            i.tname = i.tname + "-->Already Registered."
+            i.subject_name = i.subject_name + "-->Already Registered."
             
     context = {'data':data}
 
@@ -1359,7 +1391,7 @@ def student_sub_register(request):
             )
             ss.save()
 
-            tid = AssignedTeacher2.objects.filter(course_code = course_cc).first().teacher.teacher_id
+            tid = AssignedTeacher2.objects.filter(course = course_cc).first().teacher.teacher_id
 
             print(tid)
 
@@ -1530,7 +1562,7 @@ def subject_ranksheet_teacher(request):
         dept_id = xx[1]
         marksObj = Result.objects.raw('''
         SELECT 1 as id,main_student.name as name, main_student.registration_number as regi, name as cgname, total as cg,
-        theory_marks, term_test, attendence as attend FROM
+        theory_marks, term_test FROM
         public.main_student JOIN public.main_result ON
         registration_number = student_id
         and  dept_id = dept
