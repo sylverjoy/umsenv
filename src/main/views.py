@@ -63,6 +63,18 @@ def cal_cg(marks):
         return 2.00
     else:
         return 0.00
+    
+def cal_grade(mark):
+    if mark>=15:
+        return "Distinction"
+    elif mark>=14:
+        return "Upper Credit"
+    elif mark>=12:
+        return "Lower Credit"
+    elif mark>=10:
+        return "Pass"
+    else:
+        return "Fail"
 
 def cal_cgname(cg):
     if cg == 4.00:
@@ -466,7 +478,7 @@ def getting_json(subtype, regi):
 def getting_json_result(regi):
 
     marksObj = Result.objects.raw('''
-    SELECT 1 as id, subject_name, main_subject.course_code as cc, total, attendence as attendance, term_test as tt, theory_marks as theory FROM
+    SELECT 1 as id, subject_name, credit, main_subject.course_code as cc, total,term_test as tt, theory_marks as theory FROM
     public.main_student JOIN public.main_result ON
     main_student.registration_number = main_result.student_id
     JOIN public.main_subject ON main_result.course_code = main_subject.course_code
@@ -477,9 +489,9 @@ def getting_json_result(regi):
     
     attr.append("subject_name")
     attr.append("course_code")
-    attr.append("attendance")
-    attr.append("tt")
+    attr.append("credit")
     attr.append("theory")
+    attr.append("tt")
     attr.append("total")
     attr.append("cgpa")
     json_res =[]
@@ -487,12 +499,12 @@ def getting_json_result(regi):
         obj = {}
         obj[attr[0]] = i.subject_name
         obj[attr[1]] = i.cc
-        obj[attr[2]]= i.attendance
-        obj[attr[3]] = i.tt
-        obj[attr[4]] = i.theory
+        obj[attr[2]]= i.credit
+        obj[attr[3]] = i.theory
+        obj[attr[4]] = i.tt
         obj[attr[5]] = i.total
 
-        cgpa = cal_cg(i.total)
+        cgpa = cal_grade(i.total)
         obj[attr[6]]= cgpa
         json_res.append(obj) 
         
@@ -697,35 +709,40 @@ class GeneratePdf(View):
         name = request.user.student.name
         phone = request.user.student.phone
         email = request.user.email
-        dept = request.user.student.dept
+        dept = request.user.student.dept.name
         data = Result.objects.raw('''
-        SELECT 1 as id, subject_name, main_subject.course_code as cc, total, attendence as attendance ,student_id as cg , credit FROM
+        SELECT 1 as id, subject_name, main_subject.course_code as cc, total,student_id as cg , credit FROM
         public.main_student JOIN public.main_result ON
         main_student.registration_number = main_result.student_id
         JOIN public.main_subject ON main_result.course_code = main_subject.course_code
 	    where registration_number = %s''',[regi])
 
         upper =0
+        count = 0
         lower = 0
         cgpa = 0
         status =""
         for k in data:
-            if k.total>=8:
-                upper =upper+ k.credit * cal_cg(k.total)
+            if k.total>=10:
                 lower =lower + k.credit
+            upper+=k.total
+            count+=1
         
         if lower == 0:
             cgpa =0
             
         else:
-            cgpa = round(upper/lower, 2)
-        if lower<60:
+            cgpa = round(upper/count, 2)
+
+        status = cal_grade(cgpa)
+
+        '''if lower<60:
             status = "Incomplete"
         else:
-            status = "Complete"
+            status = "Complete"'''
 
         for i in data:
-            i.student_id = cal_cg(i.total)
+            i.student_id = cal_grade(i.total)
                     
 
         module_dir = os.path.dirname(__file__)  # get current directory
@@ -1020,7 +1037,8 @@ def extract_temp(request):
             n = Student.objects.filter(registration_number = r.student).first().name
             names.append(n)
 
-        wb_name = 'Results_' + str(course_cd) + '.xlsx'
+        course_name = Subject.objects.filter(course_code = course_cd).first().subject_name
+        wb_name = 'CA Results_' + str(course_name) + '.xlsx'
 
         output = io.BytesIO()
         wb = xlsxwriter.Workbook(output)
@@ -1058,6 +1076,74 @@ def extract_temp(request):
 
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['teacher'])
+def extract_temp_exam(request):
+    t_id = str(request.user.teacher.teacher_id)
+    print(t_id)
+    data1 = AssignedTeacher2.objects.filter(teacher_id = t_id)
+
+    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
+    print(c_ss)
+
+    disabled = ""
+    data = []
+    for d in data1:
+        if d.course.semester == c_ss.semester :
+            data.append(d)
+
+    context={'course':data, 'disabled': disabled} 
+    if request.method == 'POST':
+        code = request.POST.get('course_code')
+        xx =code.split(",")
+        print(xx)
+        course_cd = xx[0]
+        dept_id =xx[1]
+
+        codes = []
+        fields = ["Code", "Exam Mark"]
+
+        register1 = RegisterTable.objects.filter(subject_id = course_cd).all()
+        for r in register1:
+            c = ExamCode.objects.filter(student = r.student, sem_ses = c_ss, subject = r.subject).first().code
+            codes.append(c)
+
+        course_name = Subject.objects.filter(course_code = course_cd).first().subject_name
+        wb_name = 'Exam Results_' + str(course_name) + '_' + str(c_ss.ss_id) + '.xlsx'
+
+        output = io.BytesIO()
+        wb = xlsxwriter.Workbook(output)
+        ws = wb.add_worksheet('Sheet1')
+        
+        r1 = 0
+        c1 = 0
+
+        for f in fields:
+            ws.write(r1, c1, f)
+            c1+=1
+        r2 = 1
+        c2 = 0
+
+        
+        for c in codes:
+            ws.write(r2, c2, str(c))
+            r2+=1
+
+        wb.close()
+        
+        output.seek(0)
+
+        response = HttpResponse(
+            output,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = "attachment; filename=%s" % wb_name
+
+        return response
+            
+
+    return render(request,'teacher_template/extract_temp_exam.html',context)
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['teacher'])
 def add_excel(request):
 
     c_ss = SemesterSession.objects.filter(active = 'Yes').first()
@@ -1077,7 +1163,12 @@ def add_excel(request):
 
     t_id = str(request.user.teacher.teacher_id)
     print(t_id)
-    data = AssignedTeacher2.objects.filter(teacher_id = t_id)
+    data1 = AssignedTeacher2.objects.filter(teacher_id = t_id)
+
+    data = []
+    for d in data1:
+        if d.course.semester == c_ss.semester :
+            data.append(d)
 
     context={'course':data, 'disabled': disabled} 
     if request.method == 'POST' and request.FILES['myfile']:
@@ -1104,19 +1195,70 @@ def add_excel(request):
         
         for i in range(1, len(excel_data)):
             sub = Result(
+                    sem_ses = c_ss,
                     course_code =course_cd,
                     theory_marks = excel_data[i][2],
-                    #term_test = excel_data[i][3],
-                    #attendence = excel_data[i][4],
                     dept = dept_id,
                     student_id = excel_data[i][0],
-                    #total = round(((float(excel_data[i][2]))+(float(excel_data[i][3]))+float(excel_data[i][4]))/5),
-                )
+                    )
             sub.save()
 
         messages.success(request,"Successfully Added Results for %s course"% (course_cd))
         return redirect('home') 
     return render(request,'teacher_template/add_json.html',context)
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['teacher'])
+def add_exam(request):
+
+    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
+    print(c_ss)
+    print(c_ss.ca_deadline)
+
+    disabled = ""
+
+    t_id = str(request.user.teacher.teacher_id)
+    print(t_id)
+    data1 = AssignedTeacher2.objects.filter(teacher_id = t_id)
+
+    data = []
+    for d in data1:
+        if d.course.semester == c_ss.semester :
+            data.append(d)
+
+    context={'course':data, 'disabled': disabled} 
+    if request.method == 'POST' and request.FILES['myfile']:
+        myfile = request.FILES['myfile']
+        code = request.POST.get('course_code')
+        xx =code.split(",")
+        print(xx)
+        course_cd = xx[0]
+        dept_id =xx[1]
+
+        wb = openpyxl.load_workbook(myfile)
+        ws = wb["Sheet1"]
+        print(ws)
+
+        excel_data = []
+
+        for r in ws.iter_rows():
+            row_data = []
+            for cell in r:
+                row_data.append(str(cell.value))
+            excel_data.append(row_data)
+        
+        print(excel_data)
+        
+        for i in range(1, len(excel_data)):
+            stud = ExamCode.objects.filter(code = excel_data[i][0], sem_ses = c_ss, subject = course_cd).first()
+
+            res = Result.objects.filter(sem_ses = c_ss, student = stud.student, course_code = course_cd).first()
+            res.term_test = excel_data[i][1]
+            res.save()
+
+        messages.success(request,"Successfully Added Results for %s course"% (course_cd))
+        return redirect('home') 
+    return render(request,'teacher_template/add_exam.html',context)
 
 
 @login_required(login_url = 'login')
@@ -1233,10 +1375,14 @@ def setActiveSS(request):
     active = SemesterSession.objects.filter(active = 'Yes').first()
     print(active)
 
-    SemesterSession.objects.all().update(active = 'No')
     context = {'ss' : data, 'current': active}
 
     if request.method == 'POST':
+        sems = SemesterSession.objects.all()
+        for s in sems:
+            s.active = 'No'
+            s.save()
+        
         ssid = request.POST.get('ssid')
         print(SemesterSession.objects.filter(ss_id = ssid).first())
         sem = SemesterSession.objects.filter(ss_id = ssid).first()
@@ -1246,6 +1392,8 @@ def setActiveSS(request):
         messages.success(request,"Semester:  " + sem.ss_id + " is set active.")
     
         print(SemesterSession.objects.filter(active= "Yes").all())
+
+        return redirect('home')
     
     return render(request,'admin_template/set_active_ss.html', context)
 
@@ -1695,6 +1843,113 @@ def extract_results(request):
 
 #__________________________________________________EXTRACT RESULTS END_____________________________________________________
 
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
+def generate_codes(request):
+
+    import random
+
+    sem = SemesterSession.objects.filter(active = 'Yes').first()
+
+    data = Subject.objects.filter(semester = sem.semester)
+
+    context = {'course': data}
+
+    if request.method == 'POST':
+        course_code = request.POST.get('course_code').split(",")[0]
+        print(course_code)
+        my_list = list(range(1,301))
+        print(my_list)
+
+        studs = RegisterTable.objects.filter(subject = course_code).all()
+        print(studs)
+
+        for stud in studs:
+            code = random.choice(my_list)
+            my_list.remove(code)
+
+            exam_code = ExamCode(
+                sem_ses = sem,
+                subject = Subject.objects.filter(course_code = course_code).first(),
+                student = stud.student,
+                code = code
+            )
+
+            exam_code.save()
+            
+        messages.success(request,"Successfully Generated Codes For Course ")
+
+    return render(request,'admin_template/generate_codes.html',context)
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
+def download_codes(request):
+
+    sem = SemesterSession.objects.filter(active = 'Yes').first()
+
+    data = Subject.objects.filter(semester = sem.semester)
+
+    context = {'course': data}
+
+    if request.method == 'POST':
+        course_code = request.POST.get('course_code').split(",")[0]
+        print(course_code)
+
+        course_name = Subject.objects.filter(course_code = course_code).first().subject_name
+
+        matricules = []
+        names = []
+        codes = []
+        fields = ["Matricule", "Names", "Code"]
+
+        register1 = RegisterTable.objects.filter(subject_id = course_code).all()
+        for r in register1:
+            matricules.append(r.student)
+
+            n = Student.objects.filter(registration_number = r.student).first().name
+            names.append(n)
+
+            c = ExamCode.objects.filter(student = r.student, sem_ses = sem, subject = r.subject).first().code
+            codes.append(c)
+
+        wb_name = 'Codes_' + str(course_name) + '_' + str(sem.ss_id) +'.xlsx'
+
+        output = io.BytesIO()
+        wb = xlsxwriter.Workbook(output)
+        ws = wb.add_worksheet('Sheet1')
+        
+        r1 = 0
+        c1 = 0
+
+        for f in fields:
+            ws.write(r1, c1, f)
+            c1+=1
+        r2 = 1
+        c2 = 0
+
+        import itertools
+        for (m, n, c) in zip(matricules, names, codes):
+            ws.write(r2, c2, str(m))
+            ws.write(r2,c2 + 1, str(n))
+            ws.write(r2,c2 + 2, str(c))
+            r2+=1
+
+        wb.close()
+        
+        output.seek(0)
+
+        response = HttpResponse(
+            output,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = "attachment; filename=%s" % wb_name
+
+        return response
+            
+
+    return render(request,'admin_template/download_codes.html',context)
+
+
 def delete_result(request):
     t_id = str(request.user.teacher.teacher_id)
     data = AssignedTeacher2.objects.filter(teacher_id = t_id)
@@ -1779,7 +2034,7 @@ class GeneratePdf2(View):
         print(did)
         marksObj = Result.objects.raw('''
         SELECT 1 as id,main_student.name as name, main_student.registration_number as regi, name as cgname, total as cg,
-        theory_marks, term_test, attendence as attend FROM
+        theory_marks, term_test FROM
         public.main_student JOIN public.main_result ON
         registration_number = student_id
         and  dept_id = dept

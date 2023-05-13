@@ -14,7 +14,9 @@ urlpatterns = [
     path("get_att/",views.get_att, name ='get_att'),
     path("add_j/", views.add_j, name ='add_j'),
     path("add_excel/", views.add_excel, name ='add_excel'),
+    path("add_exam/", views.add_exam, name ='add_exam'),
     path("extract_temp/", views.extract_temp, name ='extract_temp'),
+    path("extract_temp_exam/", views.extract_temp_exam, name ='extract_temp_exam'),
     path("get_subtype/",views.get_subtype, name ='get_subtype'),
     path("full_attendance/",views.full_attendance, name ='full_attendance'),
     path("full_marksheet/",views.full_marksheet, name ='full_marksheet'),
@@ -64,6 +66,8 @@ urlpatterns = [
     path("all_students/",views.all_students, name ='all_students'),
     path('delete_student/', views.delete_student,name ="delete_student"),
     path('extract_results/', views.extract_results,name ="extract_results"),
+    path('generate_codes/', views.generate_codes,name ="generate_codes"),
+    path('dowmload_codes/', views.download_codes,name ="download_codes"),
     path('remove_teacher/', views.remove_teacher,name ="remove_teacher"),
 
 

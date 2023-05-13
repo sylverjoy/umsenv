@@ -89,8 +89,8 @@
 <body>
 
   <div>
-    {% load static %}
-    <h1> <img
+    <h1> {% load static %}
+      <img
         src="{% static 'template/images/favicon.png' %}"
         alt="alternatetext" style="width:64px;height:64px; float:left; vertical-align:middle"> <br> Yaounde International
       Business School<br>Yaounde, Cameroon</h1>
@@ -104,7 +104,7 @@
         <p1><b>Phone:</b> {{phone}}</p>
           <p1><b>Email:</b> {{email}}</p>
             <p1><b>Current CGPA:</b> {{cgpa}}</p>
-              <p1><b>Degree Completion Status:</b> {{status}}</p>
+              
 
   </div>
 
@@ -114,11 +114,11 @@
     <table class="styled-table">
       <thead>
         <tr>
-          <th>Subject Name</th>
-          <th>Course Code</th>
-          <th>Credit</th>
-          <th>Marks</th>
-          <th>CGPA</th>
+          <th>COURSE TITLE</th>
+          <th>CODE</th>
+          <th>CREDIT</th>
+          <th>SCORE</th>
+          <th>GRADE</th>
         </tr>
       </thead>
       <tbody>
@@ -135,8 +135,8 @@
         <td><b>Cumulative GPA</b></td>
         <td>-</td>
         <td>-</td>
-        <td>-</td>
         <td><b>{{cgpa}}</b></td>
+        <td><b>{{status}}</b></td>
         
         
       </tbody>

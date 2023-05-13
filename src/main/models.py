@@ -23,9 +23,14 @@ class Degree(models.Model):
     def __str__(self):
         return self.name
 
+class AcademicYear(models.Model):
+    ay = models.CharField(max_length=10)
+    active = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.ay
 class SemesterSession(models.Model):
-    session = models.CharField(max_length=9, null= False, default='2022/2023')
+    session = models.ForeignKey(AcademicYear, on_delete=models.CASCADE, default='')
     semester = models.CharField(max_length= 200, null = False, choices= [('Semester 1', 'Semester 1'), ('Semester 2', 'Semester 2') ])
     ss_id = models.CharField(max_length=9, null= False, primary_key = True)
     semester_start = models.DateField(null= False, default= datetime.now())
@@ -93,6 +98,7 @@ class AssignedTeacher2(models.Model):
     class Meta:
         unique_together = (("teacher","course"))
 class RegisterTable(models.Model):
+    sem_ses = models.ForeignKey(SemesterSession, on_delete=models.CASCADE, default= "S1/22/23")
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject,on_delete=models.CASCADE)
     status = models.CharField(max_length= 200, default= "Approved")
@@ -105,10 +111,14 @@ class Result(models.Model):
     sem_ses = models.ForeignKey(SemesterSession, on_delete= models.CASCADE, default="")
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     course_code = models.CharField(max_length= 200)
-    theory_marks  = models.IntegerField(null = True)
-    term_test  = models.IntegerField(null = True)
-    total = models.FloatField(null = True)
+    theory_marks  = models.IntegerField(null = True, default = 0)
+    term_test  = models.IntegerField(null = True, default= 0)
+    total = models.FloatField(null = True, default= 0)
     dept = models.CharField(max_length=3, null= True)
+
+    def save(self, *args, **kwargs):
+        self.total = (int(self.theory_marks) + int(self.term_test))/5
+        super(Result, self).save(*args, **kwargs)
     class Meta:
         unique_together = (("student","course_code"))
     
@@ -121,6 +131,14 @@ class Rating(models.Model):
     class Meta:
         unique_together = (("student","subject"))
 
+class ExamCode(models.Model):
+    sem_ses = models.ForeignKey(SemesterSession, on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, on_delete= models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    code = models.IntegerField()
+
+    class Meta:
+        unique_together = (("sem_ses","subject","student"))
 
 
 

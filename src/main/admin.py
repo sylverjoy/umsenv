@@ -13,6 +13,8 @@ admin.site.register(SemesterSession)
 admin.site.register(Degree)
 admin.site.register(AssignedTeacher2)
 admin.site.register(Rating)
+admin.site.register(ExamCode)
+admin.site.register(AcademicYear)
 
 # Register your models here.
 
