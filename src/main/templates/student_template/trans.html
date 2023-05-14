@@ -1,0 +1,32 @@
+{%extends 'main/main_home_student.html'%} {%block content%}
+
+
+        <div class="row">
+            <div class="col-md-12 grid-margin stretch-card">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Select the Academic Year</h4>
+                        <p class="card-description">Select Academic Year To Download Transcript</p>
+                        <form action="" method="POST"  enctype="multipart/form-data" class="forms-sample">
+                            {% csrf_token %}
+
+                            <div class="form-group">
+                                <!-- <input type="text" name="course_code" class="form-control form-control-lg" id="exampleInputPassword1" placeholder="Course Code"> -->
+                                <label for="cars">Choose An Academic Year To Download Transcript </label>
+
+                                <select name="ay" class="form-control form-control-lg" id="cars">
+                                    {%for ay in ays%}
+                                    <option value="{{ay}}" {% if ay in selected_values %} selected {% endif %}>{{ay}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary mr-2" {{disabled}}>Generate Transcript</button>
+                            <a href="{% url 'home' %}" class="btn btn-light" role="button">Cancel</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Result Sheet</title>
+  <style>
+    .styled-table {
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 1.3em;
+      font-family: sans-serif;
+      min-width: 400px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+      table-layout: auto;
+    }
+
+    .styled-table thead tr {
+
+      text-align: left;
+    }
+
+    .styled-table th,
+    .styled-table td {
+      padding-left: 1px;
+      padding-right: 1px;
+      padding-top: 3px;
+      padding-bottom: 2px;
+    }
+
+    .styled-table tbody tr {
+      border-bottom: 1px solid black;
+      height: 25px;
+    }
+
+    .styled-table tbody tr:nth-of-type(even) {
+      background-color: #f3f3f3;
+    }
+
+    .styled-table tbody tr:last-of-type {
+      border-bottom: 2px solid #009879;
+    }
+
+    .styled-table tbody tr.active-row {
+      font-weight: bold;
+      color: #009879;
+    }
+
+    table {
+      border-collapse: collapse;
+      border: 1px solid black;
+      empty-cells:h;
+      
+
+    }
+
+
+    table.c {
+      table-layout: auto;
+      width: 100%;
+    }
+
+    h1 {
+      font-family: Arial;
+      text-align: center;
+    }
+
+    td{
+      text-align: center;
+    }
+    th {
+      text-align: center;
+      color: blue;
+    }
+
+    .center {
+      margin: auto;
+      text-align: center;
+    }
+
+    .left {
+      text-align: left;
+    }
+
+    img {
+      width: 100%;
+      padding-right: 20px;
+
+    }
+
+
+  </style>
+</head>
+
+<body>
+
+  <div style="text-align: center;">
+    <img
+        src="https://th.bing.com/th/id/OIP.RucOjeLgd4sR2-qRkV4x0wAAAA?w=158&h=142&c=7&r=0&o=5&pid=1.7"
+        alt="alternatetext" style="width:64px;height:64px; float:left; vertical-align:middle">
+  </div>
+  <div>
+    <h1 style="color: blue ;">ACADEMIC TRANSCRIPT {{ ay }}</h1>
+  </div>
+  <div>
+        <p1 style="font-size: 4;"><b>Name: </b> {{name}} </p>
+        <p1><b>Registration No:</b> {{regi}}</p>
+        <p1><b>Program: </b> {{program}}</p>
+        <p1><b>Nationality: </b> Cameroonian</p>
+    
+        <p1 style="font-size: 4;"><b>Specialty: </b> {{dept}} </p>
+        <p1><b>Date of Birth:</b> {{dob}}</p>
+        <p1><b>Place of Birth: </b> {{pob}}</p>
+    
+  </div>
+  <div>
+    <h1 style="color: red;">FIRST SEMESTER</h1>
+
+    <table class="styled-table" >
+      <thead>
+        <tr>
+          <th width="30px">S/No</th>
+          <th style="width: 300px;">COURSE TITLE</th>
+          <th>CODE</th>
+          <th>CREDIT</th>
+          <th>SCORE</th>
+          <th>GRADE</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in data %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.student_id}}</td>
+          
+        </tr>
+        {% endfor %}
+        <td>-</td>
+        <td><b>SEMESTER GPA</b></td>
+        <td>-</td>
+        <td>-</td>
+        <td><b>{{cgpa}}</b></td>
+        <td><b>{{status}}</b></td>
+        
+        
+      </tbody>
+    </table>
+  </div>
+
+  <div>
+    <h1 style="color: red;">SECOND SEMESTER</h1>
+
+    <table class="styled-table" >
+      <thead>
+        <tr>
+          <th width="30px">S/No</th>
+          <th style="width: 300px;">COURSE TITLE</th>
+          <th>CODE</th>
+          <th>CREDIT</th>
+          <th>SCORE</th>
+          <th>GRADE</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in data1 %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.student_id}}</td>
+          
+        </tr>
+        {% endfor %}
+        <td>-</td>
+        <td><b>SEMESTER GPA</b></td>
+        <td>-</td>
+        <td>-</td>
+        <td><b>{{cgpa1}}</b></td>
+        <td><b>{{status1}}</b></td>
+        
+        
+        <tr>
+            <td> &nbsp;</td>
+            <td> &nbsp;</td>
+            <td> &nbsp;</td>
+            <td> &nbsp;</td>
+            <td> &nbsp;</td>
+            <td> &nbsp;</td>
+            
+        </tr>
+        <tr>
+            <td>-</td>
+            <td><b>YEAR GPA</b></td>
+            <td>-</td>
+            <td>-</td>
+            <td><b>{{year_gpa}}</b></td>
+            <td><b>{{year_grade}}</b></td>
+            
+        </tr>
+        
+        
+      </tbody>
+    </table>
+    <h1 style="text-align: right;">REGISTRAR</h1>
+
+  </div>
+
+
+</body>
+
+</html>

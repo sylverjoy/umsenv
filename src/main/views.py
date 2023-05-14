@@ -262,28 +262,21 @@ def studentHome(request):
         #JOIN public.main_subject ON main_result.course_code = main_subject.course_code
         #where main_student.registration_number=%s;''',[regi])[0].sum
 
-        credits_passed = Subject.objects.raw('''
-        SELECT 1 as course_code, SUM(credit)
-        FROM public.main_student JOIN public.main_result ON
-        main_student.registration_number = main_result.student_id
-        JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-        where main_student.registration_number=%s and total>=8;''',[regi])[0].sum
+        credits_passed = 0
+        res = Result.objects.filter(student = regi).all()
+
+        for r in res:
+            if r.total >= 10:
+                credits_passed+= r.course_code.credit
+
         degree_status = ""
 
- 
-            
 
-        cgpa = Subject.objects.raw('''
-        SELECT 1 as course_code, credit, total
-        FROM public.main_student JOIN public.main_result ON
-        main_student.registration_number = main_result.student_id
-        JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-        where main_student.registration_number=%s and total>=8;''',[regi])
         upper =0
         lower = 0
-        for k in cgpa:
-            upper =upper+ k.credit * cal_cg(k.total)
-            lower =lower + k.credit
+        for r in res:
+            upper =upper+ r.total
+            lower += 1
 
         if lower == 0:
             lower = 1
@@ -477,12 +470,7 @@ def getting_json(subtype, regi):
 
 def getting_json_result(regi):
 
-    marksObj = Result.objects.raw('''
-    SELECT 1 as id, subject_name, credit, main_subject.course_code as cc, total,term_test as tt, theory_marks as theory FROM
-    public.main_student JOIN public.main_result ON
-    main_student.registration_number = main_result.student_id
-    JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-	where registration_number = %s''',[regi])
+    marksObj = Result.objects.filter(student = regi)
     
 
     attr = []
@@ -497,11 +485,11 @@ def getting_json_result(regi):
     json_res =[]
     for i in marksObj:
         obj = {}
-        obj[attr[0]] = i.subject_name
-        obj[attr[1]] = i.cc
-        obj[attr[2]]= i.credit
-        obj[attr[3]] = i.theory
-        obj[attr[4]] = i.tt
+        obj[attr[0]] = i.course_code.subject_name
+        obj[attr[1]] = i.course_code.course_code
+        obj[attr[2]]= i.course_code.credit
+        obj[attr[3]] = i.theory_marks
+        obj[attr[4]] = i.term_test
         obj[attr[5]] = i.total
 
         cgpa = cal_grade(i.total)
@@ -710,23 +698,21 @@ class GeneratePdf(View):
         phone = request.user.student.phone
         email = request.user.email
         dept = request.user.student.dept.name
-        data = Result.objects.raw('''
-        SELECT 1 as id, subject_name, main_subject.course_code as cc, total,student_id as cg , credit FROM
-        public.main_student JOIN public.main_result ON
-        main_student.registration_number = main_result.student_id
-        JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-	    where registration_number = %s''',[regi])
+        data = Result.objects.filter(student = regi).all()
 
         upper =0
         count = 0
         lower = 0
         cgpa = 0
         status =""
+        cnt = 1
         for k in data:
             if k.total>=10:
-                lower =lower + k.credit
+                lower =lower + k.course_code.credit
             upper+=k.total
             count+=1
+            k.id = cnt
+            cnt = cnt+1
         
         if lower == 0:
             cgpa =0
@@ -751,6 +737,115 @@ class GeneratePdf(View):
 
         pwd = os.path.dirname(__file__)
         open(file_path1, "w").write(render_to_string(file_path2, {'data': data,'regi':regi,'name':name, 'phone': phone, 'email':email,'cgpa':cgpa,'status':status,'dept':dept }))
+
+        # Converting the HTML template into a PDF file
+        pdf = html_to_pdf(file_path1)
+        
+        # rendering the template
+        return HttpResponse(pdf, content_type='application/pdf')
+
+def my_trans(request):
+    data = AcademicYear.objects.all()
+
+    context = {'ays': data}
+
+    if request.method == 'POST':
+        aca = request.POST.get('ay')
+        return redirect(reverse('generate_trans', kwargs={"ay": aca}))
+
+    return render(request, 'student_template/trans.html',context)
+
+
+class GenerateTrans(View):
+    ay = None
+    def get(self, request, *args, **kwargs):
+        self.ay = self.kwargs.get('ay', None)
+        regi = request.user.student.registration_number
+        name = request.user.student.name
+        phone = request.user.student.phone
+        email = request.user.email
+        dept = request.user.student.dept.name
+        program = request.user.student.degree_pursued
+        dob = request.user.student.dob
+        pob = request.user.student.pob
+        data1 = Result.objects.filter(student = regi).all()
+
+        print(data1)
+
+        ay = str(self.ay)
+        print(ay)
+        data = []
+        for d in data1:
+            print(d.sem_ses.session)
+            if str(d.sem_ses.session) == ay:
+                print(d)
+                data.append(d)
+
+        print(data)        
+
+        sem1 = []
+        gpa_sum_s1 = 0
+        gpa_sem1 = 0
+        count = 0
+        for d in data:
+            if str(d.sem_ses.semester) == 'Semester 1':
+                sem1.append(d)
+        cnt = 1
+        for s in sem1:
+            count+=1
+            gpa_sum_s1+= s.total
+            s.student_id = cal_grade(s.total)
+            s.id = cnt
+            cnt = cnt+1
+        
+        gpa_sem1 = round(gpa_sum_s1/count, 2)
+        grade_sem1 = cal_grade(gpa_sem1)
+
+        sem2 = []
+        gpa_sum_s2 = 0
+        gpa_sem2 = 0
+        count = 0
+        for d in data:
+            if str(d.sem_ses.semester) == 'Semester 2':
+                sem2.append(d)
+        cnt = 1
+        for s in sem2:
+            count+=1
+            gpa_sum_s2+= s.total
+            s.student_id = cal_grade(s.total)
+            s.id = cnt
+            cnt = cnt+1
+        
+        gpa_sem2 = round(gpa_sum_s2/count, 2)
+        grade_sem2 = cal_grade(gpa_sem2)
+
+        year_gpa = round((gpa_sem1 + gpa_sem2)/2, 2)
+        year_grade = cal_grade(year_gpa)
+                    
+
+        module_dir = os.path.dirname(__file__)  # get current directory
+        file_path1 = os.path.join(module_dir, 'templates/student_template/my_transcript_temp.html')
+        file_path2 = os.path.join(module_dir, 'templates/student_template/my_transcript.html')
+
+        pwd = os.path.dirname(__file__)
+        open(file_path1, "w").write(render_to_string(file_path2, {'data': sem1,
+                                                                    'data1': sem2,
+                                                                    'regi':regi,
+                                                                    'name':name,
+                                                                    'phone': phone,
+                                                                    'email':email,
+                                                                    'cgpa':gpa_sem1,
+                                                                    'status':grade_sem1,
+                                                                    'cgpa1':gpa_sem2,
+                                                                    'status1':grade_sem2,
+                                                                    'dept':dept,
+                                                                    'ay': ay,
+                                                                    'year_gpa': year_gpa,
+                                                                    'year_grade': year_grade,
+                                                                    'program':program,
+                                                                    'dob':dob,
+                                                                    'pob':pob
+                                                                    }))
 
         # Converting the HTML template into a PDF file
         pdf = html_to_pdf(file_path1)
@@ -1196,7 +1291,7 @@ def add_excel(request):
         for i in range(1, len(excel_data)):
             sub = Result(
                     sem_ses = c_ss,
-                    course_code =course_cd,
+                    course_code =Subject.objects.filter(course_code = course_cd).first(),
                     theory_marks = excel_data[i][2],
                     dept = dept_id,
                     student_id = excel_data[i][0],
@@ -1703,24 +1798,19 @@ def subject_ranksheet_teacher(request):
 
     context={'course':data, 't_id': t_id} 
 
+    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
+
     if request.method == 'POST':
         course = request.POST.get('course_code')
         xx = course.split(",")
         course_id = xx[0]
         dept_id = xx[1]
-        marksObj = Result.objects.raw('''
-        SELECT 1 as id,main_student.name as name, main_student.registration_number as regi, name as cgname, total as cg,
-        theory_marks, term_test FROM
-        public.main_student JOIN public.main_result ON
-        registration_number = student_id
-        and  dept_id = dept
-	    where course_code = %s and dept = %s order by regi;''',[course_id, dept_id])
+        marksObj = Result.objects.filter(course_code = course_id, dept = dept_id, sem_ses = c_ss.ss_id)
         cnt=1
         for i in marksObj:
             i.id = cnt
             cnt = cnt+1
-            i.cg = cal_cg(i.cg)
-            i.cgname = cal_cgname(i.cg) 
+            i.cgname = cal_grade(i.total) 
             print(i.cgname)
 
         subject = Subject.objects.get(course_code = course_id)
@@ -2032,19 +2122,12 @@ class GeneratePdf2(View):
         did = str(self.dept_id)
         print(cid)
         print(did)
-        marksObj = Result.objects.raw('''
-        SELECT 1 as id,main_student.name as name, main_student.registration_number as regi, name as cgname, total as cg,
-        theory_marks, term_test FROM
-        public.main_student JOIN public.main_result ON
-        registration_number = student_id
-        and  dept_id = dept
-	    where course_code = %s and dept = %s order by regi;''',[cid, did])
+        marksObj = Result.objects.filter(course_code = cid, dept = did, sem_ses = SemesterSession.objects.filter(active= 'Yes').first())
         cnt=1
         for i in marksObj:
             i.id = cnt
             cnt = cnt+1
-            i.cg = cal_cg(i.cg)
-            i.cgname = cal_cgname(i.cg) 
+            i.cgname = cal_grade(i.total) 
             # print(i.cgname)
 
     

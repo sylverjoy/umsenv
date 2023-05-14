@@ -110,7 +110,7 @@ class RegisterTable(models.Model):
 class Result(models.Model):
     sem_ses = models.ForeignKey(SemesterSession, on_delete= models.CASCADE, default="")
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    course_code = models.CharField(max_length= 200)
+    course_code = models.ForeignKey(Subject, on_delete=models.CASCADE, default="")
     theory_marks  = models.IntegerField(null = True, default = 0)
     term_test  = models.IntegerField(null = True, default= 0)
     total = models.FloatField(null = True, default= 0)
