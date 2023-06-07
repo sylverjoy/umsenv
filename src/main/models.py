@@ -37,6 +37,7 @@ class SemesterSession(models.Model):
     semester_end = models.DateField(null= False, default= datetime.now())
     ca_deadline = models.DateField(null= False, default= datetime.now())
     active = models.CharField(max_length=3, null= False , choices=[('Yes', 'Yes'), ('No','No')], default= 'No')
+    results_published = models.CharField(max_length=3, null= False , choices=[('Yes', 'Yes'), ('No','No')], default= 'No')
 
     def __str__(self):
         return self.ss_id
@@ -110,11 +111,14 @@ class RegisterTable(models.Model):
 class Result(models.Model):
     sem_ses = models.ForeignKey(SemesterSession, on_delete= models.CASCADE, default="")
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    level = models.CharField(max_length= 10, null = True, default= 'HND1')
     course_code = models.ForeignKey(Subject, on_delete=models.CASCADE, default="")
     theory_marks  = models.IntegerField(null = True, default = 0)
     term_test  = models.IntegerField(null = True, default= 0)
     total = models.FloatField(null = True, default= 0)
     dept = models.CharField(max_length=3, null= True)
+    resited = models.CharField(max_length=3, null= False , choices=[('Yes', 'Yes'), ('No','No')], default= 'No')
+    absent = models.CharField(max_length=3, null= False , choices=[('Yes', 'Yes'), ('No','No')], default= 'No')
 
     def save(self, *args, **kwargs):
         self.total = (int(self.theory_marks) + int(self.term_test))/5
@@ -139,6 +143,10 @@ class ExamCode(models.Model):
 
     class Meta:
         unique_together = (("sem_ses","subject","student"))
+
+class Image(models.Model):
+    title = models.CharField(null=True, max_length=200)
+    pic = models.ImageField(null=True)
 
 
 

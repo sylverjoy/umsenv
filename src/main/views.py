@@ -45,22 +45,18 @@ from django.contrib.auth.models import User
 def cal_cg(marks):
     if marks>=16:
         return 4.0
-    elif marks>=15:
-        return 3.75
     elif marks>=14:
         return 3.5
-    elif marks>=13:
-        return 3.25
     elif marks>=12:
         return 3.00
     elif marks>=11:
-        return 2.75
-    elif marks>=10:
         return 2.50
-    elif marks>=9:
-        return 2.25
-    elif marks>=8:
+    elif marks>=10:
         return 2.00
+    elif marks>=9:
+        return 1.50
+    elif marks>=8:
+        return 1.00
     else:
         return 0.00
     
@@ -75,26 +71,36 @@ def cal_grade(mark):
         return "Pass"
     else:
         return "Fail"
+    
+def cal_class(mark):
+    if mark>=3.6:
+        return "First Class"
+    elif mark>=3.0:
+        return "Second Class - UD"
+    elif mark>=2.5:
+        return "Second Class - LD"
+    elif mark>=2.25:
+        return "Third Class"
+    elif mark>=2.0:
+        return "Pass"
+    else:
+        return "Fail"
 
 def cal_cgname(cg):
     if cg == 4.00:
-        return "A+"
-    elif cg == 3.75:
         return "A"
     elif cg == 3.50:
-        return "A-"
-    elif cg == 3.25:
         return "B+"
     elif cg == 3.00:
         return "B"
-    elif cg == 2.75:
-        return "B-"
     elif cg == 2.50:
         return "C+"
-    elif cg == 2.25:
-        return "C"
     elif cg == 2.00:
-        return "C-"
+        return "C"
+    elif cg == 1.50:
+        return "D+"
+    elif cg == 1.00:
+        return "D"
     elif cg == 0.00:
         return "F"
 
@@ -471,8 +477,21 @@ def getting_json(subtype, regi):
 def getting_json_result(regi):
 
     marksObj = Result.objects.filter(student = regi)
-    
 
+    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
+    print(c_ss.ss_id)
+    
+    pub_marks = []
+
+    if c_ss.results_published == "No":
+        print('exams not published')
+        for m in marksObj:
+            print(m.sem_ses)
+            if str(m.sem_ses) != str(c_ss.ss_id):
+                print(m)
+                pub_marks.append(m)
+    else:
+        pub_marks = marksObj
     attr = []
     
     attr.append("subject_name")
@@ -481,9 +500,9 @@ def getting_json_result(regi):
     attr.append("theory")
     attr.append("tt")
     attr.append("total")
-    attr.append("cgpa")
+    #attr.append("cgpa")
     json_res =[]
-    for i in marksObj:
+    for i in pub_marks:
         obj = {}
         obj[attr[0]] = i.course_code.subject_name
         obj[attr[1]] = i.course_code.course_code
@@ -492,8 +511,8 @@ def getting_json_result(regi):
         obj[attr[4]] = i.term_test
         obj[attr[5]] = i.total
 
-        cgpa = cal_grade(i.total)
-        obj[attr[6]]= cgpa
+        #cgpa = cal_grade(i.total)
+        #obj[attr[6]]= cgpa
         json_res.append(obj) 
         
     return json_res
@@ -755,103 +774,247 @@ def my_trans(request):
 
     return render(request, 'student_template/trans.html',context)
 
+def admin_trans(request):
+    data = AcademicYear.objects.all()
+
+    depts = Dept.objects.all()
+
+    context = {'ays': data, 'ds': depts}
+
+    if request.method == 'POST':
+        aca = request.POST.get('ay')
+        dept = request.POST.get('dept')
+        return redirect(reverse('generate_trans', kwargs={"ay": aca, "dept": dept}))
+
+    return render(request, 'admin_template/trans.html',context)
+
 
 class GenerateTrans(View):
     ay = None
+    d = None
+    studs = []
     def get(self, request, *args, **kwargs):
         self.ay = self.kwargs.get('ay', None)
-        regi = request.user.student.registration_number
-        name = request.user.student.name
-        phone = request.user.student.phone
-        email = request.user.email
-        dept = request.user.student.dept.name
-        program = request.user.student.degree_pursued
-        dob = request.user.student.dob
-        pob = request.user.student.pob
-        data1 = Result.objects.filter(student = regi).all()
+        self.d = self.kwargs.get('dept', None)
 
-        print(data1)
-
-        ay = str(self.ay)
-        print(ay)
-        data = []
-        for d in data1:
-            print(d.sem_ses.session)
-            if str(d.sem_ses.session) == ay:
-                print(d)
-                data.append(d)
-
-        print(data)        
-
-        sem1 = []
-        gpa_sum_s1 = 0
-        gpa_sem1 = 0
-        count = 0
-        for d in data:
-            if str(d.sem_ses.semester) == 'Semester 1':
-                sem1.append(d)
-        cnt = 1
-        for s in sem1:
-            count+=1
-            gpa_sum_s1+= s.total
-            s.student_id = cal_grade(s.total)
-            s.id = cnt
-            cnt = cnt+1
+        if self.d != None:
+            self.studs = Student.objects.filter(dept = self.d).all()
+            zip_name = "Transcripts" + "_" + self.d + "_" + self.ay + ".zip"
+        else:
+            self.studs.append(request.user.student)
         
-        gpa_sem1 = round(gpa_sum_s1/count, 2)
-        grade_sem1 = cal_grade(gpa_sem1)
+        students = self.studs
 
-        sem2 = []
-        gpa_sum_s2 = 0
-        gpa_sem2 = 0
-        count = 0
-        for d in data:
-            if str(d.sem_ses.semester) == 'Semester 2':
-                sem2.append(d)
-        cnt = 1
-        for s in sem2:
-            count+=1
-            gpa_sum_s2+= s.total
-            s.student_id = cal_grade(s.total)
-            s.id = cnt
-            cnt = cnt+1
-        
-        gpa_sem2 = round(gpa_sum_s2/count, 2)
-        grade_sem2 = cal_grade(gpa_sem2)
+        head = Image.objects.filter(title = 'trans_head').first()
 
-        year_gpa = round((gpa_sem1 + gpa_sem2)/2, 2)
-        year_grade = cal_grade(year_gpa)
+        pdfs = []
+        names = []
+
+        from io import BytesIO
+        from django.template.loader import get_template
+        from xhtml2pdf import pisa  
+
+        for stud in students:
+
+            regi = stud.registration_number
+            name = stud.name
+            phone = stud.phone
+            email = stud.user.email
+            dept = stud.dept.name
+            program = stud.degree_pursued
+            dob = stud.dob
+            pob = stud.pob
+            data1 = Result.objects.filter(student = regi).all()
+
+            ay = str(self.ay)
+
+            f_name = "Transcript " + "_" + name + "_" + program.deg_id + "_" + ay + ".pdf"
+
+            data = []
+            for d in data1:
+                if str(d.sem_ses.session) == ay:
+                    data.append(d)
+
+
+            if len(data) == 0:
+                messages.success(request,"You have no results for the choosen Academic Year")
+            else:
+                sem1 = []
+                gpa_sum_s1 = 0
+                cred_total_s1 = 0
+                cred_earned = 0
+                gpa_sem1 = 0
+                count = 0
+                for d in data:
+                    if str(d.sem_ses.semester) == 'Semester 1':
+                        sem1.append(d)
+                
+                level = sem1[0].level
+                cnt = 1
+                for s in sem1:
+                    count+=1
+                    gpa_sum_s1+= s.total
+                    cred_total_s1+= s.course_code.credit
+                    if s.absent == "Yes":
+                        s.student_id = "X"
+                        s.gp = "X"
+                        s.gd = "X"
+                        s.wp = "X"
+                        s.total = "X"
+                    else:
+                        s.student_id = cal_grade(s.total)
+                        s.id = cnt
+                        s.gp = cal_cg(s.total)
+                        s.gd = cal_cgname(s.gp)
+                        s.wp = s.course_code.credit * s.gp
+                        s.total = s.total * 5 
+                        if s.resited == "Yes" and program.deg_id == "BTECH":
+                            s.total = str(s.total) + " * "
+
+                    cnt = cnt+1
                     
+                    if s.total != "X" and float(str(s.total).split(" ")[0]) >= 50:
+                        cred_earned+= s.course_code.credit
 
-        module_dir = os.path.dirname(__file__)  # get current directory
-        file_path1 = os.path.join(module_dir, 'templates/student_template/my_transcript_temp.html')
-        file_path2 = os.path.join(module_dir, 'templates/student_template/my_transcript.html')
+                wpt_s1 = 0
+                gpt_s1 = 0
+                for s in sem1:
+                    if s.wp != "X"  and s.gp != "X":
+                        wpt_s1+= s.wp
+                        gpt_s1+= s.gp
+                
+                gpa_sem1 = round(gpa_sum_s1/count, 2)
+                gp_s1 = round(gpt_s1/count, 2)
+                grade_sem1 = cal_grade(gpa_sem1)
 
-        pwd = os.path.dirname(__file__)
-        open(file_path1, "w").write(render_to_string(file_path2, {'data': sem1,
-                                                                    'data1': sem2,
-                                                                    'regi':regi,
-                                                                    'name':name,
-                                                                    'phone': phone,
-                                                                    'email':email,
-                                                                    'cgpa':gpa_sem1,
-                                                                    'status':grade_sem1,
-                                                                    'cgpa1':gpa_sem2,
-                                                                    'status1':grade_sem2,
-                                                                    'dept':dept,
-                                                                    'ay': ay,
-                                                                    'year_gpa': year_gpa,
-                                                                    'year_grade': year_grade,
-                                                                    'program':program,
-                                                                    'dob':dob,
-                                                                    'pob':pob
-                                                                    }))
+                sem2 = []
+                gpa_sum_s2 = 0
+                cred_total_s2 = 0
+                gpa_sem2 = 0
+                count = 0
+                for d in data:
+                    if str(d.sem_ses.semester) == 'Semester 2':
+                        sem2.append(d)
+                cnt = 1
+                for s in sem2:
+                    count+=1
+                    gpa_sum_s2+= s.total
+                    cred_total_s2+= s.course_code.credit
+                    if s.absent == "Yes":
+                        s.student_id = "X"
+                        s.gp = "X"
+                        s.gd = "X"
+                        s.wp = "X"
+                        s.total = "X"
+                    else:
+                        s.student_id = cal_grade(s.total)
+                        s.id = cnt
+                        s.gp = cal_cg(s.total)
+                        s.gd = cal_cgname(s.gp)
+                        s.wp = s.course_code.credit * s.gp
+                        s.total = s.total * 5 
+                        if s.resited == "Yes" and program.deg_id == "BTECH":
+                            s.total = str(s.total) + " * "
 
-        # Converting the HTML template into a PDF file
-        pdf = html_to_pdf(file_path1)
-        
-        # rendering the template
-        return HttpResponse(pdf, content_type='application/pdf')
+                    cnt = cnt+1
+
+                    if s.total != "X" and float(str(s.total).split(" ")[0]) >=50:
+                        cred_earned+= s.course_code.credit
+
+                wpt_s2 = 0
+                gpt_s2 = 0
+                for s in sem2:
+                    if s.wp != "X"  and s.gp != "X":
+                        wpt_s2+= s.wp
+                        gpt_s2+= s.gp
+                
+                gpa_sem2 = round(gpa_sum_s2/count, 2)
+                gp_s2 = round(gpt_s2/count, 2)
+                grade_sem2 = cal_grade(gpa_sem2)
+
+                year_gpa = round((gpa_sem1 + gpa_sem2)/2, 2)
+                year_grade = cal_grade(year_gpa)
+                yr_gp = round((gp_s1 + gp_s2)/2, 2)
+
+                cred_attempted = cred_total_s1 + cred_total_s2
+
+                deg_class = cal_class(yr_gp)
+                            
+
+                module_dir = os.path.dirname(__file__) 
+                # get current directory
+                if program.deg_id == "BTECH":
+                    file_path1 = os.path.join(module_dir, 'templates/student_template/my_transcript_btech_temp.html')
+                    file_path2 = os.path.join(module_dir, 'templates/student_template/my_transcript_btech.html')
+                    #head = Image.objects.filter(title = 'trans_head_btech').first()
+                else:
+                    file_path1 = os.path.join(module_dir, 'templates/student_template/my_transcript_temp.html')
+                    file_path2 = os.path.join(module_dir, 'templates/student_template/my_transcript.html')
+
+                pwd = os.path.dirname(__file__)
+                open(file_path1, "w").write(render_to_string(file_path2, {'data': sem1,
+                                                                            'data1': sem2,
+                                                                            'regi':regi,
+                                                                            'name':name,
+                                                                            'phone': phone,
+                                                                            'email':email,
+                                                                            'cgpa':gpa_sem1,
+                                                                            'status':grade_sem1,
+                                                                            'gp1': gp_s1,
+                                                                            'credt1': cred_total_s1,
+                                                                            'wpt1':wpt_s1,
+                                                                            'cgpa1':gpa_sem2,
+                                                                            'status1':grade_sem2,
+                                                                            'gp2': gp_s2,
+                                                                            'credt2':cred_total_s2,
+                                                                            'wpt2':wpt_s2,
+                                                                            'dept':dept,
+                                                                            'ay': ay,
+                                                                            'year_gpa': year_gpa,
+                                                                            'year_grade': year_grade,
+                                                                            'yr_gp': yr_gp,
+                                                                            'deg_class': deg_class,
+                                                                            'tcred': cred_attempted,
+                                                                            'tcred_e': cred_earned,
+                                                                            'program':program,
+                                                                            'dob':dob,
+                                                                            'pob':pob,
+                                                                            'head': head,
+                                                                            'level': level
+                                                                            }))
+
+                # Converting the HTML template into a PDF file
+                
+                pdf = html_to_pdf(file_path1)
+
+                pdfs.append(pdf)
+                names.append(f_name)
+
+        if len(pdfs) > 1:
+            import zipfile
+            output = io.BytesIO()
+            with zipfile.ZipFile(output, 'w') as zf:
+                for n,p in zip(names, pdfs):
+                    zf.writestr(n,p)
+                zf.close()
+
+            response = HttpResponse(
+            output.getvalue(),
+                content_type="application/x-zip-compressed",
+            )
+            response["Content-Disposition"] = "attachment; filename=" + zip_name
+                    
+                    # rendering the template
+            return response
+        else:
+            response = HttpResponse(
+            pdfs[0],
+                content_type="application/pdf",
+            )
+            response["Content-Disposition"] = "attachment; filename=" + names[0]
+
+            return response
+    
 
 
 ##-----------------------------------------SEARCH------------------------------------####
@@ -860,12 +1023,10 @@ class GenerateTrans(View):
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['teacher'])
 def search_result1(request):
-    t_id = request.user.teacher.teacher_id
-    data = AssignedTeacher2.objects.filter(teacher_id = t_id)
+    #t_id = request.user.teacher.teacher_id
+    data = Subject.objects.all()
 
-    context = {  'data':data 
-
-    }
+    context = {  'data':data }
     
     if request.method == 'POST':
         regi= request.POST.get('course_code')
@@ -1238,6 +1399,107 @@ def extract_temp_exam(request):
     return render(request,'teacher_template/extract_temp_exam.html',context)
 
 @login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
+def extract_res_stat(request):
+
+    ss = SemesterSession.objects.all()
+    depts = Dept.objects.all()
+    levs = ['HND1','HND2','BTECH']
+
+
+    context={'sems':ss, 'depts': depts, 'levs': levs} 
+    if request.method == 'POST':
+        sem = request.POST.get('sem')
+        dept = request.POST.get('dept')
+        lev = request.POST.get('lev')
+
+        res = Result.objects.filter(sem_ses = sem, level = lev, dept = dept).all()
+
+        print(res)
+
+        fields = ['Course Code', 'Course Title', 'Credit Value', 'Course Instructor', 'Registered', 'Examined', 'Passed', 'Failed', '% Passed']
+
+        codes = []
+        titles = [] 
+        creditvs = [] 
+        instructors = [] 
+        reg = []
+        examd = []
+        passed = []
+        failed = []
+        per_passed = []
+
+        for r in res:
+            if r.course_code.course_code in codes:
+                continue
+            else:
+                codes.append(r.course_code.course_code)
+                titles.append(r.course_code.subject_name)
+                creditvs.append(r.course_code.credit)
+                instructors.append(AssignedTeacher2.objects.filter(dept = dept, course = r.course_code).first().teacher)
+                reg.append(RegisterTable.objects.filter(sem_ses = sem, dept = dept, subject = r.course_code).all().count())
+                ex = res.filter(course_code = r.course_code).count()
+                examd.append(ex)
+                psd = res.filter(course_code = r.course_code, total__gte = 10).all().count()
+                passed.append(psd)
+                failed.append(res.filter(course_code = r.course_code, total__lt = 10).all().count())
+                per_passed.append(round((psd / ex )*100,2))
+
+        wb_name = 'Results_Stats_' + str(dept) + '_' + str(lev) + '_' + str(sem) + '.xlsx'
+
+        output = io.BytesIO()
+        wb = xlsxwriter.Workbook(output)
+        ws = wb.add_worksheet('Sheet1')
+
+        ws.write(0,0, 'Results Statistics ' + dept + ' for ' + sem + '')
+        
+        r1 = 1
+        c1 = 0
+
+        for f in fields:
+            ws.write(r1, c1, f)
+            c1+=1
+
+        r2 = 2
+        c2 = 0
+        for (c,t,cv,i,r,e,p,fd,pp) in zip(codes, titles, creditvs, instructors, reg, examd, passed, failed, per_passed):
+            ws.write(r2, c2, str(c))
+            ws.write(r2, c2 + 1, str(t))
+            ws.write(r2, c2 + 2, cv)
+            ws.write(r2, c2 + 3, str(i))
+            ws.write(r2, c2 + 4, r)
+            ws.write(r2, c2 + 5, e)
+            ws.write(r2, c2 + 6, p)
+            ws.write(r2, c2 + 7, fd)
+            ws.write(r2, c2 + 8, pp)
+            r2+=1
+
+        r2+=2
+        ws.write(r2, c2 + 1, "Total")
+        ws.write(r2, c2 + 4, sum(reg))
+        exd = sum(examd)
+        ws.write(r2, c2 + 5, exd)
+        psd = sum(passed)
+        ws.write(r2, c2 + 6, psd)
+        ws.write(r2, c2 + 7, sum(failed))
+        ws.write(r2, c2 + 8, round((psd / exd)*100,2))
+
+        wb.close()
+        
+        output.seek(0)
+
+        response = HttpResponse(
+            output,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = "attachment; filename=%s" % wb_name
+
+        return response
+            
+
+    return render(request,'admin_template/result_stats.html',context)
+
+@login_required(login_url = 'login')
 @allowed_users(allowed_roles=['teacher'])
 def add_excel(request):
 
@@ -1295,6 +1557,7 @@ def add_excel(request):
                     theory_marks = excel_data[i][2],
                     dept = dept_id,
                     student_id = excel_data[i][0],
+                    level = Student.objects.filter(registration_number = excel_data[i][0]).first().level
                     )
             sub.save()
 

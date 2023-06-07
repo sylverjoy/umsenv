@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Result Sheet</title>
+  <title>My Transcript {{ay}}</title>
   <style>
     .styled-table {
       border-collapse: collapse;
@@ -24,15 +24,15 @@
 
     .styled-table th,
     .styled-table td {
-      padding-left: 1px;
-      padding-right: 1px;
-      padding-top: 3px;
-      padding-bottom: 2px;
+      padding: 1px;
     }
 
     .styled-table tbody tr {
       border-bottom: 1px solid black;
-      height: 25px;
+      height: 17px;
+    }
+    .styled-table thead tr {
+      height: 17px;
     }
 
     .styled-table tbody tr:nth-of-type(even) {
@@ -62,7 +62,7 @@
       width: 100%;
     }
 
-    h1 {
+    h3 {
       font-family: Arial;
       text-align: center;
     }
@@ -90,7 +90,6 @@
 
     }
 
-
   </style>
 </head>
 
@@ -98,25 +97,46 @@
 
   <div style="text-align: center;">
     <img
-        src="https://th.bing.com/th/id/OIP.RucOjeLgd4sR2-qRkV4x0wAAAA?w=158&h=142&c=7&r=0&o=5&pid=1.7"
-        alt="alternatetext" style="width:64px;height:64px; float:left; vertical-align:middle">
+        src="{{ head.pic.path }}"
+        alt="alternatetext" style="vertical-align:middle; height: 175px;">
   </div>
   <div>
-    <h1 style="color: blue ;">ACADEMIC TRANSCRIPT {{ ay }}</h1>
+    <h3 style="color: blue ;"> ACADEMIC TRANSCRIPT </h3>
   </div>
   <div>
-        <p1 style="font-size: 4;"><b>Name: </b> {{name}} </p>
-        <p1><b>Registration No:</b> {{regi}}</p>
-        <p1><b>Program: </b> {{program}}</p>
-        <p1><b>Nationality: </b> Cameroonian</p>
+    <table class="styled-table">
+      <tbody>
+        <tr>
+          <td class="left"><b>Academic Year: </b> </td>
+          <td class="left">{{ay}}</td>
+          <td class="left"><b>Level: </b></td>
+          <td class="left">{{level}}</td>
+        </tr>
+        <tr>
+          <td class="left"><b>Name: </b></td>
+          <td class="left">{{name}}</td>
+          <td class="left"><b>Registration No:</b></td>
+          <td class="left">{{regi}}</td>
+        </tr>
+        <tr>
+          <td class="left"><b>Date of Birth:</b></td>
+          <td class="left">{{dob}}</td>
+          <td class="left"><b>Place of Birth: </b></td>
+          <td class="left">{{pob}}</td>
+        </tr>
+        <tr>
+          <td class="left"><b>Program: </b> </td>
+          <td class="left">{{program}}</td>
+          <td class="left"><b>Specialty: </b></td>
+          <td class="left">{{dept}}</td>
+        </tr>
+      </tbody>
+    </table>
+
     
-        <p1 style="font-size: 4;"><b>Specialty: </b> {{dept}} </p>
-        <p1><b>Date of Birth:</b> {{dob}}</p>
-        <p1><b>Place of Birth: </b> {{pob}}</p>
-    
   </div>
   <div>
-    <h1 style="color: red;">FIRST SEMESTER</h1>
+    <h3 style="color: red;">FIRST SEMESTER</h3>
 
     <table class="styled-table" >
       <thead>
@@ -141,6 +161,50 @@
           
         </tr>
         {% endfor %}
+        {% for d in data %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.student_id}}</td>
+          
+        </tr>
+        {% endfor %}
+        {% for d in data %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.student_id}}</td>
+          
+        </tr>
+        {% endfor %}
+        {% for d in data %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.student_id}}</td>
+          
+        </tr>
+        {% endfor %}
+        {% for d in data %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.student_id}}</td>
+          
+        </tr>
+        {% endfor %}
         <td>-</td>
         <td><b>SEMESTER GPA</b></td>
         <td>-</td>
@@ -152,9 +216,8 @@
       </tbody>
     </table>
   </div>
-
   <div>
-    <h1 style="color: red;">SECOND SEMESTER</h1>
+    <h3 style="color: red;">SECOND SEMESTER</h3>
 
     <table class="styled-table" >
       <thead>
@@ -168,6 +231,50 @@
         </tr>
       </thead>
       <tbody>
+        {% for d in data1 %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.student_id}}</td>
+          
+        </tr>
+        {% endfor %}
+        {% for d in data1 %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.student_id}}</td>
+          
+        </tr>
+        {% endfor %}
+        {% for d in data1 %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.student_id}}</td>
+          
+        </tr>
+        {% endfor %}
+        {% for d in data1 %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.student_id}}</td>
+          
+        </tr>
+        {% endfor %}
         {% for d in data1 %}
         <tr style="width: 0;">
           <td align = "center">{{ d.id }}</td>
@@ -209,7 +316,7 @@
         
       </tbody>
     </table>
-    <h1 style="text-align: right;">REGISTRAR</h1>
+    <h3 style="text-align: right; margin-right: 20px; margin-top: 20px;">REGISTRAR</h3>
 
   </div>
 

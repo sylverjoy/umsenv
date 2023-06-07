@@ -37,6 +37,8 @@ urlpatterns = [
     path('pdf/', views.GeneratePdf.as_view(),name ="generate_pdf"),
     path('my_trans/', views.my_trans,name ="my_trans"),
     path('my_trans/<ay>', views.GenerateTrans.as_view(),name ="generate_trans"),
+    path('admin_trans/', views.admin_trans,name ="admin_trans"),
+    path('admin_trans/<dept>/<ay>', views.GenerateTrans.as_view(),name ="generate_trans"),
     path('pdf2/<course_id>/<dept_id>', views.GeneratePdf2.as_view(),name ="generate_pdf2"),
     path('ranksheet/', views.subject_ranksheet,name ="ranksheet"),
     path('add_teacher/', views.registerPageTeacher,name ="add_teacher"),
@@ -69,7 +71,8 @@ urlpatterns = [
     path('delete_student/', views.delete_student,name ="delete_student"),
     path('extract_results/', views.extract_results,name ="extract_results"),
     path('generate_codes/', views.generate_codes,name ="generate_codes"),
-    path('dowmload_codes/', views.download_codes,name ="download_codes"),
+    path('download_codes/', views.download_codes,name ="download_codes"),
+    path('stats/', views.extract_res_stat,name ="stats"),
     path('remove_teacher/', views.remove_teacher,name ="remove_teacher"),
 
 

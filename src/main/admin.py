@@ -15,6 +15,7 @@ admin.site.register(AssignedTeacher2)
 admin.site.register(Rating)
 admin.site.register(ExamCode)
 admin.site.register(AcademicYear)
+admin.site.register(Image)
 
 # Register your models here.
 
