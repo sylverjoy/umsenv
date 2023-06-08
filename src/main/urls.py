@@ -24,6 +24,7 @@ urlpatterns = [
     path("result/<course_code>/<dept>", views.search_result, name = 'search_result'),
     path("result1/", views.search_result1, name = 'search_result1'),
     path("result/update/<result_id>/<course_code>", views.update_result, name ='update_result'),
+    path("result/resit/<result_id>/<course_code>", views.update_result_resit, name ='update_result_resit'),
     path("add_result/<dept>/<course_id>", views.add_result, name='add_result'),
     path("search_student_registered/", views.search_student_registered, name = 'search_student_registered'),
     path("get_subtype_networking_marks", views.get_subtype_networking_marks, name = 'get_subtype_networking_marks'),

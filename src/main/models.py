@@ -36,6 +36,9 @@ class SemesterSession(models.Model):
     semester_start = models.DateField(null= False, default= datetime.now())
     semester_end = models.DateField(null= False, default= datetime.now())
     ca_deadline = models.DateField(null= False, default= datetime.now())
+    ca_deadline_btech = models.DateField(null= False, default= datetime.now())
+    result_deadline = models.DateField(null= False, default= datetime.now())
+    result_deadline_btech = models.DateField(null= False, default= datetime.now())
     active = models.CharField(max_length=3, null= False , choices=[('Yes', 'Yes'), ('No','No')], default= 'No')
     results_published = models.CharField(max_length=3, null= False , choices=[('Yes', 'Yes'), ('No','No')], default= 'No')
 
@@ -45,6 +48,7 @@ class Dept(models.Model):
     school = models.ForeignKey(School, on_delete= models.CASCADE, default="")
     dept_id = models.CharField(max_length= 10, null=False, primary_key=True)
     name = models.CharField(max_length= 200, null= True)
+    UBa_Mentor_School = models.CharField(max_length = 200, null = True, default = "Faculty of Economics and Management Sciences (FEMS)")
     def __str__(self):
         return self.dept_id
     

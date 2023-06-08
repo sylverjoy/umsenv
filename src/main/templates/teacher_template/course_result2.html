@@ -5,7 +5,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <p class="card-title">Marks Information : {{subject_name}} ({{course_id}}) <br> Department Name : {{student_dept}}</b></p>
-                        <a href="{% url 'generate_pdf2' course_id=course_id dept_id=student_dept %}" class="text-info">Download Marksheet</a>
+                        <!--a href="{% url 'generate_pdf2' course_id=course_id dept_id=student_dept %}" class="text-info">Download Marksheet</!--a-->
                     </div>
 
 
@@ -20,7 +20,6 @@
                                 <th>CA</th>
                                 <th>Exam</th>
                                 <th>Total</th>
-                                <th>Grade</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -32,7 +31,6 @@
                                 <td>{{ c.theory_marks }}</td>
                                 <td>{{ c.term_test }}</td>
                                 <td>{{ c.total }}</td>
-                                <td>{{ c.cgname}}</td>
 
                             </tr>
                             {% endfor %}

@@ -23,7 +23,7 @@
                             <div class="form-group">
                                 <div class="mb-3">
                                     <label for="formFile" class="form-label">File Input </label>
-                                    <input class="form-control" type="file" id="formFile" name="myfile">
+                                    <input class="form-control" type="file" id="formFile" name="myfile" accept=".xls, .xlsx">
                                 </div>
                             <button type="submit" class="btn btn-primary mr-2" {{disabled}} >Submit Result</button>
                             <a href="{% url 'home' %}" class="btn btn-light" role="button">Cancel</a>

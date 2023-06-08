@@ -3,41 +3,27 @@ import xlsxwriter
 import io
 import openpyxl
 from django.contrib.auth.models import Group
-import requests
 from django.contrib import messages
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import (HttpResponse, HttpResponseRedirect,
+from django.shortcuts import (HttpResponse,
                               get_object_or_404, redirect, render)
-from django.templatetags.static import static
 from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import UpdateView
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 
 from .models import *
-from django.core import management
-from django.core.management.commands import loaddata
-
-#from .EmailBackend import EmailBackend
-from .models import *
 from .forms import *
-from django.contrib import messages
 
 from django.contrib.auth import authenticate, login, logout
 from .decorators import allowed_users, unauthenticated_user,allowed_users_home
 from django.http import HttpResponse
 from django.views.generic import View
 
-from django.http import FileResponse
 import io
-from reportlab.pdfgen import canvas
-from reportlab.lib.units import inch
-from reportlab.lib.pagesizes import letter
-from django.db import connections
 import os
 from django.db.models import Avg
+
+from django.db.utils import *
 
 from django.contrib.auth.models import User
 
@@ -129,7 +115,7 @@ def loginPage(request):
 def registerPageTeacher(request):
     user_form = CreateUserForm(request.POST or None) 
     teacher_form = TeacherForm(request.POST or None, request.FILES or None)
-    context = {'teacher_form': teacher_form,'user_form':user_form, 'page_title':'add student'}
+    context = {'teacher_form': teacher_form,'user_form':user_form, 'page_title':'Add Teacher'}
     if request.method == 'POST':
         if user_form.is_valid and teacher_form.is_valid():
             user = user_form.save()
@@ -141,7 +127,7 @@ def registerPageTeacher(request):
             user.groups.add(group)
             messages.success(request, "Successfully Added Teacher")
         else:
-            messages.success(request, "Teacher Couldn't Be Added")
+            messages.success(request, "Form not Valid. Try another username and/or Lecturer ID and fill all fields correctly.")
             
             
     return render(request, 'registration_template/add_teacher.html',context)
@@ -151,7 +137,7 @@ def registerPageTeacher(request):
 def registerPage(request):
     user_form = CreateUserForm(request.POST or None) 
     admin_form = AdminForm(request.POST or None, request.FILES or None)
-    context = {'admin_form': admin_form,'user_form':user_form, 'page_title':'add student'}
+    context = {'admin_form': admin_form,'user_form':user_form, 'page_title':'Add Admin'}
     if request.method == 'POST':
         if user_form.is_valid() and admin_form.is_valid():
             user = user_form.save()
@@ -161,9 +147,9 @@ def registerPage(request):
             
             group = Group.objects.get(name = 'admin')
             user.groups.add(group)
-            messages.success(request, "Successfully Admin Added")
+            messages.success(request, "Successfully Added Admin")
         else:
-            messages.success(request, "Admin Couldn't Be Added")
+            messages.success(request, "Form not valid. Try another username and enter all fields correctly please.")
     return render(request, 'registration_template/add_admin.html',context)
 
 def logoutPage(request):
@@ -233,13 +219,9 @@ def studentHome(request):
     regi = request.user.student.registration_number
     dept = request.user.student.dept
     res = RegisterTable.objects.filter(student_id = regi)
+    creds = request.user.student.degree_pursued.total_credits
+    deg = request.user.student.degree_pursued.deg_id
     print(res)
-    Subject.objects.raw('''
-        SELECT 1 as id, SUM(credit)
-        FROM public.main_student JOIN public.main_result ON
-        main_student.registration_number = main_result.student_id
-        JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-        where main_student.registration_number=%s;''',[regi])
 
     if res == None:
         data = []
@@ -247,7 +229,7 @@ def studentHome(request):
         credits_passed = 0
         percent_passed_credit = 0
         percent_registered = 0
-        remain_credit = 60
+        remain_credit = creds
         remain_credit_percent= 100
         current_cgpa =0
         degree_status = "INCOMPLETE"
@@ -257,16 +239,7 @@ def studentHome(request):
         credits = 0
         for r in res:
             sub = Subject.objects.filter(course_code = r.subject.course_code).first()
-            print(sub)
-            print(sub.credit)
             credits += sub.credit
-        print(credits)
-        #credits = Subjects.objects.raw('''
-        #SELECT 1 as course_code, SUM(credit)
-        #FROM public.main_student JOIN public.main_result ON
-        #main_student.registration_number = main_result.student_id
-        #JOIN public.main_subject ON main_result.course_code = main_subject.course_code
-        #where main_student.registration_number=%s;''',[regi])[0].sum
 
         credits_passed = 0
         res = Result.objects.filter(student = regi).all()
@@ -281,7 +254,10 @@ def studentHome(request):
         upper =0
         lower = 0
         for r in res:
-            upper =upper+ r.total
+            if deg == "BTECH":
+                upper += cal_cg(r.total)
+            else:
+                upper =upper+ r.total
             lower += 1
 
         if lower == 0:
@@ -291,18 +267,18 @@ def studentHome(request):
             credits_passed = 0
 
         current_cgpa = round(upper/lower,2)
-        percent_passed_credit = ((credits_passed)*100)/60
+        percent_passed_credit = ((credits_passed)*100)/creds
 
 
-        percent_registered = ((credits)*100)/60
+        percent_registered = ((credits)*100)/creds
 
-        remain_credit = 60 - credits_passed
+        remain_credit = creds - credits_passed
 
-        remain_credit_percent = ((remain_credit)*100)/60
+        remain_credit_percent = ((remain_credit)*100)/creds
         remain =""
-        if(credits_passed<60):
+        if(credits_passed<creds):
             degree_status = "INCOMPLETE"
-            remain = "Need to pass "+ str(remain_credit) +" more credits to get a degreee" 
+            remain = "Need to pass "+ str(remain_credit) +" more credits to get a degree" 
         else:
             degree_status = "COMPLETE"
             remain = "Congratulations!!! You are a YIBS "+ str(dept) +" Graduate"  
@@ -315,8 +291,7 @@ def studentHome(request):
     'current_cgpa': current_cgpa,
     'degree_status': degree_status,
     'remain': remain,
-    
-    
+    'creds': creds
     }
     return render(request,'student_template/index.html',context)
 
@@ -509,7 +484,10 @@ def getting_json_result(regi):
         obj[attr[2]]= i.course_code.credit
         obj[attr[3]] = i.theory_marks
         obj[attr[4]] = i.term_test
-        obj[attr[5]] = i.total
+        if regi.level == "BTECH":
+            obj[attr[5]] = i.total * 5
+        else:
+            obj[attr[5]] = i.total
 
         #cgpa = cal_grade(i.total)
         #obj[attr[6]]= cgpa
@@ -612,7 +590,7 @@ def get_subtype_project_marks(request, *args, **kwargs):
 
 @login_required(login_url = 'login')
 def get_all_the_marks(request, *args, **kwargs):
-    regi = request.user.student.registration_number
+    regi = request.user.student
     json_res = getting_json_result(regi)
     return JsonResponse(json_res, safe = False)
 
@@ -820,7 +798,7 @@ class GenerateTrans(View):
             name = stud.name
             phone = stud.phone
             email = stud.user.email
-            dept = stud.dept.name
+            dept = stud.dept
             program = stud.degree_pursued
             dob = stud.dob
             pob = stud.pob
@@ -837,7 +815,7 @@ class GenerateTrans(View):
 
 
             if len(data) == 0:
-                messages.success(request,"You have no results for the choosen Academic Year")
+                messages.success(request,"Student %s has no results for the choosen Academic Year"%(stud.name))
             else:
                 sem1 = []
                 gpa_sum_s1 = 0
@@ -849,43 +827,44 @@ class GenerateTrans(View):
                     if str(d.sem_ses.semester) == 'Semester 1':
                         sem1.append(d)
                 
-                level = sem1[0].level
-                cnt = 1
-                for s in sem1:
-                    count+=1
-                    gpa_sum_s1+= s.total
-                    cred_total_s1+= s.course_code.credit
-                    if s.absent == "Yes":
-                        s.student_id = "X"
-                        s.gp = "X"
-                        s.gd = "X"
-                        s.wp = "X"
-                        s.total = "X"
-                    else:
-                        s.student_id = cal_grade(s.total)
-                        s.id = cnt
-                        s.gp = cal_cg(s.total)
-                        s.gd = cal_cgname(s.gp)
-                        s.wp = s.course_code.credit * s.gp
-                        s.total = s.total * 5 
-                        if s.resited == "Yes" and program.deg_id == "BTECH":
-                            s.total = str(s.total) + " * "
+                if len(sem1) > 0:
+                    level = sem1[0].level
+                    cnt = 1
+                    for s in sem1:
+                        count+=1
+                        gpa_sum_s1+= s.total
+                        cred_total_s1+= s.course_code.credit
+                        if s.absent == "Yes":
+                            s.student_id = "X"
+                            s.gp = "X"
+                            s.gd = "X"
+                            s.wp = "X"
+                            s.total = "X"
+                        else:
+                            s.student_id = cal_grade(s.total)
+                            s.id = cnt
+                            s.gp = cal_cg(s.total)
+                            s.gd = cal_cgname(s.gp)
+                            s.wp = s.course_code.credit * s.gp
+                            s.total = s.total * 5 
+                            if s.resited == "Yes" and program.deg_id == "BTECH":
+                                s.total = str(s.total) + " * "
 
-                    cnt = cnt+1
+                        cnt = cnt+1
+                        
+                        if s.total != "X" and float(str(s.total).split(" ")[0]) >= 50:
+                            cred_earned+= s.course_code.credit
+
+                    wpt_s1 = 0
+                    gpt_s1 = 0
+                    for s in sem1:
+                        if s.wp != "X"  and s.gp != "X":
+                            wpt_s1+= s.wp
+                            gpt_s1+= s.gp
                     
-                    if s.total != "X" and float(str(s.total).split(" ")[0]) >= 50:
-                        cred_earned+= s.course_code.credit
-
-                wpt_s1 = 0
-                gpt_s1 = 0
-                for s in sem1:
-                    if s.wp != "X"  and s.gp != "X":
-                        wpt_s1+= s.wp
-                        gpt_s1+= s.gp
-                
-                gpa_sem1 = round(gpa_sum_s1/count, 2)
-                gp_s1 = round(gpt_s1/count, 2)
-                grade_sem1 = cal_grade(gpa_sem1)
+                    gpa_sem1 = round(gpa_sum_s1/count, 2)
+                    gp_s1 = round(gpt_s1/count, 2)
+                    grade_sem1 = cal_grade(gpa_sem1)
 
                 sem2 = []
                 gpa_sum_s2 = 0
@@ -895,42 +874,44 @@ class GenerateTrans(View):
                 for d in data:
                     if str(d.sem_ses.semester) == 'Semester 2':
                         sem2.append(d)
-                cnt = 1
-                for s in sem2:
-                    count+=1
-                    gpa_sum_s2+= s.total
-                    cred_total_s2+= s.course_code.credit
-                    if s.absent == "Yes":
-                        s.student_id = "X"
-                        s.gp = "X"
-                        s.gd = "X"
-                        s.wp = "X"
-                        s.total = "X"
-                    else:
-                        s.student_id = cal_grade(s.total)
-                        s.id = cnt
-                        s.gp = cal_cg(s.total)
-                        s.gd = cal_cgname(s.gp)
-                        s.wp = s.course_code.credit * s.gp
-                        s.total = s.total * 5 
-                        if s.resited == "Yes" and program.deg_id == "BTECH":
-                            s.total = str(s.total) + " * "
-
-                    cnt = cnt+1
-
-                    if s.total != "X" and float(str(s.total).split(" ")[0]) >=50:
-                        cred_earned+= s.course_code.credit
-
-                wpt_s2 = 0
-                gpt_s2 = 0
-                for s in sem2:
-                    if s.wp != "X"  and s.gp != "X":
-                        wpt_s2+= s.wp
-                        gpt_s2+= s.gp
                 
-                gpa_sem2 = round(gpa_sum_s2/count, 2)
-                gp_s2 = round(gpt_s2/count, 2)
-                grade_sem2 = cal_grade(gpa_sem2)
+                if len(sem2) > 0:
+                    cnt = 1
+                    for s in sem2:
+                        count+=1
+                        gpa_sum_s2+= s.total
+                        cred_total_s2+= s.course_code.credit
+                        if s.absent == "Yes":
+                            s.student_id = "X"
+                            s.gp = "X"
+                            s.gd = "X"
+                            s.wp = "X"
+                            s.total = "X"
+                        else:
+                            s.student_id = cal_grade(s.total)
+                            s.id = cnt
+                            s.gp = cal_cg(s.total)
+                            s.gd = cal_cgname(s.gp)
+                            s.wp = s.course_code.credit * s.gp
+                            s.total = s.total * 5 
+                            if s.resited == "Yes" and program.deg_id == "BTECH":
+                                s.total = str(s.total) + " * "
+
+                        cnt = cnt+1
+
+                        if s.total != "X" and float(str(s.total).split(" ")[0]) >=50:
+                            cred_earned+= s.course_code.credit
+
+                    wpt_s2 = 0
+                    gpt_s2 = 0
+                    for s in sem2:
+                        if s.wp != "X"  and s.gp != "X":
+                            wpt_s2+= s.wp
+                            gpt_s2+= s.gp
+                    
+                    gpa_sem2 = round(gpa_sum_s2/count, 2)
+                    gp_s2 = round(gpt_s2/count, 2)
+                    grade_sem2 = cal_grade(gpa_sem2)
 
                 year_gpa = round((gpa_sem1 + gpa_sem2)/2, 2)
                 year_grade = cal_grade(year_gpa)
@@ -1021,17 +1002,17 @@ class GenerateTrans(View):
 
 
 @login_required(login_url = 'login')
-@allowed_users(allowed_roles=['teacher'])
+@allowed_users(allowed_roles=['admin'])
 def search_result1(request):
     #t_id = request.user.teacher.teacher_id
-    data = Subject.objects.all()
+    data = Subject.objects.filter(semester = SemesterSession.objects.filter(active = "Yes").first().semester)
 
     context = {  'data':data }
     
     if request.method == 'POST':
         regi= request.POST.get('course_code')
         xx = regi.split(',')
-        return redirect(reverse('search_result', kwargs={"course_code": xx[0], "dept" : xx[1]}))
+        return redirect(reverse('search_result', kwargs={"course_code": xx[0], "dept" : xx[1]}, ))
 
 
     return render(request,'teacher_template/search_result1.html',context)
@@ -1060,52 +1041,94 @@ def search_student_registered(request):
 ###-----------------------------------SEARCH END------------------------------------------------------------------------#
 
 @login_required(login_url = 'login')
-@allowed_users(allowed_roles=['teacher'])
+@allowed_users(allowed_roles=['admin'])
 def search_result(request, course_code, dept):
     data = Result.objects.filter(course_code = course_code, dept = dept)
 
-    context={'course':data, 'course_code': course_code, 'dept': dept} 
+    context={'course':data, 'course_code': course_code, 'dept': dept, 'resit': ['Yes', 'No']} 
     if request.method == 'POST':
         registration_number = request.POST.get('registration_number')
+        resit = request.POST.get('resit')
         obj = Result.objects.get(student_id = registration_number ,course_code = course_code, dept = dept )
         id = int(obj.id)
         print(id)
-        return redirect(reverse('update_result', kwargs= {"result_id": id,"course_code": course_code}))
+        if resit == "Yes":
+            return redirect(reverse('update_result_resit', kwargs= {"result_id": id,"course_code": course_code}))
+        else:
+            return redirect(reverse('update_result', kwargs= {"result_id": id,"course_code": course_code}))
         
     return render(request,'teacher_template/search_result.html',context)
 
 
 
 @login_required(login_url = 'login')
-@allowed_users(allowed_roles=['teacher'])
+@allowed_users(allowed_roles=['admin'])
 def update_result(request, result_id, course_code):
     result = get_object_or_404(Result, id =result_id)
     stu = result.student_id
     course_id = result.course_code
     dept = result.dept
     theory_marks = result.theory_marks
-    attendence = result.attendence
     term_test = result.term_test
     total = result.total
     print(total)
     form = UpdateForm(request.POST or None, instance = result)
-    regi = result.student_id
+    regi = result.student
 
     context = {'form':form, 
-               'regi': regi, 
-              'course_id': course_id, 
+            'regi': regi, 
+            'course_id': course_id, 
     }
     
-    if form.is_valid():
-        tt = form.instance.term_test
-        aa = form.instance.attendence
-        theory= form.instance.theory_marks
-        form.instance.total = round((theory + tt +aa)/5)
-        form.save()
-        messages.success(request,"Marks Edited %s Student's %s Course"%(regi,course_id))
-        return redirect('home')
+    if request.method == 'POST':
+        if form.is_valid():
+            print("form is valid")
+            tt = form.instance.term_test
+            theory= form.instance.theory_marks
+            #form.instance.total = round((theory + tt )/5)
+            form.save()
+            result.save()
+            messages.success(request,"Marks Edited for %s for %s "%(regi.name,course_id.subject_name))
+            return redirect('search_result1')
     
     return render (request, 'teacher_template/update_result.html',context)
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
+def update_result_resit(request, result_id, course_code):
+    result = get_object_or_404(Result, id =result_id)
+    stu = result.student_id
+    course_id = result.course_code
+    dept = result.dept
+    theory_marks = result.theory_marks
+    term_test = result.term_test
+    total = result.total
+    print(total)
+    form = UpdateFormResit(request.POST or None, instance = result)
+    regi = result.student
+
+    context = {'form':form, 
+            'regi': regi, 
+            'course_id': course_id, 
+    }
+    
+    if request.method == 'POST':
+        result.resited = "Yes"
+            
+
+        test = request.POST.get('result')
+        if regi.level == "BTECH":
+            result.term_test += int(test)
+            result.term_test = result.term_test / 2
+        else:
+            result.term_test = test
+
+        result.save()
+        
+        messages.success(request,"Added Resit Result for %s for %s "%(regi.name,course_id.subject_name))
+        return redirect('search_result1')
+    
+    return render (request, 'teacher_template/update_result_resit.html',context)
 
 
 #----------------------------------------------** ADD ** -------------------------------------------------------------------------------------------------------
@@ -1128,7 +1151,7 @@ def add_student(request):
             user.groups.add(group)
             messages.success(request, "Successfully Student Added")
         else:
-            messages.error(request, "Could Not Add")
+            messages.error(request, "Form not Valid. Try another username and/or Registration Number and fill all fields correctly.")
     return render(request, 'student_template/add_student.html',context)
 
 
@@ -1164,7 +1187,7 @@ def add_subject(request):
             
             messages.success(request, "Successfully Added Subject")
         else:
-            messages.error(request, "Could Not Add")
+            messages.error(request, "Form not Valid. Change course code and fill all fields correctly.")
 
     return render(request, 'admin_template/add_subject.html',context)
 
@@ -1256,24 +1279,34 @@ def add_j(request):
 def extract_temp(request):
     t_id = str(request.user.teacher.teacher_id)
     print(t_id)
-    data1 = AssignedTeacher2.objects.filter(teacher_id = t_id)
+    data1 = AssignedTeacher2.objects.filter(teacher_id = t_id) 
 
     c_ss = SemesterSession.objects.filter(active = 'Yes').first()
     print(c_ss)
     print(c_ss.ca_deadline)
     disabled = ""
-    data = []
-    for d in data1:
-        if d.course.semester == c_ss.semester :
-            data.append(d)
-
+    data2 = []
     from datetime import datetime
-    if datetime.now().date() > c_ss.ca_deadline :
+    if datetime.now().date() > c_ss.ca_deadline and datetime.now().date() > c_ss.ca_deadline_btech:
         print(True)
 
         disabled = "disabled"
-        messages.success(request,"Deadline to Submit CA Results has passed. You can't download any templates anymore.")
+        messages.success(request,"Deadline to Submit CA Results for both HND And BTECH  has passed. You can't download any templates anymore.")
+    elif datetime.now().date() < c_ss.ca_deadline and datetime.now().date() > c_ss.ca_deadline_btech:
+        messages.success(request,"Deadline to Submit CA Results for BTECH has passed. You can only download templates for HND courses.")
+        for d in data1:
+            if d.course.level == "HND1" or d.course.level == "HND2":
+                data2.append(d)
+    else:
+        for d in data1:
+            data2.append(d)
 
+    data = []
+    for d in data2:
+        if d.course.semester == c_ss.semester :
+            data.append(d)
+
+    
     context={'course':data, 'disabled': disabled} 
     if request.method == 'POST':
         code = request.POST.get('course_code')
@@ -1339,10 +1372,26 @@ def extract_temp_exam(request):
 
     c_ss = SemesterSession.objects.filter(active = 'Yes').first()
     print(c_ss)
-
+    print(c_ss.ca_deadline)
     disabled = ""
+    data2 = []
+    from datetime import datetime
+    if datetime.now().date() > c_ss.result_deadline and datetime.now().date() > c_ss.result_deadline_btech:
+        print(True)
+
+        disabled = "disabled"
+        messages.success(request,"Deadline to Submit Exam Results for both HND And BTECH  has passed. You can't download any templates anymore.")
+    elif datetime.now().date() < c_ss.result_deadline and datetime.now().date() > c_ss.result_deadline_btech:
+        messages.success(request,"Deadline to Submit Exam Results for BTECH has passed. You can only download templates for HND courses.")
+        for d in data1:
+            if d.course.level == "HND1" or d.course.level == "HND2":
+                data2.append(d)
+    else:
+        for d in data1:
+            data2.append(d)
+
     data = []
-    for d in data1:
+    for d in data2:
         if d.course.semester == c_ss.semester :
             data.append(d)
 
@@ -1416,85 +1465,87 @@ def extract_res_stat(request):
         res = Result.objects.filter(sem_ses = sem, level = lev, dept = dept).all()
 
         print(res)
+        if not res:
+            messages.success(request, "No results.")
+        else:
+            fields = ['Course Code', 'Course Title', 'Credit Value', 'Course Instructor', 'Registered', 'Examined', 'Passed', 'Failed', '% Passed']
 
-        fields = ['Course Code', 'Course Title', 'Credit Value', 'Course Instructor', 'Registered', 'Examined', 'Passed', 'Failed', '% Passed']
+            codes = []
+            titles = [] 
+            creditvs = [] 
+            instructors = [] 
+            reg = []
+            examd = []
+            passed = []
+            failed = []
+            per_passed = []
 
-        codes = []
-        titles = [] 
-        creditvs = [] 
-        instructors = [] 
-        reg = []
-        examd = []
-        passed = []
-        failed = []
-        per_passed = []
+            for r in res:
+                if r.course_code.course_code in codes:
+                    continue
+                else:
+                    codes.append(r.course_code.course_code)
+                    titles.append(r.course_code.subject_name)
+                    creditvs.append(r.course_code.credit)
+                    instructors.append(AssignedTeacher2.objects.filter(dept = dept, course = r.course_code).first().teacher)
+                    reg.append(RegisterTable.objects.filter(sem_ses = sem, dept = dept, subject = r.course_code).all().count())
+                    ex = res.filter(course_code = r.course_code).count()
+                    examd.append(ex)
+                    psd = res.filter(course_code = r.course_code, total__gte = 10).all().count()
+                    passed.append(psd)
+                    failed.append(res.filter(course_code = r.course_code, total__lt = 10).all().count())
+                    per_passed.append(round((psd / ex )*100,2))
 
-        for r in res:
-            if r.course_code.course_code in codes:
-                continue
-            else:
-                codes.append(r.course_code.course_code)
-                titles.append(r.course_code.subject_name)
-                creditvs.append(r.course_code.credit)
-                instructors.append(AssignedTeacher2.objects.filter(dept = dept, course = r.course_code).first().teacher)
-                reg.append(RegisterTable.objects.filter(sem_ses = sem, dept = dept, subject = r.course_code).all().count())
-                ex = res.filter(course_code = r.course_code).count()
-                examd.append(ex)
-                psd = res.filter(course_code = r.course_code, total__gte = 10).all().count()
-                passed.append(psd)
-                failed.append(res.filter(course_code = r.course_code, total__lt = 10).all().count())
-                per_passed.append(round((psd / ex )*100,2))
+            wb_name = 'Results_Stats_' + str(dept) + '_' + str(lev) + '_' + str(sem) + '.xlsx'
 
-        wb_name = 'Results_Stats_' + str(dept) + '_' + str(lev) + '_' + str(sem) + '.xlsx'
+            output = io.BytesIO()
+            wb = xlsxwriter.Workbook(output)
+            ws = wb.add_worksheet('Sheet1')
 
-        output = io.BytesIO()
-        wb = xlsxwriter.Workbook(output)
-        ws = wb.add_worksheet('Sheet1')
+            ws.write(0,0, 'Results Statistics ' + dept + ' for ' + sem + '')
+            
+            r1 = 1
+            c1 = 0
 
-        ws.write(0,0, 'Results Statistics ' + dept + ' for ' + sem + '')
-        
-        r1 = 1
-        c1 = 0
+            for f in fields:
+                ws.write(r1, c1, f)
+                c1+=1
 
-        for f in fields:
-            ws.write(r1, c1, f)
-            c1+=1
+            r2 = 2
+            c2 = 0
+            for (c,t,cv,i,r,e,p,fd,pp) in zip(codes, titles, creditvs, instructors, reg, examd, passed, failed, per_passed):
+                ws.write(r2, c2, str(c))
+                ws.write(r2, c2 + 1, str(t))
+                ws.write(r2, c2 + 2, cv)
+                ws.write(r2, c2 + 3, str(i))
+                ws.write(r2, c2 + 4, r)
+                ws.write(r2, c2 + 5, e)
+                ws.write(r2, c2 + 6, p)
+                ws.write(r2, c2 + 7, fd)
+                ws.write(r2, c2 + 8, pp)
+                r2+=1
 
-        r2 = 2
-        c2 = 0
-        for (c,t,cv,i,r,e,p,fd,pp) in zip(codes, titles, creditvs, instructors, reg, examd, passed, failed, per_passed):
-            ws.write(r2, c2, str(c))
-            ws.write(r2, c2 + 1, str(t))
-            ws.write(r2, c2 + 2, cv)
-            ws.write(r2, c2 + 3, str(i))
-            ws.write(r2, c2 + 4, r)
-            ws.write(r2, c2 + 5, e)
-            ws.write(r2, c2 + 6, p)
-            ws.write(r2, c2 + 7, fd)
-            ws.write(r2, c2 + 8, pp)
-            r2+=1
+            r2+=2
+            ws.write(r2, c2 + 1, "Total")
+            ws.write(r2, c2 + 4, sum(reg))
+            exd = sum(examd)
+            ws.write(r2, c2 + 5, exd)
+            psd = sum(passed)
+            ws.write(r2, c2 + 6, psd)
+            ws.write(r2, c2 + 7, sum(failed))
+            ws.write(r2, c2 + 8, round((psd / exd)*100,2))
 
-        r2+=2
-        ws.write(r2, c2 + 1, "Total")
-        ws.write(r2, c2 + 4, sum(reg))
-        exd = sum(examd)
-        ws.write(r2, c2 + 5, exd)
-        psd = sum(passed)
-        ws.write(r2, c2 + 6, psd)
-        ws.write(r2, c2 + 7, sum(failed))
-        ws.write(r2, c2 + 8, round((psd / exd)*100,2))
+            wb.close()
+            
+            output.seek(0)
 
-        wb.close()
-        
-        output.seek(0)
+            response = HttpResponse(
+                output,
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+            response["Content-Disposition"] = "attachment; filename=%s" % wb_name
 
-        response = HttpResponse(
-            output,
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
-        response["Content-Disposition"] = "attachment; filename=%s" % wb_name
-
-        return response
+            return response
             
 
     return render(request,'admin_template/result_stats.html',context)
@@ -1503,27 +1554,32 @@ def extract_res_stat(request):
 @allowed_users(allowed_roles=['teacher'])
 def add_excel(request):
 
-    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
-    print(c_ss)
-    print(c_ss.ca_deadline)
-
-    disabled = ""
-
-    from datetime import datetime
-    if datetime.now().date() > c_ss.ca_deadline :
-        print(True)
-
-        disabled = "disabled"
-        messages.success(request,"Deadline to Submit CA Results has passed. You can't submit anymore.")
-
-
-
     t_id = str(request.user.teacher.teacher_id)
     print(t_id)
     data1 = AssignedTeacher2.objects.filter(teacher_id = t_id)
 
+    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
+    print(c_ss)
+    print(c_ss.ca_deadline)
+    disabled = ""
+    data2 = []
+    from datetime import datetime
+    if datetime.now().date() > c_ss.ca_deadline and datetime.now().date() > c_ss.ca_deadline_btech:
+        print(True)
+
+        disabled = "disabled"
+        messages.success(request,"Deadline to Submit CA Results for both HND And BTECH  has passed. You can't upload anymore.")
+    elif datetime.now().date() < c_ss.ca_deadline and datetime.now().date() > c_ss.ca_deadline_btech:
+        messages.success(request,"Deadline to Submit CA Results for BTECH has passed. You can only upload results for HND courses.")
+        for d in data1:
+            if d.course.level == "HND1" or d.course.level == "HND2":
+                data2.append(d)
+    else:
+        for d in data1:
+            data2.append(d)
+
     data = []
-    for d in data1:
+    for d in data2:
         if d.course.semester == c_ss.semester :
             data.append(d)
 
@@ -1549,38 +1605,62 @@ def add_excel(request):
             excel_data.append(row_data)
         
         print(excel_data)
-        
+        success = False
         for i in range(1, len(excel_data)):
-            sub = Result(
-                    sem_ses = c_ss,
-                    course_code =Subject.objects.filter(course_code = course_cd).first(),
-                    theory_marks = excel_data[i][2],
-                    dept = dept_id,
-                    student_id = excel_data[i][0],
-                    level = Student.objects.filter(registration_number = excel_data[i][0]).first().level
-                    )
-            sub.save()
-
-        messages.success(request,"Successfully Added Results for %s course"% (course_cd))
+            try:
+                sub = Result(
+                        sem_ses = c_ss,
+                        course_code =Subject.objects.filter(course_code = course_cd).first(),
+                        theory_marks = excel_data[i][2],
+                        dept = dept_id,
+                        student_id = excel_data[i][0],
+                        level = Student.objects.filter(registration_number = excel_data[i][0]).first().level
+                        )
+                sub.save()
+                success = True
+            except IntegrityError :
+                messages.success(request,"Student %s already has Result for %s course"% (excel_data[i][0], course_cd))
+                sucesss = False
+                continue
+            except :
+                messages.success(request,"An error occured. You may have uploaded wrong file. Try again making sure you choose appropriate file. See platform admin if error persists")
+                success = False
+                break
+        
+        if success:
+            messages.success(request,"Successfully Added Results for %s course"% (course_cd))
         return redirect('home') 
     return render(request,'teacher_template/add_json.html',context)
 
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['teacher'])
 def add_exam(request):
-
-    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
-    print(c_ss)
-    print(c_ss.ca_deadline)
-
-    disabled = ""
-
     t_id = str(request.user.teacher.teacher_id)
     print(t_id)
     data1 = AssignedTeacher2.objects.filter(teacher_id = t_id)
 
+    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
+    print(c_ss)
+    print(c_ss.ca_deadline)
+    disabled = ""
+    data2 = []
+    from datetime import datetime
+    if datetime.now().date() > c_ss.result_deadline and datetime.now().date() > c_ss.result_deadline_btech:
+        print(True)
+
+        disabled = "disabled"
+        messages.success(request,"Deadline to Submit Exam Results for both HND And BTECH  has passed. You can't upload results anymore.")
+    elif datetime.now().date() < c_ss.result_deadline and datetime.now().date() > c_ss.result_deadline_btech:
+        messages.success(request,"Deadline to Submit Exam Results for BTECH has passed. You can only upload results for HND courses.")
+        for d in data1:
+            if d.course.level == "HND1" or d.course.level == "HND2":
+                data2.append(d)
+    else:
+        for d in data1:
+            data2.append(d)
+
     data = []
-    for d in data1:
+    for d in data2:
         if d.course.semester == c_ss.semester :
             data.append(d)
 
@@ -1606,15 +1686,26 @@ def add_exam(request):
             excel_data.append(row_data)
         
         print(excel_data)
-        
+        success = False
         for i in range(1, len(excel_data)):
-            stud = ExamCode.objects.filter(code = excel_data[i][0], sem_ses = c_ss, subject = course_cd).first()
+            try:
+                stud = ExamCode.objects.filter(code = excel_data[i][0], sem_ses = c_ss, subject = course_cd).first()
 
-            res = Result.objects.filter(sem_ses = c_ss, student = stud.student, course_code = course_cd).first()
-            res.term_test = excel_data[i][1]
-            res.save()
-
-        messages.success(request,"Successfully Added Results for %s course"% (course_cd))
+                res = Result.objects.filter(sem_ses = c_ss, student = stud.student, course_code = course_cd).first()
+                res.term_test = excel_data[i][1]
+                res.save()
+                success = True
+            except AttributeError as e :
+                messages.success(request,"The following error occured %s You may have uploaded wrong file. Make sure you have uploaded the appropriate file and try again. If error persists see platform administrator."% (e))
+                break
+            except ValueError as e :
+                messages.success(request,"The following error occured %s You may have uploaded wrong file. Make sure you have uploaded the appropriate file and try again. If error persists see platform administrator."% (e))
+                break
+            except:
+                messages.success(request,"An error occured. You may have uploaded wrong file. Make sure you have uploaded the appropriate file and try again. If error persists see platform administrator.")
+                break
+        if success:
+            messages.success(request,"Successfully Added Results for %s course"% (course_cd))
         return redirect('home') 
     return render(request,'teacher_template/add_exam.html',context)
 
@@ -1646,27 +1737,36 @@ def add_students(request):
         print(excel_data)
         
         for i in range(1, len(excel_data)):
-            user = User(
-                username = excel_data[i][0],
-                email = excel_data[i][1],
-                password = excel_data[i][2],
-            )
-            user.save()
-            
-            import pandas as pd
-            stud = Student(
-                    user = user,
-                    registration_number = excel_data[i][5],
-                    dept = dept,
-                    name = excel_data[i][3],
-                    phone = excel_data[i][4],
-                    level = excel_data[i][8],
-                    dob = pd.to_datetime(excel_data[i][6]).date(),
-                    pob = excel_data[i][7],
+            try:
+                user = User(
+                    username = excel_data[i][0],
+                    email = excel_data[i][1],
                 )
-            stud.save()
+                user.set_password(excel_data[i][2])
+                user.save()
+                
+                import pandas as pd
+                stud = Student(
+                        user = user,
+                        registration_number = excel_data[i][5],
+                        dept = dept,
+                        name = excel_data[i][3],
+                        phone = excel_data[i][4],
+                        level = excel_data[i][8],
+                        dob = pd.to_datetime(excel_data[i][6]).date(),
+                        pob = excel_data[i][7],
+                        degree_pursued =  Degree.objects.filter(deg_id = excel_data[i][9]).first()
+                    )
+                stud.save()
+                messages.success(request,"Successfully Added Student %s for %s Department"% (excel_data[i][3],dept_id))
+            except IntegrityError:
+                messages.success(request,"User with username already exists or Student with registration number already exists")
+                continue
+            except :
+                messages.success(request, "An error occured. You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
+                break
 
-        messages.success(request,"Successfully Added Students for %s Department"% (dept_id))
+        
         return redirect('home') 
     return render(request,'student_template/add_students.html',context)  
 
@@ -1683,8 +1783,12 @@ def addDept(request):
     context = {'form': form, 'page_title':'add department'}
     if request.method == 'POST':
         if form.is_valid:
-            form.save()
-            messages.success(request,"Successfully Added Dept. ")
+            try:
+                form.save()
+                messages.success(request,"Successfully Added Dept. ")
+            except IntegrityError:
+                messages.success(request,"Department with filled Dept ID already exists. Try another ID please.")
+
 
     return render(request, 'registration_template/add_dept.html',context)
 
@@ -1695,8 +1799,11 @@ def addSchool(request):
     context = {'form': form, 'page_title':'add school'}
     if request.method == 'POST':
         if form.is_valid:
-            form.save()
-            messages.success(request,"Successfully Added School")
+            try:
+                form.save()
+                messages.success(request,"Successfully Added School")
+            except IntegrityError:
+                messages.success(request,"School with filled School ID already exists. Try another School ID please.")
 
     return render(request, 'registration_template/add_school.html',context)
 
@@ -1707,8 +1814,12 @@ def addDegree(request):
     context = {'form': form, 'page_title':'add degree'}
     if request.method == 'POST':
         if form.is_valid:
-            form.save()
-            messages.success(request,"Successfully Added Degree")
+            try:
+                form.save()
+                messages.success(request,"Successfully Added Degree")
+            except IntegrityError:
+                messages.success(request,"Degree with filled Degree ID already exists. Try another Degree ID please.")
+
 
     return render(request, 'registration_template/add_deg.html',context)
 
@@ -1719,8 +1830,12 @@ def addSS(request):
     context = {'form': form, 'page_title':'add semester session'}
     if request.method == 'POST':
         if form.is_valid:
-            form.save()
-            messages.success(request,"Successfully Added Semester Session")
+            try:
+                form.save()
+                messages.success(request,"Successfully Added Semester Session")
+            except IntegrityError:
+                messages.success(request,"Semester Session with filled ID already exists. Try another ID please.")
+
 
     return render(request, 'registration_template/add_ss.html',context)
 
@@ -1780,10 +1895,14 @@ def assign_teacher(request, dept_id):
         t_dept = dept_id
 
         exists = AssignedTeacher2.objects.filter(course = Subject.objects.filter(course_code = cour_code).first(), teacher_id = t_id).first()
+        exists2 = AssignedTeacher2.objects.filter(course = Subject.objects.filter(course_code = cour_code).first())
+        
 
         print(exists)
         if exists:
-            messages.success(request,"Teacher already assigned to this course")
+            messages.success(request,"This Lecturer is already assigned to this course")
+        elif exists2:
+            messages.success(request,"Lecturer %s is already assigned to this course. You cannot assign 2 lecturers to same course. See platform admin to remove previous assignment."%(exists2.first().teacher.name))
         else:
 
             assingn = AssignedTeacher2(
@@ -1794,7 +1913,7 @@ def assign_teacher(request, dept_id):
 
             )
             assingn.save()
-            messages.success(request,"Teacher Id : %s Is Assigned For %s Course In %s Department" %(t_id,cour_code,t_dept))
+            messages.success(request,"Lecturer Id : %s Is Assigned For %s Course In %s Department" %(t_id,cour_code,t_dept))
 
     return render(request,'admin_template/assign_teacher_dept.html',context)
 
@@ -1858,21 +1977,15 @@ def promote_stud(request):
 
 def student_sub_register(request):
     dept_name = request.user.student.dept
-    dpt_name =str(dept_name)
-    regi = str(request.user.student.registration_number)
+    regi = request.user.student
     sem = SemesterSession.objects.filter(active = 'Yes').first()
 
-    print(sem)
-    print(sem.semester)
     lev = str(request.user.student.level)
-
-    print(lev)
 
     data = Subject.objects.filter(dept= dept_name, level = lev, semester = sem.semester)
 
-
     for i in data:
-        ctt = RegisterTable.objects.filter(subject_id = i.course_code, student_id = regi).first()
+        ctt = RegisterTable.objects.filter(subject = i.course_code, student = regi).first()
         
         if ctt != None:
             i.subject_name = i.subject_name + "-->Already Registered."
@@ -1881,19 +1994,16 @@ def student_sub_register(request):
 
     if request.method == "POST":
         course_cc = request.POST.get('course_regi')
-        regi = str(request.user.student.registration_number)
+        regi = request.user.student
 
-        check = RegisterTable.objects.filter(student_id = regi, subject_id = course_cc).first()
+        check = RegisterTable.objects.filter(student = regi, subject = course_cc).first()
         if check == None:
-            print("kk")
             
             ss = RegisterTable(
-                
-                dept_id = dpt_name,
-                student_id = regi,
-                subject_id = course_cc,
-
-
+                sem_ses = sem,
+                dept = dept_name,
+                student = regi,
+                subject = course_cc
             )
             ss.save()
 
@@ -1901,7 +2011,7 @@ def student_sub_register(request):
 
             print(tid)
 
-            rr = Rating.objects.filter(student_id = regi , subject_id = course_cc, teacher_id = tid).first()
+            rr = Rating.objects.filter(student = regi , subject = course_cc, teacher = tid).first()
             if rr == None:
                 rate = Rating(
                     student_id = regi,
@@ -1910,9 +2020,9 @@ def student_sub_register(request):
                 )
                 rate.save()
             messages.success(request, "Registration Successful")
-            return redirect('home')
+            
         else:
-            messages.success(request, "You have already Requested for approval on this Subject. See your Registration table for Registration Status")   
+            messages.success(request, "You have already Registered for  this Subject.")   
     
     return render(request,'teacher_template/student_sub_register.html',context)
 
@@ -1969,28 +2079,37 @@ def teacher_approval(request, course_code, student_dept):
 
 
 def student_rating(request):
-    regi =str(request.user.student.registration_number)
+    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
+    regi = request.user.student
 
-    data2 = Result.objects.raw('''
-        SELECT 1 as id, name, main_assignedteacher2.teacher_id as tid ,course_code cc, phone, profile_pic,rating  FROM
+    '''data2 = Result.objects.raw('
+        SELECT 1 as id, name, main_assignedteacher2.teacher as tid ,course_code cc, phone, profile_pic,rating  FROM
         public.main_registertable JOIN public.main_assignedteacher2 ON
-        main_registertable.dept_id = main_assignedteacher2.student_dept
-        AND main_registertable.subject_id = main_assignedteacher2.course_code
-        JOIN main_teacher ON main_teacher.teacher_id = main_assignedteacher2.teacher_id
-        JOIN main_rating ON main_registertable.student_id = main_rating.student_id 
-        AND main_registertable.subject_id = main_rating.subject_id
+        main_registertable.dept = main_assignedteacher2.dept
+        AND main_registertable.subject = main_assignedteacher2.course
+        JOIN main_teacher ON main_teacher.teacher_id = main_assignedteacher2.teacher
+        JOIN main_rating ON main_registertable.student = main_rating.student
+        AND main_registertable.subject = main_rating.subject
 
-	    where main_registertable.student_id = %s and main_registertable.status ='Approved'  ''',[regi]) 
+	    where main_registertable.student = %s and main_registertable.status ='Approved' and main_registertable.sem_ses = %s ',[regi, c_ss]) 
+    '''
 
+    data = RegisterTable.objects.filter(student = regi, sem_ses = c_ss).all()
+    teachers = []
+    for d in data:
+        teachers.append(AssignedTeacher2.objects.filter(course = d.subject).first())
+    
 
     if request.method == "POST":
         stat = request.POST.get('optionsRadios')
         xx = stat.split(',')
         print(xx)
-        Rating.objects.filter(subject_id = xx[2], student_id = regi,teacher_id = xx[1]).update(rating = int(xx[0]))
+        Rating.objects.filter(subject = xx[2], student = regi,teacher= xx[1]).update(rating = int(xx[0]))
+
+        return redirect('home')
 
     context = { 'regi':regi,
-                'data':data2,
+                'data':teachers,
 
     }
 
@@ -2058,8 +2177,17 @@ def subject_ranksheet_teacher(request):
     t_id = request.user.teacher.teacher_id
         
     data = AssignedTeacher2.objects.filter(teacher_id = t_id)
+    data2 = []
 
-    context={'course':data, 't_id': t_id} 
+    for d in data:
+        if d.course.semester == SemesterSession.objects.filter(active = 'Yes').first().semester:
+            data2.append(d)
+    
+    if len(data2) == 0:
+        messages.success(request,"Seems you have no course assigned that run this semester")
+        return redirect('home')
+
+    context={'course':data2, 't_id': t_id} 
 
     c_ss = SemesterSession.objects.filter(active = 'Yes').first()
 
@@ -2073,8 +2201,6 @@ def subject_ranksheet_teacher(request):
         for i in marksObj:
             i.id = cnt
             cnt = cnt+1
-            i.cgname = cal_grade(i.total) 
-            print(i.cgname)
 
         subject = Subject.objects.get(course_code = course_id)
         subject_name = subject.subject_name
@@ -2217,18 +2343,26 @@ def generate_codes(request):
         studs = RegisterTable.objects.filter(subject = course_code).all()
         print(studs)
 
+
         for stud in studs:
-            code = random.choice(my_list)
-            my_list.remove(code)
+            try :
+                code = random.choice(my_list)
+                my_list.remove(code)
 
-            exam_code = ExamCode(
-                sem_ses = sem,
-                subject = Subject.objects.filter(course_code = course_code).first(),
-                student = stud.student,
-                code = code
-            )
+                exam_code = ExamCode(
+                    sem_ses = sem,
+                    subject = Subject.objects.filter(course_code = course_code).first(),
+                    student = stud.student,
+                    code = code
+                )
 
-            exam_code.save()
+                exam_code.save()
+            except IntegrityError:
+                messages.success(request,"Student %s already has a code for this course. "%(stud.student.name))
+                continue
+            except:
+                messages.success(request,"An error occured.")
+                break
             
         messages.success(request,"Successfully Generated Codes For Course ")
 
