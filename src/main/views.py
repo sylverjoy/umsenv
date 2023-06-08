@@ -927,7 +927,7 @@ class GenerateTrans(View):
                 if program.deg_id == "BTECH":
                     file_path1 = os.path.join(module_dir, 'templates/student_template/my_transcript_btech_temp.html')
                     file_path2 = os.path.join(module_dir, 'templates/student_template/my_transcript_btech.html')
-                    #head = Image.objects.filter(title = 'trans_head_btech').first()
+                    head = Image.objects.filter(title = 'trans_head_btech').first()
                 else:
                     file_path1 = os.path.join(module_dir, 'templates/student_template/my_transcript_temp.html')
                     file_path2 = os.path.join(module_dir, 'templates/student_template/my_transcript.html')
