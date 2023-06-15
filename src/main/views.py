@@ -988,11 +988,15 @@ class GenerateTrans(View):
                     # rendering the template
             return response
         else:
-            response = HttpResponse(
-            pdfs[0],
-                content_type="application/pdf",
-            )
-            response["Content-Disposition"] = "attachment; filename=" + names[0]
+            if len(pdfs) == 0:
+                messages.success(request, "No Transcripts to print!")
+                response = redirect('home')
+            else:
+                response = HttpResponse(
+                pdfs[0],
+                    content_type="application/pdf",
+                )
+                response["Content-Disposition"] = "attachment; filename=" + names[0]
 
             return response
     

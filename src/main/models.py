@@ -48,7 +48,7 @@ class Dept(models.Model):
     school = models.ForeignKey(School, on_delete= models.CASCADE, default="")
     dept_id = models.CharField(max_length= 10, null=False, primary_key=True)
     name = models.CharField(max_length= 200, null= True)
-    UBa_Mentor_School = models.CharField(max_length = 200, null = True, default = "Faculty of Economics and Management Sciences (FEMS)")
+    UBa_Mentor_School = models.CharField(max_length = 200, null = True, choices= [('Faculty of Economics and Management Sciences (FEMS)', 'FEMS'), ('College of Technology (COLTECH)', 'COLTECH'), ('Faculty of Education (FED)', 'FED'), ('Higher Institute of Transport and Logistics (HITL)', 'HITL')],default = "Faculty of Economics and Management Sciences (FEMS)")
     def __str__(self):
         return self.dept_id
     
@@ -59,7 +59,7 @@ class Student(models.Model):
     dept = models.ForeignKey(Dept, on_delete= models.CASCADE)
     name = models.CharField(max_length= 200, null= True)
     phone = models.CharField(max_length= 200, null = True)
-    profile_pic = models.ImageField(null = True, blank = True, default= '0000.jpeg')
+    profile_pic = models.ImageField(null = True, blank = True, default= 'profile.jpg')
     level = models.CharField(max_length= 200, null= True, choices= [('HND1', 'HND1'), ('HND2', 'HND2'), ('BTECH', 'BTECH')  ])
     dob = models.DateField(null = True, blank = True)
     pob = models.CharField(max_length= 200, null= True)
@@ -71,7 +71,7 @@ class AdminUser(models.Model):
     user = models.OneToOneField(User, null = True, on_delete= models.CASCADE)
     name = models.CharField(max_length= 200, null= True)
     phone = models.CharField(max_length= 200, null = True)
-    profile_pic = models.ImageField(null = True, blank = True, default="0000.jpeg")
+    profile_pic = models.ImageField(null = True, blank = True, default="profile.jpg")
 
     def __str__(self):
         return self.name
@@ -82,7 +82,7 @@ class Teacher(models.Model):
     dept = models.ForeignKey(Dept, on_delete=models.CASCADE)
     teacher_id = models.CharField(max_length= 200, null=False, primary_key=True)
     phone = models.CharField(max_length= 200, null = True)
-    profile_pic = models.ImageField(null = True, blank = True, default="0000.jpeg")
+    profile_pic = models.ImageField(null = True, blank = True, default="profile.jpg")
 
     def __str__(self):
         return self.name
