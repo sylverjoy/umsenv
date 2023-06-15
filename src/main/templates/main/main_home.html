@@ -84,9 +84,39 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="{% url 'add_school' %}">
+              <i class="ti-briefcase menu-icon"></i>
+              <span class="menu-title">Add School</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'add_dept' %}">
+              <i class="ti-briefcase menu-icon"></i>
+              <span class="menu-title">Add Department</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'add_deg' %}">
+              <i class="ti-briefcase menu-icon"></i>
+              <span class="menu-title">Add Degree</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'add_ss' %}">
+              <i class="ti-briefcase menu-icon"></i>
+              <span class="menu-title">Add Semester Session</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'set_active_ss' %}">
+              <i class="ti-briefcase menu-icon"></i>
+              <span class="menu-title">Set Active Semester </span>
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="{% url 'add_teacher' %}">
               <i class="ti-user menu-icon"></i>
-              <span class="menu-title">Add Teacher</span>
+              <span class="menu-title">Add Lecturer</span>
             </a>
           </li>
           <li class="nav-item">
@@ -102,16 +132,22 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'add_dept' %}">
-              <i class="ti-briefcase menu-icon"></i>
-              <span class="menu-title">Add Department</span>
+            <a class="nav-link" href="{% url 'transfer_student' %}">
+              <i class="icon-plus menu-icon"></i>
+              <span class="menu-title">Transfer Student</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'promote_student' %}">
+              <i class="icon-plus menu-icon"></i>
+              <span class="menu-title">Promote Student</span>
             </a>
           </li>
 
           <li class="nav-item">
             <a class="nav-link" href="{% url 'add_subject' %}">
               <i class="ti-pencil-alt menu-icon"></i>
-              <span class="menu-title">Add New Subject</span>
+              <span class="menu-title">Add New Course</span>
             </a>
           </li>
 
@@ -119,27 +155,60 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'assign_teacher_dept_search' %}">
               <i class="ti-face-smile menu-icon"></i>
-              <span class="menu-title">Assign Teacher</span>
+              <span class="menu-title">Assign Lecturer</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'generate_codes' %}">
+              <i class="ti-face-smile menu-icon"></i>
+              <span class="menu-title">Generate Codes</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'download_codes' %}">
+              <i class="ti-face-smile menu-icon"></i>
+              <span class="menu-title">Download Codes</span>
             </a>
           </li>
           <li class="nav-item">
+              <a class="nav-link" href="{% url 'search_result1' %}">
+                <i class="ti-write menu-icon"></i>
+                <span class="menu-title">Edit Result</span>
+              </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'stats' %}">
+              <i class="ti-face-smile menu-icon"></i>
+              <span class="menu-title">Result Statistics</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_trans' %}">
+              <i class="ti-face-smile menu-icon"></i>
+              <span class="menu-title">Generate Transcripts</span>
+            </a>
+          </li>
+
+          <!--li class="nav-item">
             <a class="nav-link" href="{% url 'remove_teacher' %}">
               <i class="ti-trash menu-icon"></i>
-              <span class="menu-title">Remove Teacher</span>
+              <span class="menu-title">Remove Lecturer</span>
             </a>
-          </li>
-          <li class="nav-item">
+          </!--li>
+          <li-- class="nav-item">
             <a class="nav-link" href="{% url 'delete_student' %}">
               <i class="ti-face-sad menu-icon"></i>
               <span class="menu-title">Remove Student</span>
             </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'extract_results' %}">   <!--modify this when you have created extract result view -->
+          </li-->
+          <!--li class="nav-item">
+            <a class="nav-link" href="{% url 'extract_results' %}">   
               <i class="ti-export menu-icon"></i>
               <span class="menu-title">Extract Results</span>
             </a>
-          </li>
+          </li-->
         
         </ul>
 

@@ -91,8 +91,9 @@
 <body>
 
   <div>
-    {% load static %}
-    <h1> <img
+    
+    <h1> {% load static %}
+      <img
         src="{% static 'template/images/favicon.png' %}"
         alt="alternatetext" style="width:64px;height:64px; float:left; vertical-align:middle"> <br> Yaounde International
       Business School, Yaounde, Cameroon</h1>
@@ -104,7 +105,7 @@
 
   <div>
   <p style="font-size:15px;"> Department :&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Department of {{dept_name}}</p>
-  <p style="font-size:15px;"> Degree : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Bachelor of Science (Engineering)</p>
+  <p style="font-size:15px;"> Degree : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HND</p>
   <p style="font-size:15px;"> Year/Semester : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{session}} </p>
   <p style="font-size:15px;"> Course Number : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{course_number}} </p>
   <p style="font-size:15px;"> Course Title : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;{{subject_name}}</p>
@@ -121,17 +122,17 @@
           <th width="30px">Sl.</th>
           <th>Registration No.</th>
           <th width="300px">Student's Name</th>
-          <th>Grade Point</th>
-          <th>Letter Grade</th>
+          <th>Total</th>
+          <th>Grade</th>
         </tr>
       </thead>
       <tbody>
         {% for person in data %}
         <tr>
           <td align = "center">{{ person.id }}</td>
-          <td>{{ person.regi }}</td>
-          <td>{{ person.name}}</td>
-          <td align = "center">{{ person.cg }}</td>
+          <td>{{ person.student.registration_number }}</td>
+          <td>{{ person.student.name}}</td>
+          <td align = "center">{{ person.total }}</td>
           <td align = "center">{{person.cgname}}</td>
           
         </tr>

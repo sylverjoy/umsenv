@@ -8,9 +8,14 @@ admin.site.register(Subject)
 admin.site.register(Dept)
 admin.site.register(RegisterTable)
 admin.site.register(Teacher)
-admin.site.register(AssignedTeacher)
+admin.site.register(School)
+admin.site.register(SemesterSession)
+admin.site.register(Degree)
 admin.site.register(AssignedTeacher2)
 admin.site.register(Rating)
+admin.site.register(ExamCode)
+admin.site.register(AcademicYear)
+admin.site.register(Image)
 
 # Register your models here.
 

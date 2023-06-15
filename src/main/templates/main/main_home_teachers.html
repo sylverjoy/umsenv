@@ -43,8 +43,7 @@
                 <ul class="navbar-nav navbar-nav-right">
                     <li class="nav-item nav-profile dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
-                            <img src="{{request.user.teacher.profile_pic.url}}" class="img-circle elevation-2"
-                                alt="User Image">
+                            <img src="{{request.user.teacher.profile_pic.url}}" class="img-circle elevation-2" alt="User Image">
                         </a>
                         <div class="dropdown-menu dropdown-menu-right navbar-dropdown"
                             aria-labelledby="profileDropdown">
@@ -114,23 +113,39 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'extract_temp' %}">
                             <i class="ti-export menu-icon"></i>
-                            <span class="menu-title">Extract Result Template</span>
+                            <span class="menu-title">Extract CA Result Template</span>
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'add_excel' %}">
                             <i class="ti-import menu-icon"></i>
-                            <span class="menu-title">Add Result Excel</span>
+                            <span class="menu-title">Add CA Result Excel</span>
                         </a>
                     </li>
 
                     <li class="nav-item">
+                        <a class="nav-link" href="{% url 'extract_temp_exam' %}">
+                            <i class="ti-export menu-icon"></i>
+                            <span class="menu-title">Extract  Exam Result Template</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'add_exam' %}">
+                            <i class="ti-import menu-icon"></i>
+                            <span class="menu-title">Add  Exam Result Excel</span>
+                        </a>
+                    </li>
+                    
+                </li>
+
+                    <!--li class="nav-item">
                         <a class="nav-link" href="{% url 'search_result1' %}">
                             <i class="ti-write menu-icon"></i>
                             <span class="menu-title">Edit Result</span>
                         </a>
-                    </li>
+                    </li-->
                     <!-- <li class="nav-item">
                         <a class="nav-link" href="{% url 'search_student_registered' %}">
                             <i class="ti-face-smile menu-icon"></i>
@@ -140,12 +155,12 @@
 
 
                     
-                    <li class="nav-item">
+                    <!--li class="nav-item">
                         <a class="nav-link" href="{% url 'delete_result' %}">
                             <i class="ti-trash menu-icon"></i>
                             <span class="menu-title">Delete Result </span>
                         </a>
-                    </li>
+                    </li-->
 
                 </ul>
             </nav>

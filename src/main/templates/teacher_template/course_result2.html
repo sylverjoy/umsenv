@@ -5,7 +5,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <p class="card-title">Marks Information : {{subject_name}} ({{course_id}}) <br> Department Name : {{student_dept}}</b></p>
-                        <a href="http://127.0.0.1:8000/pdf2/{{course_id}}/{{student_dept}}" class="text-info">Download Marksheet</a>
+                        <!--a href="{% url 'generate_pdf2' course_id=course_id dept_id=student_dept %}" class="text-info">Download Marksheet</!--a-->
                     </div>
 
 
@@ -17,24 +17,20 @@
                                 <th>Sl.</th>
                                 <th>Registration No.</th>
                                 <th>Student's Name</th>
-                                <th>Theory Marks</th>
-                                <th>Term Test</th>
-                                <th>Attendance</th>
-                                <th>Grade Point</th>
-                                <th>Letter Grade</th>
+                                <th>CA</th>
+                                <th>Exam</th>
+                                <th>Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for c in data %}
                             <tr>
                                 <td>{{ c.id }}</td>
-                                <td>{{ c.regi }}</td>
-                                <td>{{ c.name }}</td>
+                                <td>{{ c.student.registration_number }}</td>
+                                <td>{{ c.student.name }}</td>
                                 <td>{{ c.theory_marks }}</td>
                                 <td>{{ c.term_test }}</td>
-                                <td>{{ c.attend }}</td>
-                                <td>{{ c.cg }}</td>
-                                <td>{{ c.cgname}}</td>
+                                <td>{{ c.total }}</td>
 
                             </tr>
                             {% endfor %}

@@ -10,25 +10,28 @@
     .styled-table {
       border-collapse: collapse;
       margin: 20px 0;
-      font-size: 1.5em;
+      font-size: 1.3em;
       font-family: sans-serif;
       min-width: 400px;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+      table-layout: auto;
     }
 
     .styled-table thead tr {
-      background-color: #3F3E91;
-      color: #ffffff;
+
       text-align: left;
     }
 
     .styled-table th,
     .styled-table td {
-      padding: 5px 1px;
+      padding-left: 1px;
+      padding-right: 1px;
+      padding-top: 3px;
+      padding-bottom: 2px;
     }
 
     .styled-table tbody tr {
-      border-bottom: 1px solid #dddddd;
+      border-bottom: 1px solid black;
     }
 
     .styled-table tbody tr:nth-of-type(even) {
@@ -59,12 +62,16 @@
     }
 
     h1 {
+      font-family: Arial;
       text-align: center;
     }
 
-    td,
+    td{
+      text-align: center;
+    }
     th {
       text-align: center;
+      color: blue;
     }
 
     .center {
@@ -89,9 +96,9 @@
 <body>
 
   <div>
-    {% load static %}
-    <h1> <img
-        src="{% static 'template/images/favicon.png' %}"
+    <h1> {% load static %}
+      <img
+        src="https://th.bing.com/th/id/OIP.RucOjeLgd4sR2-qRkV4x0wAAAA?w=158&h=142&c=7&r=0&o=5&pid=1.7"
         alt="alternatetext" style="width:64px;height:64px; float:left; vertical-align:middle"> <br> Yaounde International
       Business School<br>Yaounde, Cameroon</h1>
   </div>
@@ -104,46 +111,48 @@
         <p1><b>Phone:</b> {{phone}}</p>
           <p1><b>Email:</b> {{email}}</p>
             <p1><b>Current CGPA:</b> {{cgpa}}</p>
-              <p1><b>Degree Completion Status:</b> {{status}}</p>
+              
 
   </div>
 
   <div>
     <h1>Marksheet</h1>
 
-    <table class="styled-table">
+    <table class="styled-table" >
       <thead>
         <tr>
-          <th>Subject Name</th>
-          <th>Course Code</th>
-          <th>Credit</th>
-          <th>Marks</th>
-          <th>CGPA</th>
+          <th width="30px">S/No</th>
+          <th style="width: 300px;">COURSE TITLE</th>
+          <th>CODE</th>
+          <th>CREDIT</th>
+          <th>SCORE</th>
+          <th>GRADE</th>
         </tr>
       </thead>
       <tbody>
         {% for person in data %}
-        <tr>
-          <td>{{ person.subject_name }}</td>
-          <td>{{ person.cc }}</td>
-          <td>{{ person.credit}}</td>
+        <tr style="width: 0;">
+          <td align = "center">{{ person.id }}</td>
+          <td style="text-align: left;">{{ person.course_code.subject_name }}</td>
+          <td>{{ person.course_code.course_code }}</td>
+          <td>{{ person.course_code.credit}}</td>
           <td>{{ person.total }}</td>
           <td>{{person.student_id}}</td>
           
         </tr>
         {% endfor %}
+        <td>-</td>
         <td><b>Cumulative GPA</b></td>
         <td>-</td>
         <td>-</td>
-        <td>-</td>
         <td><b>{{cgpa}}</b></td>
+        <td><b>{{status}}</b></td>
         
         
       </tbody>
     </table>
   </div>
 
- 
 
 </body>
 

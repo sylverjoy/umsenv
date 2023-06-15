@@ -2,7 +2,7 @@
 
 <div class="main-panel">
     <div class="content-wrapper">
-      {% include 'main/message.html' %}
+    {% include 'main/message.html' %}
 
 
         <div class="row">
@@ -21,7 +21,7 @@
         </div>
         <div class="row">
             
-            {%for c  in data%} 
+            {%for c in data%} 
             <div class="col-md-12 grid-margin stretch-card">
                 
                 
@@ -32,17 +32,15 @@
                     <div class="col-sm" align ="center">
                         <!-- <blockquote class="blockquote">
                             <p class="mb-0">Student Registration: {{c.student_id}}</p>
-                          </blockquote> -->
-                          Course Code : {{c.cc}}<br>
-                          Teacher's Name :     {{c.name}}             <br>
-                          Teacher's ID: {{c.tid}}<br>
-                          Teachers Phone:   {{c.phone}}   <br>
-                          
+                        </blockquote> -->
+                        Course Code : {{c.course}}<br>
+                        Teacher's Name :     {{c.teacher.name}}             <br>
+                        
                     
-                     
+                    
                     </div>
                      <div class="col-sm">
-                        <img src="/media/{{c.profile_pic}}" width="120"/>
+                        <img src="/media/{{c.teacher.profile_pic}}" width="120"/>
                      </div>
                     
                      <div class="col-sm">
@@ -55,14 +53,14 @@
                                     <div class="form-check">
                                         <label class="form-check-label">
                                             <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1"
-                                                value="0,{{c.tid}},{{c.cc}}" {% if c.rating == 0 %} checked {% endif %} >
+                                                value="0,{{c.teacher}},{{c.course}}" {% if c.rating == 0 %} checked {% endif %} >
                                             0
                                         </label>
                                     </div>
                                     <div class="form-check">
                                         <label class="form-check-label">
                                             <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios2"
-                                                value="1,{{c.tid}},{{c.cc}}" {% if c.rating == 1 %} checked {% endif %} >
+                                                value="1,{{c.teacher}},{{c.course}}" {% if c.rating == 1 %} checked {% endif %} >
                                             1
                                         </label>
                                     </div>
@@ -71,28 +69,28 @@
                                     <div class="form-check">
                                         <label class="form-check-label">
                                             <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios3"
-                                                value="2,{{c.tid}},{{c.cc}}" {% if c.rating == 2 %} checked {% endif %}>
+                                                value="2,{{c.teacher}},{{c.course}}" {% if c.rating == 2 %} checked {% endif %}>
                                             2
                                         </label>
                                     </div>
                                     <div class="form-check">
                                         <label class="form-check-label">
                                             <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios4"
-                                                value="3,{{c.tid}},{{c.cc}}" {% if c.rating == 3 %} checked {% endif %}>
+                                                value="3,{{c.teacher}},{{c.course}}" {% if c.rating == 3 %} checked {% endif %}>
                                             3
                                         </label>
                                     </div>
                                     <div class="form-check">
                                         <label class="form-check-label">
                                             <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios5"
-                                                value="4,{{c.tid}},{{c.cc}}" {% if c.rating == 4 %} checked {% endif %}>
+                                                value="4,{{c.teacher}},{{c.course}}" {% if c.rating == 4 %} checked {% endif %}>
                                             4
                                         </label>
                                     </div>
                                     <div class="form-check">
                                         <label class="form-check-label">
                                             <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios6"
-                                                value="5,{{c.tid}},{{c.cc}}" {% if c.rating == 5 %} checked {% endif %}>
+                                                value="5,{{c.teacher}},{{c.course}}" {% if c.rating == 5 %} checked {% endif %}>
                                             5
                                         </label>
                                     </div>

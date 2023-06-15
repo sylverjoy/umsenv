@@ -1,0 +1,68 @@
+{%extends 'main/main_home.html'%}
+{%block content%}
+
+<div class="main-panel">
+  <div class="content-wrapperteacher">
+    <!--{% include 'main/message.html' %}
+        <div class="col-md-12 grid-margin stretch-card">
+          {% if form.errors %}
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}-->
+
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Edit Result</h4>
+              <p class="card-description style="color:red;>
+                Resit Result of <b>{{regi.registration_number}} - {{regi.name}}</b> for <b>{{course_id.course_code}} - {{course_id.subject_name}}</b>.
+                
+              </p>
+               
+              <form action = "" method="POST" enctype="multipart/form-data" class="forms-sample">
+                {% csrf_token %}
+                
+                <!-- <div class="form-group row">
+                  <label for="exampleInputMobile" class="col-sm-3 col-form-label">Mobile</label>
+                  <div class="col-sm-9">
+                    <input type="text" class="form-control" id="exampleInputMobile" placeholder="Mobile number">
+                  </div>
+                </div> -->
+                <div class="form-group row">
+                  </div>
+                  <div class="form-group row">
+                    <label for="exampleInputEmail2" class="col-sm-3 col-form-label">Exam Mark</label>
+                    <div class="col-sm-9">
+                      <input type="number" name="result" class="form-control form-control-lg" id="exampleInputEmail1" placeholder="New Mark">
+                    </div>
+                  </div>
+                  <!--div class="form-group row">
+                    <label for="exampleInputEmail2" class="col-sm-3 col-form-label">Resit? </label>
+                    <div class="col-sm-9">
+                      {{form.resited}}
+                    </div>
+                  </!--div-->
+
+
+                </div>
+                <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                <!-- <button class="btn btn-light">Cancel</button> -->
+              </form>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+  </div>
+</div>
+
+{%endblock%}

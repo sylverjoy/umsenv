@@ -62,25 +62,12 @@
           </div>
         </div>
     </div>
-    <div class="col-md-3 stretch-card grid-margin grid-margin-md-0">
-        <div class="card data-icon-card-primary">
-          <div class="card-body">
-            <p class="card-title text-white">Number of Assigned Major Courses</p>                      
-            <div class="row">
-              <div class="col-8 text-white">
-                <h3>{{major}}</h3>
-              </div>
-
-            </div>
-          </div>
-        </div>
-    </div>
     </div>
     </div>
 
 </div>
 <div class="row">
-    <div class="col-md-12 grid-margin stretch-card">
+    <!--div class="col-md-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -93,7 +80,7 @@
                 <canvas id="pieChart" data-url="{% url 'course_wise_participation' %}"></canvas>
             </div>
         </div>
-    </div>
+    </div-->
 
     <!-- <div class="col-md-6 grid-margin stretch-card">
         <div class="card">
@@ -107,7 +94,7 @@
         </div>
     </div> -->
 </div>
-<div class="row">
+<!--div class="row">
     <div class="col-md-6 grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
@@ -139,7 +126,7 @@
     </div>
 
 
-</div>
+</div-->
 
 
 
@@ -168,7 +155,7 @@
             </p>
             <div class="table-responsive pt-3">
               <table class="table table-bordered table-hover">
-                <table id="table" data-toggle="table" data-url='http://127.0.0.1:8000/teacher_subject_list/'>
+                <table id="table" data-toggle="table" data-url="{% url 'teacher_subject_list' %}">
                   <thead class = "thead">
                     <tr>
                       <th data-field="cc">
@@ -176,10 +163,6 @@
                       </th>
                       <th data-field="name">
                         Subject's Name
-                      </th>
-
-                      <th data-field="student_dept">
-                        Student's Department
                       </th>
                       <th data-field="subtype">
                         Genre
