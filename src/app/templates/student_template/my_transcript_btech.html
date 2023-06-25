@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Transcript {{ay}}</title>
+  <style>
+    .styled-table {
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-family: sans-serif;
+      min-width: 400px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+      table-layout: auto;
+      font-size: medium;
+    }
+
+    .styled-table thead tr {
+
+      text-align: left;
+    }
+
+    .styled-table th,
+    .styled-table td {
+      padding-left: 1px;
+      padding-right: 1px;
+      padding-top: 3px;
+      padding-bottom: 2px;
+      font-size: medium;
+    }
+
+    .styled-table tbody tr {
+      border-bottom: 1px solid black;
+      height: 20px;
+      font-size: medium;
+    }
+    .styled-table thead tr {
+      height: 20px;
+      font-size: medium;
+    }
+
+    .styled-table tbody tr:nth-of-type(even) {
+      background-color: #f3f3f3;
+    }
+
+    .styled-table tbody tr:last-of-type {
+      border-bottom: 2px solid #009879;
+    }
+
+    .styled-table tbody tr.active-row {
+      font-weight: bold;
+      color: #009879;
+    }
+
+    .mytable tbody tr {
+        padding-top: 2px;
+    }
+
+    .mytable thead tr th {
+        padding-top: 2px;
+    }
+    .mytable  tr th {
+        color: black;
+    }
+
+    .mytable thead tr th {
+        color: black;
+    }
+
+    table {
+      border-collapse: collapse;
+      border: 1px solid black;
+      empty-cells:h;
+      
+
+    }
+
+
+    table.c {
+      table-layout: auto;
+      width: 100%;
+    }
+
+    h3 {
+      font-family: Arial;
+      text-align: center;
+    }
+
+    td{
+      text-align: center;
+    }
+    th {
+      text-align: center;
+      color: blue;
+    }
+
+    .center {
+      margin: auto;
+      text-align: center;
+    }
+
+    .left {
+      text-align: left;
+    }
+
+    img {
+      width: 100%;
+      padding-right: 20px;
+
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div style="text-align: center;">
+    <img
+        src="{{ head.pic.path }}"
+        alt="alternatetext" style="vertical-align:middle; height: 175px;">
+  </div>
+  <div>
+    <h3 style="color: red ;"> ACADEMIC TRANSCRIPT </h3>
+    <h4 style="color: black ; text-align: center;"> (For the Students of Yaounde International Business School(YIBS), Affiliated to The University of Bamenda by Specific Partnership Agreement) </h4>
+  </div>
+  <div>
+    <table class="styled-table">
+      <tbody>
+        <tr>
+          <td class="left"><b>Academic Year: </b> </td>
+          <td class="left">{{ay}}</td>
+          <td class="left"><b>Level: </b></td>
+          <td class="left">{{level}}</td>
+        </tr>
+        <tr>
+          <td class="left"><b>Name: </b></td>
+          <td class="left">{{name}}</td>
+          <td class="left"><b>Registration No:</b></td>
+          <td class="left">{{regi}}</td>
+        </tr>
+        <tr>
+          <td class="left"><b>Date of Birth:</b></td>
+          <td class="left">{{dob}}</td>
+          <td class="left"><b>Place of Birth: </b></td>
+          <td class="left">{{pob}}</td>
+        </tr>
+        <tr>
+          <td class="left"><b>Program: </b> </td>
+          <td class="left">{{program}}</td>
+          <td class="left"><b>Specialty: </b></td>
+          <td class="left">{{dept.name}}</td>
+        </tr>
+        <tr>
+            <td class="left"><b>Mentoring School: </b> </td>
+            <td class="left" style="width: 250px;">{{dept.UBa_Mentor_School}}</td>
+            
+          </tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <h3 style="color: red;">FIRST SEMESTER</h3>
+
+    <table class="styled-table" >
+      <thead>
+        <tr>
+          <th width="30px">S/No</th>
+          <th style="width: 300px;">COURSE TITLE</th>
+          <th>CODE</th>
+          <th>CV</th>
+          <th>MARKS</th>
+          <th>GD</th>
+          <th>GP</th>
+          <th>WP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in data %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.gd}}</td>
+          <td>{{d.gp}}</td>
+          <td>{{d.wp}}</td>
+          
+        </tr>
+        {% endfor %}
+        
+        
+        <tr>
+            <td>-</td>
+            <td><b>TOTAL</b></td>
+            <td>-</td>
+            <td>{{credt1}}</td>
+            <td><b>-</b></td>
+            <td><b>-</b></td>
+            <td><b>-</b></td>
+            <td><b>{{wpt1}}</b></td>
+        </tr>
+        
+        <tr>
+            <td>-</td>
+            <td><b>SEMESTER GPA</b></td>
+            <td>-</td>
+            <td>-</td>
+            <td><b>-</b></td>
+            <td><b>-</b></td>
+            <td><b>{{gp1}}</b></td>
+            <td><b>-</b></td>
+        </tr>
+        
+        
+        
+      </tbody>
+    </table>
+  </div>
+
+  <div>
+  
+    <h3 style="color: red;">SECOND SEMESTER</h3>
+
+    <table class="styled-table" >
+      <thead>
+        <tr>
+          <th width="30px">S/No</th>
+          <th style="width: 300px;">COURSE TITLE</th>
+          <th>CODE</th>
+          <th>CV</th>
+          <th>MARKS</th>
+          <th>GD</th>
+          <th>GP</th>
+          <th>WP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in data1 %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.gd}}</td>
+          <td>{{d.gp}}</td>
+          <td>{{d.wp}}</td>
+          
+        </tr>
+        {% endfor %}
+      
+        <tr>
+            <td>-</td>
+            <td><b>TOTAL</b></td>
+            <td>-</td>
+            <td>{{credt2}}</td>
+            <td><b>-</b></td>
+            <td><b>-</b></td>
+            <td><b>-</b></td>
+            <td><b>{{wpt2}}</b></td>
+        </tr>
+        
+        <tr>
+            <td>-</td>
+            <td><b>SEMESTER GPA</b></td>
+            <td>-</td>
+            <td>-</td>
+            <td><b>-</b></td>
+            <td><b>-</b></td>
+            <td><b>{{gp2}}</b></td>
+            <td><b>-</b></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="display: {{display}};">
+      <h3 style="color: red;">RESIT SEMESTER</h3>
+
+    <table class="styled-table" >
+      <thead>
+        <tr>
+          <th width="30px">S/No</th>
+          <th style="width: 300px;">COURSE TITLE</th>
+          <th>CODE</th>
+          <th>CV</th>
+          <th>MARKS</th>
+          <th>GD</th>
+          <th>GP</th>
+          <th>WP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in data2 %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.gd}}</td>
+          <td>{{d.gp}}</td>
+          <td>{{d.wp}}</td>
+          
+        </tr>
+        {% endfor %}
+      
+        <tr>
+            <td>-</td>
+            <td><b>TOTAL</b></td>
+            <td>-</td>
+            <td>{{credt3}}</td>
+            <td><b>-</b></td>
+            <td><b>-</b></td>
+            <td><b>-</b></td>
+            <td><b>{{wpt3}}</b></td>
+        </tr>
+        
+        <tr>
+            <td>-</td>
+            <td><b>SEMESTER GPA</b></td>
+            <td>-</td>
+            <td>-</td>
+            <td><b>-</b></td>
+            <td><b>-</b></td>
+            <td><b>{{gp3}}</b></td>
+            <td><b>-</b></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <table class="styled-table">
+        <tbody>
+          <tr>
+            <td class="left"><b>Total Credits Attempted: </b> </td>
+            <td class="left">{{tcred}}</td>
+            <td class="left"><b>Total Credit Earned: </b></td>
+            <td class="left">{{tcred_e}}</td>
+          </tr>
+          <tr>
+            <td class="left"><b>Cumulative GPA: </b></td>
+            <td class="left">{{yr_gp}}</td>
+            <td class="left"><b>Class of Degree Obtained:</b></td>
+            <td class="left">{{deg_class}}</td>
+          </tr>
+         
+        </tbody>
+      </table>
+
+    <h3 style="text-align: right; margin-right: 20px; margin-top: 20px;">REGISTRAR UBa</h3>
+
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+
+    <table class="mytable">
+      <thead>
+          <tr style="padding-top: 2px;">
+              <th> Grading System</th>
+              <th> Degree Classification</th>
+              <th> Key </th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr>
+              <td>
+                  <table class="">
+                      
+                          <tr>
+                              <th>GRADE</th>
+                              <th>MARK</th>
+                              <th>GP</th>
+                          </tr> 
+                          <tr>
+                              <td>A</td>
+                              <td>>=80</td>
+                              <td>4.0</td>
+                          </tr>
+                          <tr>
+                              <td>B+</td>
+                              <td>[70-80[</td>
+                              <td>3.5</td>
+                          </tr>
+                          <tr>
+                              <td>B</td>
+                              <td>[60-70[</td>
+                              <td>3.0</td>
+                          </tr>
+                          <tr>
+                              <td>C+</td>
+                              <td>[55-60[</td>
+                              <td>2.5</td>
+                          </tr>
+                          <tr>
+                              <td>C</td>
+                              <td>[50-55[</td>
+                              <td>2.0</td>
+                          </tr>
+                          <tr>
+                              <td>D+</td>
+                              <td>[45-50[</td>
+                              <td>1.5</td>
+                          </tr>
+                          <tr>
+                              <td>D</td>
+                              <td>[40-45[</td>
+                              <td>1.0</td>
+                          </tr>
+                          <tr>
+                              <td>F</td>
+                              <td> <40 </td>
+                              <td>0.0</td>
+                          </tr>
+                      
+                  </table>
+              </td>
+              <td>
+                  <table class="">
+                          <tr>
+                              <th>GPA</th>
+                              <th>Class of Degree</th>
+                          </tr>
+                          <tr>
+                              <td>3.60 - 4.00 </td>
+                              <td>First Class</td>
+                              
+                          </tr>
+                          <tr>
+                              <td>3.00 - 3.59</td>
+                              <td>Second Class - UD</td>
+                          </tr>
+                          <tr>
+                              <td>2.50 - 2.99</td>
+                              <td>Second Class - LD</td>
+                          </tr>
+                          <tr>
+                              <td>2.25 - 2.49 </td>
+                              <td>Third Class</td>
+                          </tr>
+                          <tr>
+                              <td>2.00 - 2.24 </td>
+                              <td>Pass</td>
+                          </tr>
+                          <tr>
+                              <td>UD</td>
+                              <td>Upper Division</td>
+
+                          </tr>
+                          <tr>
+                              <td>LD</td>
+                              <td>Lower Division</td>
+                          </tr>
+                          <tr>
+                              <td>&nbsp;</td>
+                              
+                          </tr>
+                  </table>
+              </td>
+              <td>
+                  <table class="">
+                          <tr>
+                              <td>I = Incomplete</td>
+                          </tr>
+                          <tr>
+                              <td>X = Absent </td> 
+                          </tr>
+                          <tr>
+                              <td> * = Mark obtained after resit</td>
+                          </tr>
+                          <tr>
+                              <td> GP = Grade Point</td>
+                          </tr>
+                          <tr>
+                              <td> GPA = Grade Point Average </td>
+                          </tr>
+                          <tr>
+                              <td> CGPA = Cumulative Grade Point Average </td>
+                          </tr>
+                          <tr>
+                              <td> WP = Weighted Point </td>
+                          </tr>
+                          <tr>
+                              <td> &nbsp; </td>
+                          </tr>
+                          <tr>
+                              <td> &nbsp; </td>
+                          </tr>
+                  </table>
+              </td>
+          </tr>
+      </tbody>
+  </table>
+
+  </div>
+
+
+</body>
+
+</html>

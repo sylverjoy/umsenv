@@ -1,0 +1,57 @@
+{%extends 'main/main_home.html'%} {%block content%}
+
+    <div class="row">
+      <div class="col-md-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title">{{lev}} Students of {{dept}} Department.</h4>
+            <p class="card-description">Select Students and Level to Promote</p>
+            <form action="" method="POST" class="forms-sample">
+              {% csrf_token %}
+              <div class="form-group">
+                <div class=" form-control form-control-lg">
+                    <input class="form-check-input" type="checkbox" onClick="toggle(this)">
+                    <label class="form-check-label" for="apple">Select All</label>   
+              
+                </div>
+                </div>
+              {%for s in studs%}
+              <div class="form-group">
+                <!-- <input type="text" name="course_code" class="form-control form-control-lg" id="exampleInputPassword1" placeholder="Course Code"> -->
+                <div class="form-control form-control-lg">
+                    
+                    <input class="form-check-input" type="checkbox" value={{s.registration_number}} id="apple" name="studs">
+                    <label class="form-check-label" for="apple">{{s.registration_number}} -- {{s.name}}</label>
+                    
+                    
+                </div>
+              </div>
+              {% endfor %}
+              <div class="form-group">
+                <!-- <input type="text" name="course_code" class="form-control form-control-lg" id="exampleInputPassword1" placeholder="Course Code"> -->
+<select name="lev"  class="form-control form-control-lg" id="cars">
+  {%for l in levs%}
+  <option value="{{l}}"+ {% if l in selected_values %} selected {% endif %}>{{l}}</option>
+  {% endfor %}
+</select>
+              </div>
+              <button type="submit" class="btn btn-primary mr-2">Promote</button>
+              <a href="{% url 'home' %}" class="btn btn-light" role="button">Cancel</a>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    function toggle(source) {
+  checkboxes = document.getElementsByName('studs');
+  for(var i=0, n=checkboxes.length;i<n;i++) {
+    checkboxes[i].checked = source.checked;
+  }
+}
+</script>
+
+{%endblock%}

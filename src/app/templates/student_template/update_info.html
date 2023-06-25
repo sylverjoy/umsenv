@@ -1,0 +1,52 @@
+{%extends 'main/main_home_student.html'%}
+{%block content%}
+<body>
+
+      <!-- partial -->
+
+            <div class="col-md-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Information Update </h4>
+                  <p class="card-description">
+                    Update your information here 
+                  </p>
+                   
+                  <form action = "" method="POST" enctype="multipart/form-data" class="forms-sample">
+                    {% csrf_token %}
+                    <div class="form-group row">
+                      <label for="exampleInputUsername2" class="col-sm-3 col-form-label">Name </label>
+                      <div class="col-sm-9">
+                        {{form.name}}
+                  
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="exampleInputEmail2" class="col-sm-3 col-form-label">Phone</label>
+                      <div class="col-sm-9">
+                        {{form.phone}}
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="exampleInputPassword2" class="col-sm-3 col-form-label">Date Of Birth </label>
+                      <div class="col-sm-9">
+                        {{form.dob}}
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="exampleInputConfirmPassword2" class="col-sm-3 col-form-label">Place Of Birth</label>
+                      <div class="col-sm-9">
+                        {{form.pob}}
+                      </div>
+                    </div>  
+                    </div>
+                    <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+
+        
+          {%endblock%}
