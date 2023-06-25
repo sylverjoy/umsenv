@@ -1,10 +1,5 @@
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import UserManager
-from django.dispatch import receiver
-from django.db.models.signals import post_save
+
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 
@@ -92,14 +87,23 @@ class Subject(models.Model):
     credit = models.FloatField(null = True)
     semester = models.CharField(max_length= 200, null = True, choices= [('Semester 1', 'Semester 1'), ('Semester 2', 'Semester 2') ])
     subtype = models.CharField(max_length= 200, null=True)
-    dept =models.ForeignKey(Dept, on_delete=models.CASCADE)
+    dept = models.ManyToManyField(Dept)
+    dep = models.CharField(max_length= 200, null=True, blank = True)
     level = models.CharField(max_length= 200, null= True, choices= [('HND1', 'HND1'), ('HND2', 'HND2'), ('BTECH', 'BTECH') ])
 
+    def __str__(self):
+        return self.subject_name
+
+    def save(self, *args, **kwargs):
+        self.dep = str(self.dept.all()[0])
+        super(Subject, self).save(*args, **kwargs)
 class AssignedTeacher2(models.Model):
     dept = models.ForeignKey(Dept,on_delete=models.CASCADE)
     course = models.ForeignKey(Subject, on_delete=models.CASCADE, default="")
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return str(self.teacher) + " - " + str(self.course)
     class Meta:
         unique_together = (("teacher","course"))
 class RegisterTable(models.Model):
@@ -108,6 +112,9 @@ class RegisterTable(models.Model):
     subject = models.ForeignKey(Subject,on_delete=models.CASCADE)
     status = models.CharField(max_length= 200, default= "Approved")
     dept =models.ForeignKey(Dept, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.student) + " - " + str(self.subject)
     class Meta:
         unique_together = (("student","subject"))
 
@@ -119,14 +126,19 @@ class Result(models.Model):
     course_code = models.ForeignKey(Subject, on_delete=models.CASCADE, default="")
     theory_marks  = models.IntegerField(null = True, default = 0)
     term_test  = models.IntegerField(null = True, default= 0)
+    term_test_resit  = models.IntegerField(null = True, default= 0)
     total = models.FloatField(null = True, default= 0)
+    total_resit = models.FloatField(null = True, default= 0)
     dept = models.CharField(max_length=3, null= True)
     resited = models.CharField(max_length=3, null= False , choices=[('Yes', 'Yes'), ('No','No')], default= 'No')
     absent = models.CharField(max_length=3, null= False , choices=[('Yes', 'Yes'), ('No','No')], default= 'No')
 
     def save(self, *args, **kwargs):
         self.total = (int(self.theory_marks) + int(self.term_test))/5
+        self.total_resit = (int(self.theory_marks) + int(self.term_test_resit))/5
         super(Result, self).save(*args, **kwargs)
+    def __str__(self):
+        return str(self.student) + " - " + str(self.course_code)
     class Meta:
         unique_together = (("student","course_code"))
     

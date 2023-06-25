@@ -10,11 +10,11 @@
     .styled-table {
       border-collapse: collapse;
       margin: 20px 0;
-      font-size: 1.3em;
       font-family: sans-serif;
       min-width: 400px;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
       table-layout: auto;
+      font-size: medium;
     }
 
     .styled-table thead tr {
@@ -28,14 +28,17 @@
       padding-right: 1px;
       padding-top: 3px;
       padding-bottom: 2px;
+      font-size: medium;
     }
 
     .styled-table tbody tr {
       border-bottom: 1px solid black;
       height: 20px;
+      font-size: medium;
     }
     .styled-table thead tr {
       height: 20px;
+      font-size: medium;
     }
 
     .styled-table tbody tr:nth-of-type(even) {
@@ -151,7 +154,7 @@
         </tr>
         <tr>
             <td class="left"><b>Mentoring School: </b> </td>
-            <td class="left" style="width: 300px;">{{dept.UBa_Mentor_School}}</td>
+            <td class="left" style="width: 250px;">{{dept.UBa_Mentor_School}}</td>
             
           </tr>
       </tbody>
@@ -272,6 +275,61 @@
         </tr>
       </tbody>
     </table>
+    <div style="display: {{display}};">
+      <h3 style="color: red;">RESIT SEMESTER</h3>
+
+    <table class="styled-table" >
+      <thead>
+        <tr>
+          <th width="30px">S/No</th>
+          <th style="width: 300px;">COURSE TITLE</th>
+          <th>CODE</th>
+          <th>CV</th>
+          <th>MARKS</th>
+          <th>GD</th>
+          <th>GP</th>
+          <th>WP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in data2 %}
+        <tr style="width: 0;">
+          <td align = "center">{{ d.id }}</td>
+          <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
+          <td>{{ d.course_code.course_code }}</td>
+          <td>{{ d.course_code.credit}}</td>
+          <td>{{ d.total }}</td>
+          <td>{{d.gd}}</td>
+          <td>{{d.gp}}</td>
+          <td>{{d.wp}}</td>
+          
+        </tr>
+        {% endfor %}
+      
+        <tr>
+            <td>-</td>
+            <td><b>TOTAL</b></td>
+            <td>-</td>
+            <td>{{credt3}}</td>
+            <td><b>-</b></td>
+            <td><b>-</b></td>
+            <td><b>-</b></td>
+            <td><b>{{wpt3}}</b></td>
+        </tr>
+        
+        <tr>
+            <td>-</td>
+            <td><b>SEMESTER GPA</b></td>
+            <td>-</td>
+            <td>-</td>
+            <td><b>-</b></td>
+            <td><b>-</b></td>
+            <td><b>{{gp3}}</b></td>
+            <td><b>-</b></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
     <table class="styled-table">
         <tbody>
           <tr>

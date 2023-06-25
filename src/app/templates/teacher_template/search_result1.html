@@ -7,9 +7,9 @@
             <h4 class="card-title">Choose From  Courses</h4>
             <form action="" method="POST" class="forms-sample">
               {% csrf_token %}
-              <select name="course_code"  class="form-control form-control-lg" id="cars">
+              <select name="course_code"  class="form-control form-control-lg" id="myselect">
                 {%for c in data%}
-                <option value="{{c.course_code}},{{c.dept}}" {% if c in selected_values %} selected {% endif %}>{{c.course_code}} - {{c.subject_name}} for {{c.dept}}  Department</option>
+                <option value="{{c.course_code}},{{c.dep}}" {% if c in selected_values %} selected {% endif %}>{{c.course_code}} - {{c.subject_name}} for {{c.dep}}  Department</option>
                 {% endfor %}
               </select>
               <p></p>
@@ -22,5 +22,9 @@
     </div>
   </div>
 </div>
+
+<script>
+  $('#myselect').select2();
+</script>
 
 {%endblock%}

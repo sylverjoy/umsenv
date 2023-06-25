@@ -12,7 +12,6 @@ urlpatterns = [
     path("add_admin/",views.add_admin, name ='add_admin'),
     path("add_subject/",views.add_subject, name ='add_subject'),
     path("get_att/",views.get_att, name ='get_att'),
-    path("add_j/", views.add_j, name ='add_j'),
     path("add_excel/", views.add_excel, name ='add_excel'),
     path("add_exam/", views.add_exam, name ='add_exam'),
     path("extract_temp/", views.extract_temp, name ='extract_temp'),
@@ -27,12 +26,6 @@ urlpatterns = [
     path("result/resit/<result_id>/<course_code>", views.update_result_resit, name ='update_result_resit'),
     path("add_result/<dept>/<course_id>", views.add_result, name='add_result'),
     path("search_student_registered/", views.search_student_registered, name = 'search_student_registered'),
-    path("get_subtype_networking_marks", views.get_subtype_networking_marks, name = 'get_subtype_networking_marks'),
-    path("get_subtype_ai_marks", views.get_subtype_ai_marks, name = 'get_subtype_ai_marks'),
-    path("get_subtype_sys_n_media_marks", views.get_subtype_sys_n_media_marks, name = 'get_subtype_sys_n_media_marks'),
-    path("get_subtype_dbms_marks", views.get_subtype_dbms_marks, name = 'get_subtype_dbms_marks'),
-    path("get_subtype_project_marks", views.get_subtype_project_marks, name = 'get_subtype_project_marks'),
-    path("get_subtype_programming_marks", views.get_subtype_programming_marks, name = 'get_subtype_programming_marks'),
     path("get_all_the_marks", views.get_all_the_marks, name = 'get_all_the_marks'),
     path("get_all_the_students", views.get_all_the_students, name = 'get_all_the_students'),
     path('pdf/', views.GeneratePdf.as_view(),name ="generate_pdf"),
@@ -63,21 +56,17 @@ urlpatterns = [
     path('get_ratings_admin/', views.get_ratings_admin,name ="get_ratings_admin"),
     path('dept_performance/', views.dept_performance,name ="dept_performance"),
     path('subject_ranksheet_teacher/', views.subject_ranksheet_teacher,name ="subject_ranksheet_teacher"),
-    path('delete_result/', views.delete_result,name ="delete_result"),
-    path('delete_result2/<dept>/<course_id>', views.delete_result2,name ="delete_result2"),
     path('teacher_subject_list/', views.teacher_subject_list,name ="teacher_subject_list"),
     path('transfer_student/', views.change_stud_dept,name ="transfer_student"),
     path('promote_student/', views.promote_stud,name ="promote_student"),
+    path('promote_student/<dept>/<lev>', views.promote_stud2,name ="promote_student2"),
     path("all_students/",views.all_students, name ='all_students'),
-    path('delete_student/', views.delete_student,name ="delete_student"),
     path('extract_results/', views.extract_results,name ="extract_results"),
     path('generate_codes/', views.generate_codes,name ="generate_codes"),
     path('download_codes/', views.download_codes,name ="download_codes"),
     path('stats/', views.extract_res_stat,name ="stats"),
-    path('remove_teacher/', views.remove_teacher,name ="remove_teacher"),
-
-
-
+    path('password/', views.change_pwd,name ="password"),
+    path('updateinfo/', views.stud_update_info, name = "update_info")
 
 
 ]

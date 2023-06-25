@@ -48,6 +48,26 @@ class StudentForm(ModelForm):
         model = Student
         fields = ['name','phone','registration_number','degree_pursued','dept','level','dob','pob','profile_pic',]
 
+class StudentUpdateForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(StudentUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs['class'] = 'form-control'
+        self.fields['name'].widget.attrs['placeholder'] = "Student's Name"
+        self.fields['phone'].widget.attrs['class'] = 'form-control'
+        self.fields['phone'].widget.attrs['placeholder'] = "Student's Phone"
+        self.fields['dob'].widget.attrs['class'] = 'form-control'
+        self.fields['dob'].widget.attrs['placeholder'] = 'Date of Birth in format yyyy-mm-dd'
+        self.fields['pob'].widget.attrs['class'] = 'form-control'
+        self.fields['pob'].widget.attrs['placeholder'] = 'Place of Birth'
+        # self.fields['profile_pic'].widget.attrs['class'] = 'file-upload-default'
+        # self.fields['profile_pic'].widget.attrs['class'] = 'form-control file-upload-info'
+        # self.fields['profile_pic'].widget.attrs['disabled placeholder'] = "Upload Image"
+
+    class Meta:
+        model = Student
+        fields = ['name','phone','dob','pob']
+
+
 
 
 class AdminForm(ModelForm):
