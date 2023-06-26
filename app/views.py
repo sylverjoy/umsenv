@@ -1791,8 +1791,9 @@ def setActiveSS(request):
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['admin'])
 def assign_teacher_dept_search(request):
-    data = Result.objects.raw('''
-        SELECT dept_id as id FROM app_dept''')
+    #data = Result.objects.raw('''
+    #    SELECT dept_id as id FROM app_dept''')
+    data = Dept.objects.all()
 
     context={'dept':data} 
     if request.method == 'POST':
@@ -2263,7 +2264,7 @@ def generate_codes(request):
                 )
 
                 exam_code.save()
-                success = False
+                success = True
             except IntegrityError:
                 messages.success(request,"Student %s already has a code for this course. "%(stud.student.name))
                 success = True
@@ -2484,7 +2485,7 @@ def stud_update_info(request):
             form.save()
             student.save()
 
-            messages.info("Info Successfully Updated!")
+            messages.info(request,"Info Successfully Updated!")
             return redirect('home')
     
     return render(request, 'student_template/update_info.html', context)

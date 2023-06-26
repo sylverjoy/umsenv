@@ -14,7 +14,7 @@
                 <!-- <input type="text" name="course_code" class="form-control form-control-lg" id="exampleInputPassword1" placeholder="Course Code"> -->
                 <label for="cars">Choose A Registration Number To Edit Result</label>
 
-                <select name="registration_number"  class="form-control form-control-lg" id="cars">
+                <select name="registration_number"  class="form-control form-control-lg" id="myselect">
                   {%for c in course%}
                   <option value="{{c.student.registration_number}}" {% if c in selected_values %} selected {% endif %}>{{c.student.registration_number}} - {{c.student.name}}</option>
                   {% endfor %}
@@ -39,5 +39,7 @@
     </div>
   </div>
 </div>
-
+<script>
+  $('#myselect').select2();
+</script>
 {%endblock%}
