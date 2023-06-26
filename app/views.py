@@ -1038,13 +1038,13 @@ def search_student_registered(request):
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['admin'])
 def search_result(request, course_code, dept):
-    data = Result.objects.filter(course_code = course_code, dept = dept)
+    data = Result.objects.filter(course_code = course_code)
 
     context={'course':data, 'course_code': course_code, 'dept': dept, 'resit': ['Yes', 'No']} 
     if request.method == 'POST':
         registration_number = request.POST.get('registration_number')
         resit = request.POST.get('resit')
-        obj = Result.objects.get(student_id = registration_number ,course_code = course_code, dept = dept )
+        obj = Result.objects.get(student_id = registration_number ,course_code = course_code)
         id = int(obj.id)
         print(id)
         if resit == "Yes":
@@ -1791,8 +1791,9 @@ def setActiveSS(request):
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['admin'])
 def assign_teacher_dept_search(request):
-    data = Result.objects.raw('''
-        SELECT dept_id as id FROM app_dept''')
+    #data = Result.objects.raw('''
+    #    SELECT dept_id as id FROM app_dept''')
+    data = Dept.objects.all()
 
     context={'dept':data} 
     if request.method == 'POST':
@@ -2121,7 +2122,7 @@ def subject_ranksheet_teacher(request):
         xx = course.split(",")
         course_id = xx[0]
         dept_id = xx[1]
-        marksObj = Result.objects.filter(course_code = course_id, dept = dept_id, sem_ses = c_ss.ss_id)
+        marksObj = Result.objects.filter(course_code = course_id, sem_ses = c_ss.ss_id)
         cnt=1
         for i in marksObj:
             i.id = cnt
@@ -2263,7 +2264,7 @@ def generate_codes(request):
                 )
 
                 exam_code.save()
-                success = False
+                success = True
             except IntegrityError:
                 messages.success(request,"Student %s already has a code for this course. "%(stud.student.name))
                 success = True
@@ -2425,7 +2426,7 @@ class GeneratePdf2(View):
         did = str(self.dept_id)
         print(cid)
         print(did)
-        marksObj = Result.objects.filter(course_code = cid, dept = did, sem_ses = SemesterSession.objects.filter(active= 'Yes').first())
+        marksObj = Result.objects.filter(course_code = cid, sem_ses = SemesterSession.objects.filter(active= 'Yes').first())
         cnt=1
         for i in marksObj:
             i.id = cnt
@@ -2484,7 +2485,7 @@ def stud_update_info(request):
             form.save()
             student.save()
 
-            messages.info("Info Successfully Updated!")
+            messages.info(request,"Info Successfully Updated!")
             return redirect('home')
     
     return render(request, 'student_template/update_info.html', context)

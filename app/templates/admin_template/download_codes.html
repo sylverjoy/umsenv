@@ -14,7 +14,7 @@
                                 <!-- <input type="text" name="course_code" class="form-control form-control-lg" id="exampleInputPassword1" placeholder="Course Code"> -->
                                 <label for="cars">Choose A Registered Course To Download Generated Codes</label>
 
-                                <select name="course_code" class="form-control form-control-lg" id="cars">
+                                <select name="course_code" class="form-control form-control-lg" id="myselect">
                                     {%for c in course%}
                                     <option value="{{c.course_code}},{{c.dep}}" {% if c in selected_values %} selected {% endif %}>{{c.course_code}} {{c.subject_name}} for <br>({{c.dep}})</br> Department</option>
                                     {% endfor %}
@@ -29,4 +29,7 @@
         </div>
     </div>
 </div>
+<script>
+    $('#myselect').select2()
+</script>
 {%endblock%}

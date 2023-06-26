@@ -129,32 +129,32 @@
     <table class="styled-table">
       <tbody>
         <tr>
-          <td class="left"><b>Academic Year: </b> </td>
-          <td class="left">{{ay}}</td>
-          <td class="left"><b>Level: </b></td>
-          <td class="left">{{level}}</td>
+          <td class="left" style="width: 60%;"><b>Academic Year: {{ay}} </b> </td>
+          <!--td class="left">{{ay}}</!--td-->
+          <td class="left" style="width: 40%;"><b>Level: {{level}}</b></td>
+          <!--td class="left">{{level}}</!--td-->
         </tr>
         <tr>
-          <td class="left"><b>Name: </b></td>
-          <td class="left">{{name}}</td>
-          <td class="left"><b>Registration No:</b></td>
-          <td class="left">{{regi}}</td>
+          <td class="left"><b>Name: {{name}}</b></td>
+          <!--td class="left">{{name}}</!--td-->
+          <td class="left"><b>Registration No: {{regi}}</b></td>
+          <!--td class="left">{{regi}}</!--td-->
         </tr>
         <tr>
-          <td class="left"><b>Date of Birth:</b></td>
-          <td class="left">{{dob}}</td>
-          <td class="left"><b>Place of Birth: </b></td>
-          <td class="left">{{pob}}</td>
+          <td class="left"><b>Date of Birth: {{dob}}</b></td>
+          <!--td class="left">{{dob}}</!--td-->
+          <td class="left"><b>Place of Birth: {{pob}}</b></td>
+          <!--td class="left">{{pob}}</!--td-->
         </tr>
         <tr>
-          <td class="left"><b>Program: </b> </td>
-          <td class="left">{{program}}</td>
-          <td class="left"><b>Specialty: </b></td>
-          <td class="left">{{dept.name}}</td>
+          <td class="left"><b>Program: {{program}}</b> </td>
+          <!--td class="left">{{program}}</!--td-->
+          <td class="left"><b>Specialty: {{dept.name}}</b></td>
+          <!--td class="left">{{dept.name}}</!--td-->
         </tr>
         <tr>
-            <td class="left"><b>Mentoring School: </b> </td>
-            <td class="left" style="width: 250px;">{{dept.UBa_Mentor_School}}</td>
+            <td class="left"><b>Mentor School: {{dept.UBa_Mentor_School}}</b> </td>
+            <!--td class="left" style="width: 250px;">{{dept.UBa_Mentor_School}}</!--td-->
             
           </tr>
       </tbody>
@@ -349,7 +349,7 @@
       </table>
 
     <h3 style="text-align: right; margin-right: 20px; margin-top: 20px;">REGISTRAR UBa</h3>
-
+{% if display == "None" %}
     <p>&nbsp;</p>
     <p>&nbsp;</p>
     <p>&nbsp;</p>
@@ -360,6 +360,7 @@
     <p>&nbsp;</p>
     <p>&nbsp;</p>
     <p>&nbsp;</p>
+{% endif %}
 
     <table class="mytable">
       <thead>

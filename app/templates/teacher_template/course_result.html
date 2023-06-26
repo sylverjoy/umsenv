@@ -10,7 +10,7 @@
               <div class="form-group">
                 <label for="cars">Choose a course that you have registered</label>
 
-                <select name="course_code"  class="form-control form-control-lg" id="cars">
+                <select name="course_code"  class="form-control form-control-lg" id="myselect">
                   {%for c in course%}
                   <option value="{{c.course.course_code}},{{c.course.dep}}" {% if c in selected_values %} selected {% endif %}>{{c.course.course_code}}  {{c.course.subject_name}} for {{c.course.dep}} Department</option>
                   {% endfor %}
@@ -25,5 +25,7 @@
     </div>
   </div>
 </div>
-
+<script>
+  $('#myselect').select2();
+</script>
 {%endblock%}
