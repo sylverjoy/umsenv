@@ -869,24 +869,28 @@ class GenerateTrans(View):
                         gpa_sum_resit+= s.total_resit
                         cred_total_resit+= s.course_code.credit
                         if s.absent == "Yes":
-                            s.student_id = "X"
-                            s.gp = "X"
-                            s.gd = "X"
-                            s.wp = "X"
-                            s.total = "X"
+                            s.student_id2 = "X"
+                            s.gp2 = "X"
+                            s.gd2 = "X"
+                            s.wp2 = "X"
+                            s.total_resit = "X"
                         else:
-                            s.student_id = cal_grade(s.total)
-                            s.id = cnt
-                            s.gp = cal_cg(s.total)
-                            s.gd = cal_cgname(s.gp)
-                            s.wp = s.course_code.credit * s.gp
+                            s.student_id2 = cal_grade(s.total_resit)
+                            s.id2 = cnt
+                            s.gp2 = cal_cg(s.total_resit)
+                            s.gd2 = cal_cgname(s.gp2)
+                            s.wp2 = s.course_code.credit * s.gp2
                             s.total_resit = s.total_resit * 5 
+			cnt = cnt+1
+                        
+                        if program.deg_id == "BTECH" and s.total_resit != "X" and s.total_resit >= 50:
+                            cred_earned+= s.course_code.credit
                     
                     
                     for s in resits:
                         if s.wp != "X"  and s.gp != "X":
-                            wpt_resit+= s.wp
-                            gpt_resit+= s.gp
+                            wpt_resit+= s.wp2
+                            gpt_resit+= s.gp2
                     
                     gpa_resit = round(gpa_sum_resit/count, 2)
                     gp_resit = round(gpt_resit/count, 2)
