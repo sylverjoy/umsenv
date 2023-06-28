@@ -294,14 +294,14 @@
       <tbody>
         {% for d in data2 %}
         <tr style="width: 0;">
-          <td align = "center">{{ d.id }}</td>
+          <td align = "center">{{ d.id2 }}</td>
           <td style="text-align: left;">{{ d.course_code.subject_name }}</td>
           <td>{{ d.course_code.course_code }}</td>
           <td>{{ d.course_code.credit}}</td>
-          <td>{{ d.total }}</td>
-          <td>{{d.gd}}</td>
-          <td>{{d.gp}}</td>
-          <td>{{d.wp}}</td>
+          <td>{{ d.total_resit }}</td>
+          <td>{{d.gd2}}</td>
+          <td>{{d.gp2}}</td>
+          <td>{{d.wp2}}</td>
           
         </tr>
         {% endfor %}
