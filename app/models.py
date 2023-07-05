@@ -87,7 +87,7 @@ class Subject(models.Model):
     credit = models.FloatField(null = True)
     semester = models.CharField(max_length= 200, null = True, choices= [('Semester 1', 'Semester 1'), ('Semester 2', 'Semester 2') ])
     subtype = models.CharField(max_length= 200, null=True)
-    dept = models.ManyToManyField(Dept)
+    dept = models.ManyToManyField(Dept, blank= True)
     dep = models.CharField(max_length= 200, null=True, blank = True)
     level = models.CharField(max_length= 200, null= True, choices= [('HND1', 'HND1'), ('HND2', 'HND2'), ('BTECH', 'BTECH') ])
 
@@ -95,7 +95,10 @@ class Subject(models.Model):
         return self.subject_name
 
     def save(self, *args, **kwargs):
-        self.dep = str(self.dept.all()[0])
+        if not self.dept.all():
+            self.dep = " "
+        else:
+            self.dep = str(self.dept.all()[0])
         super(Subject, self).save(*args, **kwargs)
 class AssignedTeacher2(models.Model):
     dept = models.ForeignKey(Dept,on_delete=models.CASCADE)
