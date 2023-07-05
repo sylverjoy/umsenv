@@ -881,7 +881,7 @@ class GenerateTrans(View):
                             s.gd2 = cal_cgname(s.gp2)
                             s.wp2 = s.course_code.credit * s.gp2
                             s.total_resit = s.total_resit * 5 
-			cnt = cnt+1
+                        cnt = cnt+1
                         
                         if program.deg_id == "BTECH" and s.total_resit != "X" and s.total_resit >= 50:
                             cred_earned+= s.course_code.credit
@@ -1238,7 +1238,7 @@ def extract_temp(request):
         names = []
         fields = ["Matricule", "Names", "CA"]
 
-        register1 = RegisterTable.objects.filter(subject_id = course_cd).all()
+        register1 = RegisterTable.objects.filter(subject_id = course_cd, sem_ses = c_ss).all()
         for r in register1:
             matricules.append(r.student)
 
@@ -1325,7 +1325,7 @@ def extract_temp_exam(request):
         codes = []
         fields = ["Code", "Exam Mark"]
 
-        register1 = RegisterTable.objects.filter(subject_id = course_cd).all()
+        register1 = RegisterTable.objects.filter(subject_id = course_cd, sem_ses = c_ss).all()
         for r in register1:
             c = ExamCode.objects.filter(student = r.student, sem_ses = c_ss, subject = r.subject).first().code
             codes.append(c)
@@ -1926,7 +1926,7 @@ def student_sub_register(request):
     data = Subject.objects.filter(dept= dept_name, level = lev, semester = sem.semester)
 
     for i in data:
-        ctt = RegisterTable.objects.filter(subject_id = i.course_code, student = regi).first()
+        ctt = RegisterTable.objects.filter(subject_id = i.course_code, student = regi, sem_ses = sem).first()
         
         if ctt != None:
             i.subject_name = i.subject_name + "-->Already Registered."
@@ -1937,7 +1937,7 @@ def student_sub_register(request):
         course_cc = request.POST.get('course_regi')
         regi = request.user.student
 
-        check = RegisterTable.objects.filter(student = regi, subject_id = course_cc).first()
+        check = RegisterTable.objects.filter(student = regi, subject_id = course_cc, sem_ses = sem).first()
         if check == None:
             
             ss = RegisterTable(
@@ -2253,9 +2253,9 @@ def generate_codes(request):
         course_code = request.POST.get('course_code').split(",")[0]
         
 
-        studs = RegisterTable.objects.filter(subject = course_code).all()
+        studs = RegisterTable.objects.filter(subject = course_code, sem_ses = sem).all()
         my_list = list(range(1,int(studs.count()) + 1))
-	success = False
+        success = False
         for stud in studs:
             try :
                 code = random.choice(my_list)
@@ -2304,7 +2304,7 @@ def download_codes(request):
         codes = []
         fields = ["Matricule", "Names", "Code"]
 
-        register1 = RegisterTable.objects.filter(subject_id = course_code).all()
+        register1 = RegisterTable.objects.filter(subject_id = course_code, sem_ses = sem).all()
         for r in register1:
             matricules.append(r.student)
 
