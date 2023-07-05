@@ -2255,6 +2255,7 @@ def generate_codes(request):
 
         studs = RegisterTable.objects.filter(subject = course_code).all()
         my_list = list(range(1,int(studs.count()) + 1))
+	success = False
         for stud in studs:
             try :
                 code = random.choice(my_list)
