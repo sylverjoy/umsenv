@@ -254,10 +254,10 @@ def studentHome(request):
         upper =0
         lower = 0
         for r in res:
-            if deg == "BTECH":
-                upper += cal_cg(r.total)
-            else:
+            if deg == "HND1" or level == "HND2":
                 upper =upper+ r.total
+            else:
+                upper += cal_cg(r.total)
             lower += 1
 
         if lower == 0:
@@ -483,10 +483,10 @@ def getting_json_result(regi):
         obj[attr[2]]= i.course_code.credit
         obj[attr[3]] = i.theory_marks
         obj[attr[4]] = i.term_test
-        if regi.level == "BTECH":
-            obj[attr[5]] = i.total * 5
-        else:
+        if regi.level == "HND1" or level == "HND2":
             obj[attr[5]] = i.total
+        else:
+            obj[attr[5]] = i.total * 5
 
         #cgpa = cal_grade(i.total)
         #obj[attr[6]]= cgpa
@@ -785,14 +785,14 @@ class GenerateTrans(View):
                             s.gp = cal_cg(s.total)
                             s.gd = cal_cgname(s.gp)
                             s.wp = s.course_code.credit * s.gp
-                            if program.deg_id == "BTECH":
+                            if program.deg_id not in ["HND1", "HND2"]:
                                 s.total = s.total * 5 
                         if s.resited == "Yes":
                             resits.append(s)
 
                         cnt = cnt+1
                         
-                        if program.deg_id == "BTECH" and s.total != "X" and s.total >= 50:
+                        if program.deg_id not in ["HND1", "HND2"] and s.total != "X" and s.total >= 50:
                             cred_earned+= s.course_code.credit
 
                     wpt_s1 = 0
@@ -840,7 +840,7 @@ class GenerateTrans(View):
 
                         cnt = cnt+1
 
-                        if program.deg_id == "BTECH" and s.total != "X" and s.total >=50:
+                        if program.deg_id not in ["HND1", "HND2"] and s.total != "X" and s.total >=50:
                             cred_earned+= s.course_code.credit
 
                     wpt_s2 = 0
@@ -883,7 +883,7 @@ class GenerateTrans(View):
                             s.total_resit = s.total_resit * 5 
                         cnt = cnt+1
                         
-                        if program.deg_id == "BTECH" and s.total_resit != "X" and s.total_resit >= 50:
+                        if program.deg_id not in ["HND1", "HND2"] and s.total_resit != "X" and s.total_resit >= 50:
                             cred_earned+= s.course_code.credit
                     
                     
@@ -1372,7 +1372,7 @@ def extract_res_stat(request):
 
     ss = SemesterSession.objects.all()
     depts = Dept.objects.all()
-    levs = ['HND1','HND2','BTECH']
+    levs = ['HND1','HND2','BTECH','MBA','MSC']
 
 
     context={'sems':ss, 'depts': depts, 'levs': levs} 
@@ -1869,7 +1869,7 @@ def change_stud_dept(request):
 def promote_stud(request):
     data1 = Dept.objects.all()
     
-    data2 = ['HND1','HND2','BTECH']
+    data2 = ['HND1','HND2','BTECH','MBA','MSC']
 
 
     context = {'depts' : data1, 'levs': data2}
@@ -1889,7 +1889,7 @@ def promote_stud(request):
 @allowed_users(allowed_roles=['admin'])
 def promote_stud2(request, dept, lev):
     studs = Student.objects.filter(dept_id = dept, level = lev).all()
-    data2 = ['HND1','HND2','BTECH']
+    data2 = ['HND1','HND2','BTECH','MBA','MSC']
 
     context = {"studs": studs, 'levs': data2, 'lev': lev, 'dept': dept}
 
@@ -2148,7 +2148,7 @@ def extract_results(request):
     
     data = Dept.objects.all()
 
-    context={'dept':data, 'level': ['HND1', 'HND2', 'BTECH']} 
+    context={'dept':data, 'level': ['HND1', 'HND2', 'BTECH','MBA','MSC']} 
 
     if request.method == 'POST':
         dept_id = request.POST.get('dept')
@@ -2178,10 +2178,10 @@ def extract_results(request):
             res = []
             results = Result.objects.filter(course_code = s.course_code).all()
             for r in results:
-                if level == "BTECH":
-                    res.append(r.total*5)
-                else:
+                if level == "HND1" or level = "HND2":
                     res.append(r.total)
+                else:
+                    res.append(r.total*5)
             if len(res) > 0 :
                 f_results.append(res)
 
