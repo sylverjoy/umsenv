@@ -60,13 +60,17 @@ urlpatterns = [
     path('transfer_student/', views.change_stud_dept,name ="transfer_student"),
     path('promote_student/', views.promote_stud,name ="promote_student"),
     path('promote_student/<dept>/<lev>', views.promote_stud2,name ="promote_student2"),
+    path('block_student/', views.block_stud,name ="block_student"),
+    path('unblock_student/', views.unblock_stud,name ="unblock_student"),
     path("all_students/",views.all_students, name ='all_students'),
     path('extract_results/', views.extract_results,name ="extract_results"),
+    path('reupload_results/', views.reupload_results,name ="reupload_results"),
     path('generate_codes/', views.generate_codes,name ="generate_codes"),
     path('download_codes/', views.download_codes,name ="download_codes"),
     path('stats/', views.extract_res_stat,name ="stats"),
     path('password/', views.change_pwd,name ="password"),
-    path('updateinfo/', views.stud_update_info, name = "update_info")
+    path('updateinfo/', views.stud_update_info, name = "update_info"),
+    path('updateseminfo/', views.sem_update, name = "update_sem_info")
 
 
 ]

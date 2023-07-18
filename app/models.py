@@ -32,8 +32,10 @@ class SemesterSession(models.Model):
     semester_end = models.DateField(null= False, default= datetime.now())
     ca_deadline = models.DateField(null= False, default= datetime.now())
     ca_deadline_btech = models.DateField(null= False, default= datetime.now())
+    ca_deadline_masters = models.DateField(null= False, default= datetime.now())
     result_deadline = models.DateField(null= False, default= datetime.now())
     result_deadline_btech = models.DateField(null= False, default= datetime.now())
+    result_deadline_masters = models.DateField(null= False, default= datetime.now())
     active = models.CharField(max_length=3, null= False , choices=[('Yes', 'Yes'), ('No','No')], default= 'No')
     results_published = models.CharField(max_length=3, null= False , choices=[('Yes', 'Yes'), ('No','No')], default= 'No')
 
@@ -86,10 +88,10 @@ class Subject(models.Model):
     subject_name = models.CharField(max_length= 200)
     credit = models.FloatField(null = True)
     semester = models.CharField(max_length= 200, null = True, choices= [('Semester 1', 'Semester 1'), ('Semester 2', 'Semester 2') ])
-    subtype = models.CharField(max_length= 200, null=True)
+    subtype = models.CharField(max_length= 200, null=True, choices= [('HND','HND'), ('DEGREE','DEGREE'), ('MASTER','MASTER')], default="HND" )
     dept = models.ManyToManyField(Dept, blank= True)
     dep = models.CharField(max_length= 200, null=True, blank = True)
-    level = models.CharField(max_length= 200, null= True, choices= [('HND1', 'HND1'), ('HND2', 'HND2'), ('BTECH', 'BTECH') ])
+    level = models.CharField(max_length= 200, null= True, choices= [('HND1', 'HND1'), ('HND2', 'HND2'), ('BTECH', 'BTECH'), ('M1', 'M1'), ('M2', 'M2') ])
 
     def __str__(self):
         return self.subject_name

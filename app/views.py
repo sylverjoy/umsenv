@@ -100,12 +100,17 @@ def loginPage(request):
         password = request.POST.get('password')
 
         user = authenticate(request, username=username, password=password)
+        
 
         if user is not None:
             login(request,user)
-            return redirect('home')
+            if user.is_active :
+                return redirect('home')
+            else:
+                messages.info(request, "User blocked")
+            
         else:
-            messages.info(request, "Username Or Password is not Correct")
+            messages.info(request, "Username Or Password is not Correct or User is blocked.")
         
 
     return render(request, 'login_template/login1.html')
@@ -221,7 +226,12 @@ def studentHome(request):
     res = RegisterTable.objects.filter(student_id = regi)
     creds = request.user.student.degree_pursued.total_credits
     deg = request.user.student.degree_pursued.deg_id
+    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
+    pe = 'auto'
     print(res)
+
+    if c_ss.results_published == "No":
+        pe = 'none'
 
     if res == None:
         data = []
@@ -254,7 +264,7 @@ def studentHome(request):
         upper =0
         lower = 0
         for r in res:
-            if deg == "HND1" or level == "HND2":
+            if deg == "HND":
                 upper =upper+ r.total
             else:
                 upper += cal_cg(r.total)
@@ -291,7 +301,9 @@ def studentHome(request):
     'current_cgpa': current_cgpa,
     'degree_status': degree_status,
     'remain': remain,
-    'creds': creds
+    'creds': creds,
+    'pe': pe,
+    'aca': c_ss.session 
     }
     return render(request,'student_template/index.html',context)
 
@@ -474,7 +486,7 @@ def getting_json_result(regi):
     attr.append("theory")
     attr.append("tt")
     attr.append("total")
-    #attr.append("cgpa")
+    attr.append("cgpa")
     json_res =[]
     for i in pub_marks:
         obj = {}
@@ -483,13 +495,14 @@ def getting_json_result(regi):
         obj[attr[2]]= i.course_code.credit
         obj[attr[3]] = i.theory_marks
         obj[attr[4]] = i.term_test
-        if regi.level == "HND1" or level == "HND2":
+        if regi.level == "HND1" or regi.level == "HND2":
             obj[attr[5]] = i.total
+            cgpa = cal_grade(i.total) 
         else:
+            cgpa = cal_cgname(cal_cg(i.total))
             obj[attr[5]] = i.total * 5
-
-        #cgpa = cal_grade(i.total)
-        #obj[attr[6]]= cgpa
+            
+        obj[attr[6]]= cgpa
         json_res.append(obj) 
         
     return json_res
@@ -580,7 +593,11 @@ def full_attendance(request):
 
 @login_required(login_url = 'login')
 def full_marksheet(request):
-    return render(request,'student_template/full_marksheet.html')
+    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
+    pe = "auto"
+    if c_ss.results_published == "No":
+        pe = "none"
+    return render(request,'student_template/full_marksheet.html', {'pe': pe, 'aca': c_ss.session})
 
 @login_required(login_url = 'login')
 def all_students(request):
@@ -637,6 +654,7 @@ class GeneratePdf(View):
         phone = request.user.student.phone
         email = request.user.email
         dept = request.user.student.dept.name
+        deg = request.user.student.degree_pursued.deg_id
         data = Result.objects.filter(student = regi).all()
 
         upper =0
@@ -648,7 +666,12 @@ class GeneratePdf(View):
         for k in data:
             if k.total>=10:
                 lower =lower + k.course_code.credit
-            upper+=k.total
+            if deg == "HND":
+                upper+=k.total
+            else:
+                k.gp = cal_cg(k.total)
+                upper+= k.gp
+
             count+=1
             k.id = cnt
             cnt = cnt+1
@@ -667,8 +690,11 @@ class GeneratePdf(View):
             status = "Complete"
 
         for i in data:
-            i.student_id = cal_grade(i.total)
-                    
+            if deg == "HND":
+                i.student_id = cal_grade(i.total)
+            else:
+                i.student_id = cal_cgname(i.gp)
+                i.total = i.total * 5    
 
         module_dir = os.path.dirname(__file__)  # get current directory
         file_path1 = os.path.join(module_dir, 'templates/student_template/generate_result_pdf_temp.html')
@@ -722,6 +748,7 @@ class GenerateTrans(View):
             zip_name = "Transcripts" + "_" + self.d + "_" + self.ay + ".zip"
         else:
             self.studs.append(request.user.student)
+            zip_name = "Transcripts" + "_" + str(self.studs[0].name) + "_" + self.ay + ".zip"
         
         students = self.studs
 
@@ -761,7 +788,13 @@ class GenerateTrans(View):
                 cred_total_s1 = 0
                 cred_earned = 0
                 gpa_sem1 = 0
+                gp_s1 = 0
+                grade_sem1 = ""
                 count = 0
+
+                wpt_s1 = 0
+                gpt_s1 = 0
+
                 for d in data:
                     if str(d.sem_ses.semester) == 'Semester 1':
                         sem1.append(d)
@@ -795,8 +828,7 @@ class GenerateTrans(View):
                         if program.deg_id not in ["HND1", "HND2"] and s.total != "X" and s.total >= 50:
                             cred_earned+= s.course_code.credit
 
-                    wpt_s1 = 0
-                    gpt_s1 = 0
+                    
                     for s in sem1:
                         if s.wp != "X"  and s.gp != "X":
                             wpt_s1+= s.wp
@@ -810,7 +842,13 @@ class GenerateTrans(View):
                 gpa_sum_s2 = 0
                 cred_total_s2 = 0
                 gpa_sem2 = 0
+                gp_s2 = 0
+                grade_sem2 = ""
                 count = 0
+
+                wpt_s2 = 0
+                gpt_s2 = 0
+                
                 for d in data:
                     if str(d.sem_ses.semester) == 'Semester 2':
                         sem2.append(d)
@@ -843,8 +881,6 @@ class GenerateTrans(View):
                         if program.deg_id not in ["HND1", "HND2"] and s.total != "X" and s.total >=50:
                             cred_earned+= s.course_code.credit
 
-                    wpt_s2 = 0
-                    gpt_s2 = 0
                     for s in sem2:
                         if s.wp != "X"  and s.gp != "X":
                             wpt_s2+= s.wp
@@ -858,6 +894,8 @@ class GenerateTrans(View):
                 cred_total_resit = 0
                 gpa_resit = 0
                 gp_resit = 0
+                gp_resit = 0
+                grade_resit = ""
                 count = 0
                 wpt_resit = 0
                 gpt_resit = 0
@@ -900,6 +938,10 @@ class GenerateTrans(View):
                     year_gpa = round((gpa_sem1 + gpa_sem2 + gpa_resit)/3, 2)
                     year_grade = cal_grade(year_gpa)
                     yr_gp = round((gp_s1 + gp_s2 + gp_resit)/3, 2)
+                elif gpa_sem2 == 0 and gp_s2 == 0:
+                    year_gpa = gpa_sem1
+                    year_grade = cal_grade(year_gpa)
+                    yr_gp = gp_s1
                 else:
                     year_gpa = round((gpa_sem1 + gpa_sem2)/2, 2)
                     year_grade = cal_grade(year_gpa)
@@ -1206,19 +1248,31 @@ def extract_temp(request):
     disabled = ""
     data2 = []
     from datetime import datetime
-    if datetime.now().date() > c_ss.ca_deadline and datetime.now().date() > c_ss.ca_deadline_btech:
+    if datetime.now().date() > c_ss.ca_deadline and datetime.now().date() > c_ss.ca_deadline_btech and datetime.now().date() > c_ss.ca_deadline_masters:
         print(True)
 
         disabled = "disabled"
-        messages.success(request,"Deadline to Submit CA Results for both HND And BTECH  has passed. You can't download any templates anymore.")
-    elif datetime.now().date() < c_ss.ca_deadline and datetime.now().date() > c_ss.ca_deadline_btech:
-        messages.success(request,"Deadline to Submit CA Results for BTECH has passed. You can only download templates for HND courses.")
+    if datetime.now().date() < c_ss.ca_deadline:
         for d in data1:
             if d.course.level == "HND1" or d.course.level == "HND2":
                 data2.append(d)
     else:
+        messages.success(request,"Deadline to Submit CA Results for HND has passed.")
+    
+    if datetime.now().date() < c_ss.ca_deadline_btech:
         for d in data1:
-            data2.append(d)
+            if d.course.level == "BTECH":
+                data2.append(d)
+    else:
+        messages.success(request,"Deadline to Submit CA Results for BTECH has passed.")
+    
+    if datetime.now().date() < c_ss.ca_deadline_masters:
+        for d in data1:
+            if d.course.level == "M1" or d.course.level == "M2":
+                data2.append(d)
+    else:
+        messages.success(request,"Deadline to Submit CA Results for Masters has passed.")
+    
 
     data = []
     for d in data2:
@@ -1295,19 +1349,31 @@ def extract_temp_exam(request):
     disabled = ""
     data2 = []
     from datetime import datetime
-    if datetime.now().date() > c_ss.result_deadline and datetime.now().date() > c_ss.result_deadline_btech:
+    if datetime.now().date() > c_ss.result_deadline and datetime.now().date() > c_ss.result_deadline_btech and datetime.now().date() > c_ss.result_deadline_masters:
         print(True)
 
         disabled = "disabled"
-        messages.success(request,"Deadline to Submit Exam Results for both HND And BTECH  has passed. You can't download any templates anymore.")
-    elif datetime.now().date() < c_ss.result_deadline and datetime.now().date() > c_ss.result_deadline_btech:
-        messages.success(request,"Deadline to Submit Exam Results for BTECH has passed. You can only download templates for HND courses.")
+    if datetime.now().date() < c_ss.result_deadline:
         for d in data1:
             if d.course.level == "HND1" or d.course.level == "HND2":
                 data2.append(d)
     else:
+        messages.success(request,"Deadline to Submit Exam Results for HND has passed.")
+    
+    if datetime.now().date() < c_ss.result_deadline_btech:
         for d in data1:
-            data2.append(d)
+            if d.course.level == "BTECH":
+                data2.append(d)
+    else:
+        messages.success(request,"Deadline to Submit Exam Results for BTECH has passed.")
+    
+    if datetime.now().date() < c_ss.result_deadline_masters:
+        for d in data1:
+            if d.course.level == "M1" or d.course.level == "M2":
+                data2.append(d)
+    else:
+        messages.success(request,"Deadline to Submit Exam Results for Masters has passed.")
+    
 
     data = []
     for d in data2:
@@ -1372,7 +1438,7 @@ def extract_res_stat(request):
 
     ss = SemesterSession.objects.all()
     depts = Dept.objects.all()
-    levs = ['HND1','HND2','BTECH','MBA','MSC']
+    levs = ['HND1','HND2','BTECH','M1','M2']
 
 
     context={'sems':ss, 'depts': depts, 'levs': levs} 
@@ -1387,7 +1453,7 @@ def extract_res_stat(request):
         if not res:
             messages.success(request, "No results.")
         else:
-            fields = ['Course Code', 'Course Title', 'Credit Value', 'Course Instructor', 'Registered', 'Examined', 'Passed', 'Failed', '% Passed']
+            fields = ['Course Code', 'Course Title', 'Credit Value', 'Course Instructor', 'Registered', 'Examined', 'Passed', 'Failed', '% Passed','A','B+','B','C+','C','D+','D','F']
 
             codes = []
             titles = [] 
@@ -1398,6 +1464,14 @@ def extract_res_stat(request):
             passed = []
             failed = []
             per_passed = []
+            As = []
+            Bps = []
+            Bs = []
+            Cps = []
+            Cs = []
+            Dps = []
+            Ds = []
+            Fs = []
 
             for r in res:
                 if r.course_code.course_code in codes:
@@ -1408,12 +1482,48 @@ def extract_res_stat(request):
                     creditvs.append(r.course_code.credit)
                     instructors.append(AssignedTeacher2.objects.filter(dept = dept, course = r.course_code).first().teacher)
                     reg.append(RegisterTable.objects.filter(sem_ses = sem, dept = dept, subject = r.course_code).all().count())
-                    ex = res.filter(course_code = r.course_code).count()
-                    examd.append(ex)
+                    ex = res.filter(course_code = r.course_code).all()
+                    A = 0
+                    Bp = 0
+                    B = 0
+                    Cp = 0
+                    C = 0
+                    Dp = 0
+                    D = 0
+                    F = 0
+                    for r in ex:
+                        grade = cal_cgname(cal_cg(r.total))
+                        if grade == 'A':
+                            A+=1
+                        elif grade == 'B+':
+                            Bp+=1
+                        elif grade == 'B':
+                            B+=1
+                        elif grade == 'C+':
+                            Cp+=1
+                        elif grade == 'C':
+                            C+=1
+                        elif grade == 'D+':
+                            Dp+=1
+                        elif grade == 'D':
+                            D+=1
+                        else:
+                            F+=1
+                    As.append(A)
+                    Bps.append(Bp)
+                    Bs.append(B)
+                    Cps.append(Cp)
+                    Cs.append(C)
+                    Dps.append(Dp)
+                    Ds.append(D)
+                    Fs.append(F)
+
+                    examd.append(ex.count())
                     psd = res.filter(course_code = r.course_code, total__gte = 10).all().count()
                     passed.append(psd)
                     failed.append(res.filter(course_code = r.course_code, total__lt = 10).all().count())
-                    per_passed.append(round((psd / ex )*100,2))
+                    per_passed.append(round((psd / ex.count() )*100,2))
+                
 
             wb_name = 'Results_Stats_' + str(dept) + '_' + str(lev) + '_' + str(sem) + '.xlsx'
 
@@ -1432,7 +1542,7 @@ def extract_res_stat(request):
 
             r2 = 2
             c2 = 0
-            for (c,t,cv,i,r,e,p,fd,pp) in zip(codes, titles, creditvs, instructors, reg, examd, passed, failed, per_passed):
+            for (c,t,cv,i,r,e,p,fd,pp,a,bp,b,cp,ce,dp,d,ef) in zip(codes, titles, creditvs, instructors, reg, examd, passed, failed, per_passed,As,Bps,Bs,Cps,Cs,Dps,Ds,Fs):
                 ws.write(r2, c2, str(c))
                 ws.write(r2, c2 + 1, str(t))
                 ws.write(r2, c2 + 2, cv)
@@ -1442,6 +1552,15 @@ def extract_res_stat(request):
                 ws.write(r2, c2 + 6, p)
                 ws.write(r2, c2 + 7, fd)
                 ws.write(r2, c2 + 8, pp)
+                ws.write(r2, c2 + 9, a)
+                ws.write(r2, c2 + 10, bp)
+                ws.write(r2, c2 + 11, b)
+                ws.write(r2, c2 + 12, cp)
+                ws.write(r2, c2 + 13, ce)
+                ws.write(r2, c2 + 14, dp)
+                ws.write(r2, c2 + 15, d)
+                ws.write(r2, c2 + 16,ef)
+                
                 r2+=1
 
             r2+=2
@@ -1483,20 +1602,31 @@ def add_excel(request):
     disabled = ""
     data2 = []
     from datetime import datetime
-    if datetime.now().date() > c_ss.ca_deadline and datetime.now().date() > c_ss.ca_deadline_btech:
+    if datetime.now().date() > c_ss.ca_deadline and datetime.now().date() > c_ss.ca_deadline_btech and datetime.now().date() > c_ss.ca_deadline_masters:
         print(True)
 
         disabled = "disabled"
-        messages.success(request,"Deadline to Submit CA Results for both HND And BTECH  has passed. You can't upload anymore.")
-    elif datetime.now().date() < c_ss.ca_deadline and datetime.now().date() > c_ss.ca_deadline_btech:
-        messages.success(request,"Deadline to Submit CA Results for BTECH has passed. You can only upload results for HND courses.")
+    if datetime.now().date() < c_ss.ca_deadline:
         for d in data1:
             if d.course.level == "HND1" or d.course.level == "HND2":
                 data2.append(d)
     else:
+        messages.success(request,"Deadline to Submit CA Results for HND has passed.")
+    
+    if datetime.now().date() < c_ss.ca_deadline_btech:
         for d in data1:
-            data2.append(d)
-
+            if d.course.level == "BTECH":
+                data2.append(d)
+    else:
+        messages.success(request,"Deadline to Submit CA Results for BTECH has passed.")
+    
+    if datetime.now().date() < c_ss.ca_deadline_masters:
+        for d in data1:
+            if d.course.level == "M1" or d.course.level == "M2":
+                data2.append(d)
+    else:
+        messages.success(request,"Deadline to Submit CA Results for Masters has passed.")
+    
     data = []
     for d in data2:
         if d.course.semester == c_ss.semester :
@@ -1541,10 +1671,12 @@ def add_excel(request):
                 messages.success(request,"Student %s already has Result for %s course"% (excel_data[i][0], course_cd))
                 success = False
                 continue
-            except :
-                messages.success(request,"An error occured. You may have uploaded wrong file. Try again making sure you choose appropriate file. See platform admin if error persists")
+            except DataError:
+                messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
                 success = False
-                break
+            except ValueError:
+                messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
+                success = False
         
         if success:
             messages.success(request,"Successfully Added Results for %s course"% (course_cd))
@@ -1564,19 +1696,31 @@ def add_exam(request):
     disabled = ""
     data2 = []
     from datetime import datetime
-    if datetime.now().date() > c_ss.result_deadline and datetime.now().date() > c_ss.result_deadline_btech:
+    if datetime.now().date() > c_ss.result_deadline and datetime.now().date() > c_ss.result_deadline_btech and datetime.now().date() > c_ss.result_deadline_masters:
         print(True)
 
         disabled = "disabled"
-        messages.success(request,"Deadline to Submit Exam Results for both HND And BTECH  has passed. You can't upload results anymore.")
-    elif datetime.now().date() < c_ss.result_deadline and datetime.now().date() > c_ss.result_deadline_btech:
-        messages.success(request,"Deadline to Submit Exam Results for BTECH has passed. You can only upload results for HND courses.")
+    if datetime.now().date() < c_ss.result_deadline:
         for d in data1:
             if d.course.level == "HND1" or d.course.level == "HND2":
                 data2.append(d)
     else:
+        messages.success(request,"Deadline to Submit Exam Results for HND has passed.")
+    
+    if datetime.now().date() < c_ss.result_deadline_btech:
         for d in data1:
-            data2.append(d)
+            if d.course.level == "BTECH":
+                data2.append(d)
+    else:
+        messages.success(request,"Deadline to Submit Exam Results for BTECH has passed.")
+    
+    if datetime.now().date() < c_ss.result_deadline_masters:
+        for d in data1:
+            if d.course.level == "M1" or d.course.level == "M2":
+                data2.append(d)
+    else:
+        messages.success(request,"Deadline to Submit Exam Results for Masters has passed.")
+    
 
     data = []
     for d in data2:
@@ -1619,9 +1763,6 @@ def add_exam(request):
                 break
             except ValueError as e :
                 messages.success(request,"The following error occured %s You may have uploaded wrong file. Make sure you have uploaded the appropriate file and try again. If error persists see platform administrator."% (e))
-                break
-            except:
-                messages.success(request,"An error occured. You may have uploaded wrong file. Make sure you have uploaded the appropriate file and try again. If error persists see platform administrator.")
                 break
         if success:
             messages.success(request,"Successfully Added Results for %s course"% (course_cd))
@@ -1683,14 +1824,73 @@ def add_students(request):
             except IntegrityError:
                 messages.success(request,"User with given username already exists or Student with given registration number already exists")
                 continue
-            except :
-                messages.success(request, "An error occured. You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
-                break
+            except DataError:
+                messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
+                return redirect('home')
+            except ValueError:
+                messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
+                return redirect('home')
 
         
         return redirect('home') 
     return render(request,'student_template/add_students.html',context)  
 
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])         
+def reupload_results(request):
+    ss = SemesterSession.objects.filter(active ='Yes').first()
+    depts = Dept.objects.all()
+    levs = ['HND1','HND2','BTECH','M1','M2']
+
+
+    context={ 'depts': depts, 'levs': levs} 
+
+    if request.method == 'POST' and request.FILES['myfile']:
+        myfile = request.FILES['myfile']
+        dept_id = request.POST.get('dept')
+        dept = Dept.objects.filter(dept_id = dept_id).first()
+        level = request.POST.get('level')
+
+        print(dept.dept_id)
+
+        try:
+            wb = openpyxl.load_workbook(myfile)
+            ws = wb["Sheet1"]
+            print(ws)
+
+            excel_data = []
+
+            for r in ws.iter_rows():
+                row_data = []
+                for cell in r:
+                    row_data.append(str(cell.value))
+                excel_data.append(row_data)
+            
+            print(excel_data)
+
+            subjects = Subject.objects.filter(dept = dept_id, level = level).all()
+            print(subjects)
+
+
+            for i in range(1, len(excel_data)):
+                j=4
+                while j < subjects.count() + 4:
+                    for s in subjects:
+                        Result.objects.filter(sem_ses = ss, student = excel_data[i][0], level = level, course_code = s ).update(term_test = excel_data[i][j])
+                        j+=1
+            
+            return redirect('home') 
+        except OSError:
+            messages.success(request, "An error occured.Please Upload an excel file. If error persists contact platform admin.")
+            return redirect('home')
+        except DataError:
+            messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
+            return redirect('home')
+        except ValueError:
+            messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
+            return redirect('home')
+                
+    return render(request,'admin_template/reupload_results.html',context)  
 
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['admin'])
@@ -1910,6 +2110,48 @@ def promote_stud2(request, dept, lev):
 
     return render(request, 'admin_template/promote_stud2.html', context)
 
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
+def block_stud(request):
+    data1 = Student.objects.all()
+    
+    context = {'studs' : data1}
+
+    if request.method == 'POST':
+        stud = request.POST.get('stud')
+        
+        student = Student.objects.filter(registration_number = stud).first()
+        student.user.is_active = False 
+        student.user.save()
+        student.save()
+
+        messages.success(request,"Student:  " + student.name + " blocked. The student can no more access his account. ")
+    
+    return render(request,'admin_template/block_stud.html', context)
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])
+def unblock_stud(request):
+    data1 = Student.objects.all()
+    studs = []
+    for s in data1:
+        if s.user.is_active == False:
+            studs.append(s)
+    
+    context = {'studs' : studs}
+
+    if request.method == 'POST':
+        stud = request.POST.get('stud')
+        
+        student = Student.objects.filter(registration_number = stud).first()
+        student.user.is_active = True
+        student.user.save()
+        student.save()
+
+        messages.success(request,"Student:  " + student.name + " unblocked. The student can now access his account again. ")
+
+    return render(request,'admin_template/unblock_stud.html', context)
+
 
 
 #--------------------------------------------------------###### ADD END #######---------------------------------------------------------
@@ -1918,12 +2160,21 @@ def promote_stud2(request, dept, lev):
 
 def student_sub_register(request):
     dept_name = request.user.student.dept
+    deg = request.user.student.degree_pursued.deg_id
     regi = request.user.student
     sem = SemesterSession.objects.filter(active = 'Yes').first()
+    print(deg)
+    if deg == "HND":
+        sub = "HND"
+    elif deg == "BTECH":
+        sub = "DEGREE"
+    else:
+        sub = "MASTER"
 
     lev = str(request.user.student.level)
+    print(sub)
 
-    data = Subject.objects.filter(dept= dept_name, level = lev, semester = sem.semester)
+    data = Subject.objects.filter(dept= dept_name, subtype = sub)
 
     for i in data:
         ctt = RegisterTable.objects.filter(subject_id = i.course_code, student = regi, sem_ses = sem).first()
@@ -1931,7 +2182,7 @@ def student_sub_register(request):
         if ctt != None:
             i.subject_name = i.subject_name + "-->Already Registered."
             
-    context = {'data':data}
+    context = {'data':data, 'aca': sem.session}
 
     if request.method == "POST":
         course_cc = request.POST.get('course_regi')
@@ -2040,7 +2291,7 @@ def student_rating(request):
 
     context = { 'regi':regi,
                 'data':teachers,
-
+                'aca': c_ss.session,
     }
 
     return render(request, 'student_template/student_rating.html',context)
@@ -2148,18 +2399,25 @@ def extract_results(request):
     
     data = Dept.objects.all()
 
-    context={'dept':data, 'level': ['HND1', 'HND2', 'BTECH','MBA','MSC']} 
+    context={'dept':data, 'level': ['HND1', 'HND2', 'BTECH','M1','M2']} 
 
     if request.method == 'POST':
         dept_id = request.POST.get('dept')
         level = request.POST.get('level')
 
+        files = []
+        f_names = []
         matricules = []
         names = []
         dobs = []
         pobs = []
         fields = ["Matricule", "Names", "Date of Birth", "Place of Birth"]
         f_results = []
+        ca_results = []
+        exam_results = []
+
+        zip_name = 'Results_' + str(dept_id) + '_' + str(level) + '.zip'
+
 
         students = Student.objects.filter(dept = dept_id, level = level).all()
         print(students)
@@ -2176,18 +2434,28 @@ def extract_results(request):
             fields.append(s.subject_name)
 
             res = []
+            ca = []
+            exam = []
             results = Result.objects.filter(course_code = s.course_code).all()
             for r in results:
-                if level == "HND1" or level = "HND2":
+                if level == "HND1" or level == "HND2":
                     res.append(r.total)
                 else:
                     res.append(r.total*5)
+                ca.append(r.theory_marks)
+                exam.append(r.term_test)
             if len(res) > 0 :
                 f_results.append(res)
+            if len(ca) > 0 :
+                ca_results.append(ca)
+            if len(exam) > 0 :
+                exam_results.append(exam)
 
-        print(f_results)    
+        print(f_results)
+        print(ca_results)
+        print(exam_results)    
 
-        wb_name = 'Results_' + str(dept_id) + '_' + str(level) + '.xlsx'
+        wb_name = 'Combined_Results_' + str(dept_id) + '_' + str(level) + '.xlsx'
 
         output = io.BytesIO()
         wb = xlsxwriter.Workbook(output)
@@ -2223,15 +2491,104 @@ def extract_results(request):
 
         wb.close()
         
-        output.seek(0)
+        files.append(output.getvalue())
+        f_names.append(wb_name)
 
-        response = HttpResponse(
-            output,
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
-        response["Content-Disposition"] = "attachment; filename=%s" % wb_name
+        wb_name = 'CA_Results_' + str(dept_id) + '_' + str(level) + '.xlsx'
 
-        return response
+        output = io.BytesIO()
+        wb = xlsxwriter.Workbook(output)
+        ws = wb.add_worksheet('Sheet1')
+        
+        r1 = 0
+        c1 = 0
+
+        for f in fields:
+            ws.write(r1, c1, f)
+            c1+=1
+        r2 = 1
+        c2 = 0
+
+        for (m, n, d, p ) in zip(matricules, names, dobs, pobs):
+            ws.write(r2, c2, str(m))
+            ws.write(r2,c2 + 1, str(n))
+            ws.write(r2,c2 + 2, str(d))
+            ws.write(r2,c2 + 3, str(p))
+            r2+=1
+
+        
+        c3 = 4
+        if len(ca_results) > 0 :
+            for i in range(0, len(ca_results)):
+                r3 = 1
+                for j in range(0, len(matricules)):
+                    ws.write(r3,c3, ca_results[i][j])
+                    r3+=1
+                c3+=1
+        
+
+
+        wb.close()
+        
+        files.append(output.getvalue())
+        f_names.append(wb_name)
+
+        wb_name = 'Exam_Results_' + str(dept_id) + '_' + str(level) + '.xlsx'
+
+        output = io.BytesIO()
+        wb = xlsxwriter.Workbook(output)
+        ws = wb.add_worksheet('Sheet1')
+        
+        r1 = 0
+        c1 = 0
+
+        for f in fields:
+            ws.write(r1, c1, f)
+            c1+=1
+        r2 = 1
+        c2 = 0
+
+        for (m, n, d, p ) in zip(matricules, names, dobs, pobs):
+            ws.write(r2, c2, str(m))
+            ws.write(r2,c2 + 1, str(n))
+            ws.write(r2,c2 + 2, str(d))
+            ws.write(r2,c2 + 3, str(p))
+            r2+=1
+
+        
+        c3 = 4
+        if len(exam_results) > 0 :
+            for i in range(0, len(exam_results)):
+                r3 = 1
+                for j in range(0, len(matricules)):
+                    ws.write(r3,c3, exam_results[i][j])
+                    r3+=1
+                c3+=1
+        
+
+
+        wb.close()
+        
+        files.append(output.getvalue())
+        f_names.append(wb_name)
+
+        if len(files) > 1:
+            import zipfile
+            output = io.BytesIO()
+            with zipfile.ZipFile(output, 'w') as zf:
+                for n,p in zip(f_names, files):
+                    zf.writestr(n,p)
+                zf.close()
+
+            response = HttpResponse(
+            output.getvalue(),
+                content_type="application/x-zip-compressed",
+            )
+            response["Content-Disposition"] = "attachment; filename=" + zip_name
+                    
+                    # rendering the template
+            return response
+
 
     return render(request,'admin_template/extract_results.html',context)
 
@@ -2274,10 +2631,6 @@ def generate_codes(request):
                 messages.success(request,"Student %s already has a code for this course. "%(stud.student.name))
                 success = True
                 continue
-            except:
-                messages.success(request,"An error occured.")
-                success =  False
-                break
         if success:    
             messages.success(request,"Successfully Generated Codes For Course ")
 
@@ -2479,18 +2832,43 @@ def change_pwd(request):
 
 @login_required(login_url = 'login')
 def stud_update_info(request):
+    user = request.user.student.user
+    u =  get_object_or_404(User, username = user.username )
     stud = request.user.student
     student = get_object_or_404(Student, registration_number = stud.registration_number )
     form = StudentUpdateForm(request.POST or None, instance = student)
 
-    context = {'form': form}
+    c_ss = SemesterSession.objects.filter(active = "Yes").first()
+    context = {'form': form, 'aca': c_ss.session, 'email': user.email}
 
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        if form.is_valid() :
+            u.username = email
+            u.email = email
+            u.save()
+            form.save()
+            student.save()
+
+            messages.info(request,"Info Successfully Updated! Your username is now the entered email.")
+            return redirect('home')
+    
+    return render(request, 'student_template/update_info.html', context)
+
+@login_required(login_url="login")
+@allowed_users(allowed_roles=['admin'])
+def sem_update(request):
+    c_ss = SemesterSession.objects.filter(active = 'Yes').first()
+    sem = get_object_or_404(SemesterSession,ss_id = c_ss.ss_id)
+    form = SSUpdateForm(request.POST or None, instance = sem)
+
+    context = {"form": form}
     if request.method == 'POST':
         if form.is_valid():
             form.save()
-            student.save()
+            sem.save()
 
             messages.info(request,"Info Successfully Updated!")
             return redirect('home')
     
-    return render(request, 'student_template/update_info.html', context)
+    return render(request, 'admin_template/update_sem_info.html', context)

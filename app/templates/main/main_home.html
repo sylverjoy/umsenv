@@ -154,6 +154,12 @@
                   <span class="menu-title">Set Active Semester </span>
                 </a>
               </li>
+              <li class="dropdown-item">
+                <a class="nav-link" href="{% url 'update_sem_info' %}">
+                  <i class="ti-briefcase menu-icon"></i>
+                  <span class="menu-title">Update Semester Info </span>
+                </a>
+              </li>
             </ul>
             
           </li>
@@ -170,6 +176,18 @@
                 <a class="nav-link" href="{% url 'promote_student' %}">
                   <i class="icon-plus menu-icon"></i>
                   <span class="menu-title">Promote Student</span>
+                </a>
+              </li>
+              <li class="dropdown-item">
+                <a class="nav-link" href="{% url 'block_student' %}">
+                  <i class="icon-plus menu-icon"></i>
+                  <span class="menu-title">Block Student</span>
+                </a>
+              </li>
+              <li class="dropdown-item">
+                <a class="nav-link" href="{% url 'unblock_student' %}">
+                  <i class="icon-plus menu-icon"></i>
+                  <span class="menu-title">Unblock Student</span>
                 </a>
               </li>
             </ul>
@@ -236,6 +254,12 @@
               <a class="nav-link" href="{% url 'extract_results' %}">   
                 <i class="ti-export menu-icon"></i>
                 <span class="menu-title">Extract Results</span>
+              </a>
+            </li>
+            <li class="dropdown-item">
+              <a class="nav-link" href="{% url 'reupload_results' %}">   
+                <i class="ti-export menu-icon"></i>
+                <span class="menu-title">Re-Upload Exam Results</span>
               </a>
             </li>
             </ul>
