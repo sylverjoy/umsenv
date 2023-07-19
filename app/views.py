@@ -529,6 +529,74 @@ def getting_students_json():
     
     return json_res
 
+def getting_courses_json():
+    Subs = Subject.objects.all().order_by('dep', 'level', 'subject_name')
+
+    attr = [] 
+    attr.append("Course_Code")
+    attr.append("Name")
+    attr.append('Department')
+    attr.append("Level")
+    attr.append("Credit")
+    attr.append("Lecturer")
+
+    json_res = []
+    for sub in Subs:
+        obj = {}
+        obj[attr[0]] = sub.course_code
+        obj[attr[1]] = sub.subject_name
+        obj[attr[2]] = sub.dep
+        obj[attr[3]] = sub.level
+        obj[attr[4]] = sub.credit
+        ass = AssignedTeacher2.objects.filter(course = sub).first()
+        if ass is not None:
+            obj[attr[5]] = ass.teacher.name
+        else:
+            obj[attr[5]] = " "
+        json_res.append(obj)
+    
+    return json_res
+
+def getting_lecturers_json():
+    Lects = Teacher.objects.all().order_by('name')
+
+    attr = [] 
+    attr.append("Name")
+    attr.append('N_Courses')
+    attr.append("Courses")
+
+    json_res = []
+    for lect in Lects:
+        obj = {}
+        obj[attr[0]] = lect.name
+        obj[attr[1]] = AssignedTeacher2.objects.filter(teacher = lect).all().count()
+        obj[attr[2]] = ""
+        for ass in AssignedTeacher2.objects.filter(teacher = lect).all():
+            obj[attr[2]]+= ass.course.subject_name + '<p></p>'
+        json_res.append(obj)
+    
+    return json_res
+
+def getting_schools_json():
+    Schools = School.objects.all().order_by('name')
+
+    attr = [] 
+    attr.append("Name")
+    attr.append('N_Depts')
+    attr.append("Depts")
+
+    json_res = []
+    for sch in Schools:
+        obj = {}
+        obj[attr[0]] = sch.name
+        obj[attr[1]] = Dept.objects.filter(school = sch).all().count()
+        obj[attr[2]] = ""
+        for dep in Dept.objects.filter(school = sch).all():
+            obj[attr[2]]+= dep.name + '<p></p> '
+        json_res.append(obj)
+    
+    return json_res
+
 def teacher_subject_list(request):
 
 
@@ -561,6 +629,21 @@ def get_all_the_marks(request, *args, **kwargs):
 @login_required(login_url = 'login')
 def get_all_the_students(request, *args, **kwargs):
     json_res = getting_students_json()
+    return JsonResponse(json_res, safe = False)
+
+@login_required(login_url = 'login')
+def get_all_the_courses(request, *args, **kwargs):
+    json_res = getting_courses_json()
+    return JsonResponse(json_res, safe = False)
+
+@login_required(login_url = 'login')
+def get_all_the_lecturers(request, *args, **kwargs):
+    json_res = getting_lecturers_json()
+    return JsonResponse(json_res, safe = False)
+
+@login_required(login_url = 'login')
+def get_all_the_schools(request, *args, **kwargs):
+    json_res = getting_schools_json()
     return JsonResponse(json_res, safe = False)
 
 def see_registration_status(request, *args, **kwargs):
@@ -603,6 +686,17 @@ def full_marksheet(request):
 def all_students(request):
     return render(request,'admin_template/view_studs.html')
 
+@login_required(login_url = 'login')
+def all_lecturers(request):
+    return render(request,'admin_template/view_lecturers.html')
+
+@login_required(login_url = 'login')
+def all_courses(request):
+    return render(request,'admin_template/view_courses.html')
+
+@login_required(login_url = 'login')
+def all_schools(request):
+    return render(request,'admin_template/view_schools.html')
 
 @login_required(login_url = 'login')
 def full_skillset(request):
@@ -1878,7 +1972,7 @@ def reupload_results(request):
                     for s in subjects:
                         Result.objects.filter(sem_ses = ss, student = excel_data[i][0], level = level, course_code = s ).update(term_test = excel_data[i][j])
                         j+=1
-            
+            messages.success(request, "Succesfully reuploaded results.")
             return redirect('home') 
         except OSError:
             messages.success(request, "An error occured.Please Upload an excel file. If error persists contact platform admin.")
@@ -2069,7 +2163,7 @@ def change_stud_dept(request):
 def promote_stud(request):
     data1 = Dept.objects.all()
     
-    data2 = ['HND1','HND2','BTECH','MBA','MSC']
+    data2 = ['HND1','HND2','BTECH','M1','M2']
 
 
     context = {'depts' : data1, 'levs': data2}
@@ -2089,7 +2183,7 @@ def promote_stud(request):
 @allowed_users(allowed_roles=['admin'])
 def promote_stud2(request, dept, lev):
     studs = Student.objects.filter(dept_id = dept, level = lev).all()
-    data2 = ['HND1','HND2','BTECH','MBA','MSC']
+    data2 = ['HND1','HND2','BTECH','M1','M2']
 
     context = {"studs": studs, 'levs': data2, 'lev': lev, 'dept': dept}
 
@@ -2099,6 +2193,11 @@ def promote_stud2(request, dept, lev):
         if lev == 'BTECH':
             for stud in studs:
                 deg = Degree.objects.filter(deg_id = lev).first()
+                Student.objects.filter(registration_number = stud).update(degree_pursued = deg)
+                Student.objects.filter(registration_number = stud).update(level = lev)
+        elif lev == 'M1' or lev == 'M2':
+            for stud in studs:
+                deg = Degree.objects.filter(deg_id = 'MSC').first()
                 Student.objects.filter(registration_number = stud).update(degree_pursued = deg)
                 Student.objects.filter(registration_number = stud).update(level = lev)
         else :

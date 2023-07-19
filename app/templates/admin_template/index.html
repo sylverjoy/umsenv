@@ -38,10 +38,12 @@
       </div>
       <div class="col-md-6 mb-4 stretch-card transparent">
         <div class="card card-dark-blue">
+          <a href="{% url 'all_lecturers' %}" style="color:white;">
           <div class="card-body">
             <p class="mb-4">Total Lecturers</p>
             <p class="fs-30 mb-2">{{teacher}}</p>
           </div>
+        </a>
         </div>
       </div>
     </div>
@@ -57,10 +59,12 @@
       </div>
       <div class="col-md-6 stretch-card transparent">
         <div class="card card-light-danger">
+          <a href="{% url 'all_courses' %}" style="color:white;">
           <div class="card-body">
             <p class="mb-4">Total courses</p>
             <p class="fs-30 mb-2">{{sub_cnt}}</p>
           </div>
+        </a>
         </div>
       </div>
     </div>
@@ -83,10 +87,12 @@
       </div>
       <div class="col-md-6 mb-4 stretch-card transparent">
         <div class="card card-dark-blue">
+          <a href="{% url 'all_schools' %}" style="color:white;">
           <div class="card-body">
             <p class="mb-4">Total Schools</p>
             <p class="fs-30 mb-2">{{school}}</p>
           </div>
+        </a>
         </div>
       </div>
     </div>

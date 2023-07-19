@@ -57,7 +57,7 @@ class Student(models.Model):
     name = models.CharField(max_length= 200, null= True)
     phone = models.CharField(max_length= 200, null = True)
     profile_pic = models.ImageField(null = True, blank = True, default= 'profile.jpg')
-    level = models.CharField(max_length= 200, null= True, choices= [('HND1', 'HND1'), ('HND2', 'HND2'), ('BTECH', 'BTECH')  ])
+    level = models.CharField(max_length= 200, null= True, choices= [('HND1', 'HND1'), ('HND2', 'HND2'), ('BTECH', 'BTECH'), ('M1', 'M1'), ('M2', 'M2')])
     dob = models.DateField(null = True, blank = True)
     pob = models.CharField(max_length= 200, null= True)
     
