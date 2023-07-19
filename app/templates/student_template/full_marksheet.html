@@ -7,7 +7,7 @@
           <div class="card-body">
             <div class="d-flex justify-content-between">
               <p class="card-title">Complete Marksheet</p>
-              <a href="{% url 'generate_pdf' %}" class="text-info">Download Marksheet</a>
+              <a href="{% url 'generate_trans' ay=aca %}" class="text-info" style="pointer-events: {{pe}};">Download Marksheet</a>
             </div>
 
             <p class="card-description">
@@ -36,9 +36,9 @@
                       <th data-field="total">
                         Final Mark
                       </th>
-                      <!--th data-field="cgpa">
+                      <th data-field="cgpa">
                         Grade
-                      </th-->
+                      </th>
                     </tr>
                   </thead>
                 </table>

@@ -237,15 +237,44 @@ class SSForm(ModelForm):
         self.fields['ca_deadline'].widget.attrs['placeholder'] = "Deadline for teachers to submit HND CAs in format yyyy-mm-dd"
         self.fields['ca_deadline_btech'].widget.attrs['class'] = 'form-control'
         self.fields['ca_deadline_btech'].widget.attrs['placeholder'] = "Deadline for teachers to submit BTECH CAs in format yyyy-mm-dd"
+        self.fields['ca_deadline_masters'].widget.attrs['class'] = 'form-control'
+        self.fields['ca_deadline_masters'].widget.attrs['placeholder'] = "Deadline for teachers to submit Masters CAs in format yyyy-mm-dd"
         self.fields['result_deadline'].widget.attrs['class'] = 'form-control'
         self.fields['result_deadline'].widget.attrs['placeholder'] = "Deadline for teachers to submit HND Exams in format yyyy-mm-dd"
         self.fields['result_deadline_btech'].widget.attrs['class'] = 'form-control'
-        self.fields['result_deadline_btech'].widget.attrs['placeholder'] = "Deadline for teachers to submit CAs in format yyyy-mm-dd"
+        self.fields['result_deadline_btech'].widget.attrs['placeholder'] = "Deadline for teachers to submit BTECH Exams in format yyyy-mm-dd"
+        self.fields['result_deadline_masters'].widget.attrs['class'] = 'form-control'
+        self.fields['result_deadline_masters'].widget.attrs['placeholder'] = "Deadline for teachers to submit Masters Exams in format yyyy-mm-dd"
+
     class Meta:
         model = SemesterSession
-        fields = ['session','semester','ss_id','semester_start','semester_end','ca_deadline','ca_deadline_btech','result_deadline','result_deadline_btech']
+        fields = ['session','semester','ss_id','semester_start','semester_end','ca_deadline','ca_deadline_btech','ca_deadline_masters','result_deadline','result_deadline_btech','result_deadline_masters']
 
-    
+
+class SSUpdateForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(SSUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['semester_start'].widget.attrs['class'] = 'form-control'
+        self.fields['semester_start'].widget.attrs['placeholder'] = "Semester Start  in format yyyy-mm-dd"
+        self.fields['semester_end'].widget.attrs['class'] = 'form-control'
+        self.fields['semester_end'].widget.attrs['placeholder'] = "Semester End  in format yyyy-mm-dd"
+        self.fields['ca_deadline'].widget.attrs['class'] = 'form-control'
+        self.fields['ca_deadline'].widget.attrs['placeholder'] = "Deadline for teachers to submit HND CAs in format yyyy-mm-dd"
+        self.fields['ca_deadline_btech'].widget.attrs['class'] = 'form-control'
+        self.fields['ca_deadline_btech'].widget.attrs['placeholder'] = "Deadline for teachers to submit BTECH CAs in format yyyy-mm-dd"
+        self.fields['ca_deadline_masters'].widget.attrs['class'] = 'form-control'
+        self.fields['ca_deadline_masters'].widget.attrs['placeholder'] = "Deadline for teachers to submit Masters CAs in format yyyy-mm-dd"
+        self.fields['result_deadline'].widget.attrs['class'] = 'form-control'
+        self.fields['result_deadline'].widget.attrs['placeholder'] = "Deadline for teachers to submit HND Exams in format yyyy-mm-dd"
+        self.fields['result_deadline_btech'].widget.attrs['class'] = 'form-control'
+        self.fields['result_deadline_btech'].widget.attrs['placeholder'] = "Deadline for teachers to submit BTECH Exams in format yyyy-mm-dd"
+        self.fields['result_deadline_masters'].widget.attrs['class'] = 'form-control'
+        self.fields['result_deadline_masters'].widget.attrs['placeholder'] = "Deadline for teachers to submit Masters Exams in format yyyy-mm-dd"
+    class Meta:
+        model = SemesterSession
+        fields = ['semester_start','semester_end','ca_deadline','ca_deadline_btech','ca_deadline_masters','result_deadline','result_deadline_btech','result_deadline_masters']
+
+
 
 
 

@@ -1,0 +1,76 @@
+{%extends 'main/main_home.html'%}
+{%block content%}
+<body>
+
+      <!-- partial -->
+
+            <div class="col-md-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Information Update </h4>
+                  <p class="card-description">
+                    Update semester information here 
+                  </p>
+                   
+                  <form action = "" method="POST" enctype="multipart/form-data" class="forms-sample">
+                    {% csrf_token %}
+                    <div class="form-group row">
+                      <label for="exampleInputUsername2" class="col-sm-3 col-form-label">Semester Start </label>
+                      <div class="col-sm-9">
+                        {{form.semester_start}}
+                  
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="exampleInputEmail2" class="col-sm-3 col-form-label">Semester End</label>
+                      <div class="col-sm-9">
+                        {{form.semester_end}}
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="exampleInputPassword2" class="col-sm-3 col-form-label">CA Deadline </label>
+                      <div class="col-sm-9">
+                        {{form.ca_deadline}}
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="exampleInputConfirmPassword2" class="col-sm-3 col-form-label">CA Deadline BTECH</label>
+                      <div class="col-sm-9">
+                        {{form.ca_deadline_btech}}
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="exampleInputConfirmPassword2" class="col-sm-3 col-form-label">CA Deadline Masters</label>
+                      <div class="col-sm-9">
+                        {{form.ca_deadline_masters}}
+                      </div>
+                    </div> 
+                    <div class="form-group row">
+                        <label for="exampleInputConfirmPassword2" class="col-sm-3 col-form-label">Result Deadline</label>
+                        <div class="col-sm-9">
+                          {{form.result_deadline}}
+                        </div>
+                      </div> 
+                      <div class="form-group row">
+                        <label for="exampleInputConfirmPassword2" class="col-sm-3 col-form-label">Result Deadline BTECH</label>
+                        <div class="col-sm-9">
+                          {{form.result_deadline_btech}}
+                        </div>
+                      </div> 
+                      <div class="form-group row">
+                        <label for="exampleInputConfirmPassword2" class="col-sm-3 col-form-label">Result Deadline Masters</label>
+                        <div class="col-sm-9">
+                          {{form.result_deadline_masters}}
+                        </div>
+                      </div>  
+                    </div>
+                    <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+
+        
+          {%endblock%}

@@ -28,6 +28,9 @@ urlpatterns = [
     path("search_student_registered/", views.search_student_registered, name = 'search_student_registered'),
     path("get_all_the_marks", views.get_all_the_marks, name = 'get_all_the_marks'),
     path("get_all_the_students", views.get_all_the_students, name = 'get_all_the_students'),
+    path("get_all_the_courses", views.get_all_the_courses, name = 'get_all_the_courses'),
+    path("get_all_the_lecturers", views.get_all_the_lecturers, name = 'get_all_the_lecturers'),
+    path("get_all_the_schools", views.get_all_the_schools, name = 'get_all_the_schools'),
     path('pdf/', views.GeneratePdf.as_view(),name ="generate_pdf"),
     path('my_trans/', views.my_trans,name ="my_trans"),
     path('my_trans/<ay>', views.GenerateTrans.as_view(),name ="generate_trans"),
@@ -60,13 +63,20 @@ urlpatterns = [
     path('transfer_student/', views.change_stud_dept,name ="transfer_student"),
     path('promote_student/', views.promote_stud,name ="promote_student"),
     path('promote_student/<dept>/<lev>', views.promote_stud2,name ="promote_student2"),
+    path('block_student/', views.block_stud,name ="block_student"),
+    path('unblock_student/', views.unblock_stud,name ="unblock_student"),
     path("all_students/",views.all_students, name ='all_students'),
+    path("all_lecturers/",views.all_lecturers, name ='all_lecturers'),
+    path("all_courses/",views.all_courses, name ='all_courses'),
+    path("all_schools/",views.all_schools, name ='all_schools'),
     path('extract_results/', views.extract_results,name ="extract_results"),
+    path('reupload_results/', views.reupload_results,name ="reupload_results"),
     path('generate_codes/', views.generate_codes,name ="generate_codes"),
     path('download_codes/', views.download_codes,name ="download_codes"),
     path('stats/', views.extract_res_stat,name ="stats"),
     path('password/', views.change_pwd,name ="password"),
-    path('updateinfo/', views.stud_update_info, name = "update_info")
+    path('updateinfo/', views.stud_update_info, name = "update_info"),
+    path('updateseminfo/', views.sem_update, name = "update_sem_info")
 
 
 ]
