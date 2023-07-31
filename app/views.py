@@ -2575,17 +2575,20 @@ def extract_results(request):
             ws.write(r2,c2 + 3, str(p))
             r2+=1
             
-            c3 = 4
-            try:
-                if len(f_results) > 0 :
-                    for i in range(0, len(f_results)):
-                        r3 = 1
-                        for j in range(0, len(matricules)):
+        c3 = 4
+        if len(f_results) > 0 :
+            for i in range(0, len(f_results)):
+                try:
+                    r3 = 1
+                    for j in range(0, len(matricules)):
+                        try:
                             ws.write(r3,c3, f_results[i][j])
                             r3+=1
-                        c3+=1
-            except IndexError:
-                continue
+                        except IndexError:
+                            continue
+                    c3+=1
+                except IndexError:
+                    continue
 
         wb.close()
         files.append(output.getvalue())
@@ -2612,17 +2615,20 @@ def extract_results(request):
             ws.write(r2,c2 + 3, str(p))
             r2+=1
             
-            c3 = 4
-            try:
-                if len(ca_results) > 0 :
-                    for i in range(0, len(ca_results)):
-                        r3 = 1
-                        for j in range(0, len(matricules)):
+        c3 = 4
+        if len(ca_results) > 0 :
+            for i in range(0, len(ca_results)):
+                try:
+                    r3 = 1
+                    for j in range(0, len(matricules)):
+                        try:
                             ws.write(r3,c3, ca_results[i][j])
                             r3+=1
-                        c3+=1
-            except IndexError:
-                continue
+                        except IndexError:
+                            continue
+                    c3+=1
+                except IndexError:
+                    continue
 
         wb.close()
         files.append(output.getvalue())
@@ -2649,17 +2655,20 @@ def extract_results(request):
             ws.write(r2,c2 + 3, str(p))
             r2+=1
             
-            c3 = 4
-            try:
-                if len(exam_results) > 0 :
-                    for i in range(0, len(exam_results)):
-                        r3 = 1
-                        for j in range(0, len(matricules)):
+        c3 = 4
+        if len(exam_results) > 0 :
+            for i in range(0, len(exam_results)):
+                try:
+                    r3 = 1
+                    for j in range(0, len(matricules)):
+                        try:
                             ws.write(r3,c3, exam_results[i][j])
                             r3+=1
-                        c3+=1
-            except IndexError:
-                continue
+                        except IndexError:
+                            continue
+                    c3+=1
+                except IndexError:
+                    continue
 
         wb.close()
         files.append(output.getvalue())
