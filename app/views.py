@@ -861,7 +861,7 @@ class GenerateTrans(View):
             program = stud.degree_pursued
             dob = stud.dob
             pob = stud.pob
-            data1 = Result.objects.filter(student = regi).all()
+            data1 = Result.objects.filter(student = regi).all().order_by('Course code')
 
             ay = str(self.ay)
 
@@ -2527,7 +2527,7 @@ def extract_results(request):
             dobs.append(r.dob)
             pobs.append(r.pob)
         
-        subjects = Subject.objects.filter(dept = dept_id, level = level).all()
+        subjects = Subject.objects.filter(dept = dept_id, level = level, semester = SemesterSession.objects.filter(active = 'Yes').first().semester).all().order_by('name')
         print(subjects)
         for s in subjects:
             fields.append(s.subject_name)
