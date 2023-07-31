@@ -2553,123 +2553,125 @@ def extract_results(request):
         print(f_results)
         print(ca_results)
         print(exam_results)    
-
-        wb_name = 'Combined_Results_' + str(dept_id) + '_' + str(level) + '.xlsx'
-
-        output = io.BytesIO()
-        wb = xlsxwriter.Workbook(output)
-        ws = wb.add_worksheet('Sheet1')
-        
-        r1 = 0
-        c1 = 0
-
-        for f in fields:
-            ws.write(r1, c1, f)
-            c1+=1
-        r2 = 1
-        c2 = 0
-
-        for (m, n, d, p ) in zip(matricules, names, dobs, pobs):
-            ws.write(r2, c2, str(m))
-            ws.write(r2,c2 + 1, str(n))
-            ws.write(r2,c2 + 2, str(d))
-            ws.write(r2,c2 + 3, str(p))
-            r2+=1
-
-        
-        c3 = 4
-        if len(f_results) > 0 :
-            for i in range(0, len(f_results)):
-                r3 = 1
-                for j in range(0, len(matricules)):
-                    ws.write(r3,c3, f_results[i][j])
-                    r3+=1
-                c3+=1
-        
-
-
-        wb.close()
-        
-        files.append(output.getvalue())
-        f_names.append(wb_name)
-
-        wb_name = 'CA_Results_' + str(dept_id) + '_' + str(level) + '.xlsx'
-
-        output = io.BytesIO()
-        wb = xlsxwriter.Workbook(output)
-        ws = wb.add_worksheet('Sheet1')
-        
-        r1 = 0
-        c1 = 0
-
-        for f in fields:
-            ws.write(r1, c1, f)
-            c1+=1
-        r2 = 1
-        c2 = 0
-
-        for (m, n, d, p ) in zip(matricules, names, dobs, pobs):
-            ws.write(r2, c2, str(m))
-            ws.write(r2,c2 + 1, str(n))
-            ws.write(r2,c2 + 2, str(d))
-            ws.write(r2,c2 + 3, str(p))
-            r2+=1
-
-        
-        c3 = 4
-        if len(ca_results) > 0 :
-            for i in range(0, len(ca_results)):
-                r3 = 1
-                for j in range(0, len(matricules)):
-                    ws.write(r3,c3, ca_results[i][j])
-                    r3+=1
-                c3+=1
-        
-
-
-        wb.close()
-        
-        files.append(output.getvalue())
-        f_names.append(wb_name)
-
-        wb_name = 'Exam_Results_' + str(dept_id) + '_' + str(level) + '.xlsx'
-
-        output = io.BytesIO()
-        wb = xlsxwriter.Workbook(output)
-        ws = wb.add_worksheet('Sheet1')
-        
-        r1 = 0
-        c1 = 0
-
-        for f in fields:
-            ws.write(r1, c1, f)
-            c1+=1
-        r2 = 1
-        c2 = 0
-
-        for (m, n, d, p ) in zip(matricules, names, dobs, pobs):
-            ws.write(r2, c2, str(m))
-            ws.write(r2,c2 + 1, str(n))
-            ws.write(r2,c2 + 2, str(d))
-            ws.write(r2,c2 + 3, str(p))
-            r2+=1
-
-        
-        c3 = 4
-        if len(exam_results) > 0 :
-            for i in range(0, len(exam_results)):
-                r3 = 1
-                for j in range(0, len(matricules)):
-                    ws.write(r3,c3, exam_results[i][j])
-                    r3+=1
-                c3+=1
-        
-
-
-        wb.close()
-        
-        files.append(output.getvalue())
-        f_names.append(wb_name)
+	try:
+	        wb_name = 'Combined_Results_' + str(dept_id) + '_' + str(level) + '.xlsx'
+	
+	        output = io.BytesIO()
+	        wb = xlsxwriter.Workbook(output)
+	        ws = wb.add_worksheet('Sheet1')
+	        
+	        r1 = 0
+	        c1 = 0
+	
+	        for f in fields:
+	            ws.write(r1, c1, f)
+	            c1+=1
+	        r2 = 1
+	        c2 = 0
+	
+	        for (m, n, d, p ) in zip(matricules, names, dobs, pobs):
+	            ws.write(r2, c2, str(m))
+	            ws.write(r2,c2 + 1, str(n))
+	            ws.write(r2,c2 + 2, str(d))
+	            ws.write(r2,c2 + 3, str(p))
+	            r2+=1
+	
+	        
+	        c3 = 4
+	        if len(f_results) > 0 :
+	            for i in range(0, len(f_results)):
+	                r3 = 1
+	                for j in range(0, len(matricules)):
+	                    ws.write(r3,c3, f_results[i][j])
+	                    r3+=1
+	                c3+=1
+	        
+	
+	
+	        wb.close()
+	        
+	        files.append(output.getvalue())
+	        f_names.append(wb_name)
+	
+	        wb_name = 'CA_Results_' + str(dept_id) + '_' + str(level) + '.xlsx'
+	
+	        output = io.BytesIO()
+	        wb = xlsxwriter.Workbook(output)
+	        ws = wb.add_worksheet('Sheet1')
+	        
+	        r1 = 0
+	        c1 = 0
+	
+	        for f in fields:
+	            ws.write(r1, c1, f)
+	            c1+=1
+	        r2 = 1
+	        c2 = 0
+	
+	        for (m, n, d, p ) in zip(matricules, names, dobs, pobs):
+	            ws.write(r2, c2, str(m))
+	            ws.write(r2,c2 + 1, str(n))
+	            ws.write(r2,c2 + 2, str(d))
+	            ws.write(r2,c2 + 3, str(p))
+	            r2+=1
+	
+	        
+	        c3 = 4
+	        if len(ca_results) > 0 :
+	            for i in range(0, len(ca_results)):
+	                r3 = 1
+	                for j in range(0, len(matricules)):
+	                    ws.write(r3,c3, ca_results[i][j])
+	                    r3+=1
+	                c3+=1
+	        
+	
+	
+	        wb.close()
+	        
+	        files.append(output.getvalue())
+	        f_names.append(wb_name)
+	
+	        wb_name = 'Exam_Results_' + str(dept_id) + '_' + str(level) + '.xlsx'
+	
+	        output = io.BytesIO()
+	        wb = xlsxwriter.Workbook(output)
+	        ws = wb.add_worksheet('Sheet1')
+	        
+	        r1 = 0
+	        c1 = 0
+	
+	        for f in fields:
+	            ws.write(r1, c1, f)
+	            c1+=1
+	        r2 = 1
+	        c2 = 0
+	
+	        for (m, n, d, p ) in zip(matricules, names, dobs, pobs):
+	            ws.write(r2, c2, str(m))
+	            ws.write(r2,c2 + 1, str(n))
+	            ws.write(r2,c2 + 2, str(d))
+	            ws.write(r2,c2 + 3, str(p))
+	            r2+=1
+	
+	        
+	        c3 = 4
+	        if len(exam_results) > 0 :
+	            for i in range(0, len(exam_results)):
+	                r3 = 1
+	                for j in range(0, len(matricules)):
+	                    ws.write(r3,c3, exam_results[i][j])
+	                    r3+=1
+	                c3+=1
+	        
+	
+	
+	        wb.close()
+	        
+	        files.append(output.getvalue())
+	        f_names.append(wb_name)
+	catch IndexError:
+	    continue
 
         if len(files) > 1:
             import zipfile
