@@ -2530,12 +2530,13 @@ def extract_results(request):
         subjects = Subject.objects.filter(dept = dept_id, level = level, semester = SemesterSession.objects.filter(active = 'Yes').first().semester).all().order_by('subject_name')
         print(subjects)
         for s in subjects:
-            fields.append(s.subject_name)
-
             res = []
             ca = []
             exam = []
-            results = Result.objects.filter(course_code = s.course_code).all()
+            res.append(s.subject_name)
+            ca.append(s.subject_name)
+            exam.append(s.subject_name)
+            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all()
             for r in results:
                 if level == "HND1" or level == "HND2":
                     res.append(r.total)
@@ -2579,8 +2580,8 @@ def extract_results(request):
         if len(f_results) > 0 :
             for i in range(0, len(f_results)):
                 try:
-                    r3 = 1
-                    for j in range(0, len(matricules)):
+                    r3 = 0
+                    for j in range(0, len(matricules)+1):
                         try:
                             ws.write(r3,c3, f_results[i][j])
                             r3+=1
@@ -2619,8 +2620,8 @@ def extract_results(request):
         if len(ca_results) > 0 :
             for i in range(0, len(ca_results)):
                 try:
-                    r3 = 1
-                    for j in range(0, len(matricules)):
+                    r3 = 0
+                    for j in range(0, len(matricules)+1):
                         try:
                             ws.write(r3,c3, ca_results[i][j])
                             r3+=1
@@ -2659,8 +2660,8 @@ def extract_results(request):
         if len(exam_results) > 0 :
             for i in range(0, len(exam_results)):
                 try:
-                    r3 = 1
-                    for j in range(0, len(matricules)):
+                    r3 = 0
+                    for j in range(0, len(matricules)+1):
                         try:
                             ws.write(r3,c3, exam_results[i][j])
                             r3+=1
