@@ -121,7 +121,7 @@ class RegisterTable(models.Model):
     def __str__(self):
         return str(self.student) + " - " + str(self.subject)
     class Meta:
-        unique_together = (("student","subject"))
+        unique_together = (("student","subject","sem_ses"))
 
 
 class Result(models.Model):
@@ -145,7 +145,7 @@ class Result(models.Model):
     def __str__(self):
         return str(self.student) + " - " + str(self.course_code)
     class Meta:
-        unique_together = (("student","course_code"))
+        unique_together = (("student","course_code","sem_ses"))
     
 
 class Rating(models.Model):
