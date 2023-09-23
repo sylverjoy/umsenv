@@ -274,7 +274,8 @@
         </tr>
       </tbody>
     </table>
-    <div style="display: {{display}};">
+    {% if display == "hidden" %}
+    <div>
       <h3 style="color: red;">RESIT SEMESTER</h3>
 
     <table class="styled-table" >
@@ -329,6 +330,7 @@
       </tbody>
     </table>
     </div>
+    {% endif %}
     <table class="styled-table">
         <tbody>
           <tr>
@@ -348,7 +350,7 @@
       </table>
 
     <h3 style="text-align: right; margin-right: 20px; margin-top: 20px;">REGISTRAR UBa</h3>
-{% if display == "None" %}
+{% if display == "hidden" %}
     <p>&nbsp;</p>
     <p>&nbsp;</p>
     <p>&nbsp;</p>

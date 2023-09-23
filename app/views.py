@@ -850,7 +850,7 @@ class GenerateTrans(View):
 
         pdfs = []
         names = []
-        resit_display = "None"
+        resit_display = "hidden"
         for stud in students:
 
             regi = stud.registration_number
@@ -994,7 +994,7 @@ class GenerateTrans(View):
                 wpt_resit = 0
                 gpt_resit = 0
                 if len(resits) > 0:
-                    resit_display = "block"
+                    resit_display = " "
                     cnt = 1
                     for s in resits:
                         count+=1
@@ -1977,9 +1977,9 @@ def reupload_results(request):
         except OSError:
             messages.success(request, "An error occured.Please Upload an excel file. If error persists contact platform admin.")
             return redirect('home')
-        except DataError:
-            messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
-            return redirect('home')
+        #except DataError:
+            #messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
+            #return redirect('home')
         except ValueError:
             messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
             return redirect('home')
