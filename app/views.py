@@ -851,6 +851,7 @@ class GenerateTrans(View):
         pdfs = []
         names = []
         resit_display = False
+
         for stud in students:
 
             regi = stud.registration_number
@@ -1092,7 +1093,7 @@ class GenerateTrans(View):
                                                                             'pob':pob,
                                                                             'head': head,
                                                                             'level': level,
-                                                                            'display':resit_display,
+                                                                            'display': resit_display,
                                                                             }))
 
                 # Converting the HTML template into a PDF file
