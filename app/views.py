@@ -850,7 +850,7 @@ class GenerateTrans(View):
 
         pdfs = []
         names = []
-        resit_display = "hidden"
+        resit_display = False
         for stud in students:
 
             regi = stud.registration_number
@@ -994,7 +994,7 @@ class GenerateTrans(View):
                 wpt_resit = 0
                 gpt_resit = 0
                 if len(resits) > 0:
-                    resit_display = " "
+                    resit_display = True
                     cnt = 1
                     for s in resits:
                         count+=1
