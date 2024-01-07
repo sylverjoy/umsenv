@@ -2539,12 +2539,32 @@ def extract_results(request):
             exam.append(s.subject_name)
             results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all()
             for r in results:
-                if level == "HND1" or level == "HND2":
-                    res.append(r.total)
-                else:
-                    res.append(r.total*5)
-                ca.append(r.theory_marks)
-                exam.append(r.term_test)
+                if r.resited == "No" :
+                    if r.total or r.total != None  :
+                        if level == "HND1" or level == "HND2":
+                            res.append(r.total)
+                        else:
+                            res.append(r.total*5)
+                    else :
+                        res.append(" ")
+                    if r.theory_marks or r.theory_marks != None :
+                        ca.append(r.theory_marks)
+                    else :
+                        ca.append(" ")
+                    if r.term_test or r.term_test != None :
+                        exam.append(r.term_test)
+                    else :
+                        exam.append(" ")
+                else :
+                    if level == "HND1" or level == "HND2":
+                        res.append(r.total)
+                        ca.append(r.theory_marks)
+                        exam.append(r.term_test)
+                    else:
+                        res.append(r.total_resit*5)
+                        ca.append(r.theory_marks)
+                        exam.append(r.term_test_resit)
+                        
             if len(res) > 0 :
                 f_results.append(res)
             if len(ca) > 0 :
@@ -2584,7 +2604,7 @@ def extract_results(request):
                     r3 = 0
                     for j in range(0, len(matricules)+1):
                         try:
-                            ws.write(r3,c3, f_results[i][j])
+                            ws.write(r3,c3, str(f_results[i][j]))
                             r3+=1
                         except IndexError:
                             continue
