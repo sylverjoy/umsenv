@@ -2083,6 +2083,50 @@ def setActiveSS(request):
     
         print(SemesterSession.objects.filter(active= "Yes").all())
 
+        # Register all students to various courses for the semester
+        students = Student.objects.all()
+        for stud in students:
+            deg = stud.degree_pursued.deg_id
+            lev = stud.level
+            dep = stud.dept
+
+            if deg == "HND":
+                sub = "HND"
+            elif deg == "BTECH":
+                sub = "DEGREE"
+            else:
+                sub = "MASTER"
+
+            courses = Subject.objects.filter(level = lev, subtype = sub, dept= dep, semester = sem.semester)
+
+            for c in courses:
+                check = RegisterTable.objects.filter(student = stud, subject = c, sem_ses = sem).first()
+                if check == None:
+                    
+                    ss = RegisterTable(
+                        sem_ses = sem,
+                        dept = dep,
+                        student = stud,
+                        subject = c
+                    )
+                    ss.save()
+
+                    tid = AssignedTeacher2.objects.filter(course_id = c.course_code).first().teacher.teacher_id
+
+                    print(tid)
+
+                    rr = Rating.objects.filter(student = stud , subject_id = c.course_code, teacher_id = tid).first()
+                    if rr == None:
+                        rate = Rating(
+                            student = stud,
+                            subject_id = c.course_code,
+                            teacher_id = tid,
+                        )
+                        rate.save()
+                    
+                else:
+                    continue
+
         return redirect('home')
     
     return render(request,'admin_template/set_active_ss.html', context)
