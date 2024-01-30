@@ -2103,7 +2103,7 @@ def setActiveSS(request):
             for c in courses:
                 check = RegisterTable.objects.filter(student = stud, subject = c, sem_ses = sem).first()
                 if check == None:
-                    
+                    print('registering student: ' + str(stud) + ' to course: ' + str(c.subject_name))
                     ss = RegisterTable(
                         sem_ses = sem,
                         dept = dep,
@@ -2125,9 +2125,11 @@ def setActiveSS(request):
                         )
                         rate.save()
                     else:
+                        print('Continuing loop because rating exist...')
                         continue
                     
                 else:
+                    print('Continuing loop because student already registered...')
                     continue
 
         return redirect('home')
