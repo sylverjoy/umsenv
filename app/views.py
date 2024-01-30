@@ -2085,6 +2085,7 @@ def setActiveSS(request):
 
         # Register all students to various courses for the semester
         students = Student.objects.all()
+        print(students)
         for stud in students:
             deg = stud.degree_pursued.deg_id
             lev = stud.level
@@ -2123,6 +2124,8 @@ def setActiveSS(request):
                             teacher_id = tid,
                         )
                         rate.save()
+                    else:
+                        continue
                     
                 else:
                     continue
