@@ -49,7 +49,7 @@ class Dept(models.Model):
     name = models.CharField(max_length= 200, null= True)
     UBa_Mentor_School = models.CharField(max_length = 200, null = True, choices= [('Faculty of Economics and Management Sciences (FEMS)', 'FEMS'), ('College of Technology (COLTECH)', 'COLTECH'), ('Faculty of Education (FED)', 'FED'), ('Higher Institute of Transport and Logistics (HITL)', 'HITL')],default = "Faculty of Economics and Management Sciences (FEMS)")
     def __str__(self):
-        return self.dept_id + ' - ' + self.name
+        return self.dept_id
     
 class Student(models.Model):
     user = models.OneToOneField(User, null = True, on_delete= models.CASCADE)
@@ -64,7 +64,7 @@ class Student(models.Model):
     pob = models.CharField(max_length= 200, null= True)
     
     def __str__(self):
-        return self.registration_number + " - " + str(self.name)
+        return self.registration_number
 
 class AdminUser(models.Model):
     user = models.OneToOneField(User, null = True, on_delete= models.CASCADE)
