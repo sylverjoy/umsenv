@@ -2125,10 +2125,10 @@ def setActiveSS(request):
                         )
                         rate.save()
                     else:
-                        pass
+                        continue
                     
                 else:
-                    pass
+                    continue
 
         return redirect('home')
     
