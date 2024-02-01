@@ -218,55 +218,61 @@ def home(request):
     if request.method == 'POST':
         # Register all students to various courses for the semester
         sem = SemesterSession.objects.filter(active= "Yes").first()
-        students = Student.objects.all()
-        print(students)
-        for stud in students:
-            print(stud)
-            deg = stud.degree_pursued.deg_id
-            lev = stud.level
-            dep = stud.dept
+        from django.core.paginator import Paginator
 
-            if deg == "HND":
-                sub = "HND"
-            elif deg == "BTECH":
-                sub = "DEGREE"
-            else:
-                sub = "MASTER"
+        queryset = Student.objects.all().order_by('registration_number')
+        paginator = Paginator(queryset, per_page=50) 
 
-            courses = Subject.objects.filter(level = lev, subtype = sub, dept= dep, semester = sem.semester)
+        # Iterate through pages
+        for page_num in range(1, paginator.num_pages + 1):
+            page = paginator.page(page_num)
+            for stud in page.object_list:
+                print(stud)
+                deg = stud.degree_pursued.deg_id
+                lev = stud.level
+                dep = stud.dept
 
-            for c in courses:
-                print(c)
-                check = RegisterTable.objects.filter(student = stud, subject = c, sem_ses = sem).first()
-                if check == None:
-                    print('registering student: ' + str(stud) + ' to course: ' + str(c.subject_name))
-                    ss = RegisterTable(
-                        sem_ses = sem,
-                        dept = dep,
-                        student = stud,
-                        subject = c
-                    )
-                    ss.save()
-
-                    tid = AssignedTeacher2.objects.filter(course_id = c.course_code).first().teacher.teacher_id
-
-                    print(tid)
-
-                    rr = Rating.objects.filter(student = stud , subject_id = c.course_code, teacher_id = tid).first()
-                    if rr == None:
-                        rate = Rating(
-                            student = stud,
-                            subject_id = c.course_code,
-                            teacher_id = tid,
-                        )
-                        rate.save()
-                    else:
-                        print('Continuing loop because rating exist...')
-                        continue
-                    
+                if deg == "HND":
+                    sub = "HND"
+                elif deg == "BTECH":
+                    sub = "DEGREE"
                 else:
-                    print('Continuing loop because student already registered...')
-                    continue
+                    sub = "MASTER"
+
+                courses = Subject.objects.filter(level = lev, subtype = sub, dept= dep, semester = sem.semester)
+
+                for c in courses:
+                    print(c)
+                    check = RegisterTable.objects.filter(student = stud, subject = c, sem_ses = sem).first()
+                    if check == None:
+                        print('registering student: ' + str(stud) + ' to course: ' + str(c.subject_name))
+                        ss = RegisterTable(
+                            sem_ses = sem,
+                            dept = dep,
+                            student = stud,
+                            subject = c
+                        )
+                        ss.save()
+
+                        tid = AssignedTeacher2.objects.filter(course_id = c.course_code).first().teacher.teacher_id
+
+                        print(tid)
+
+                        rr = Rating.objects.filter(student = stud , subject_id = c.course_code, teacher_id = tid).first()
+                        if rr == None:
+                            rate = Rating(
+                                student = stud,
+                                subject_id = c.course_code,
+                                teacher_id = tid,
+                            )
+                            rate.save()
+                        else:
+                            print('Continuing loop because rating exist...')
+                            continue
+                        
+                    else:
+                        print('Continuing loop because student already registered...')
+                        continue
 
         messages.success(request,"All students registered to respective courses.")
 
