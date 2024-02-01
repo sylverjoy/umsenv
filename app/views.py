@@ -253,23 +253,27 @@ def home(request):
                                 subject = c
                             )
                             ss.save()
-
-                            tid = AssignedTeacher2.objects.filter(course_id = c.course_code).first().teacher.teacher_id
-
-                            print(tid)
-
-                            rr = Rating.objects.filter(student = stud , subject_id = c.course_code, teacher_id = tid).first()
-                            if rr == None:
-                                rate = Rating(
-                                    student = stud,
-                                    subject_id = c.course_code,
-                                    teacher_id = tid,
-                                )
-                                rate.save()
-                            else:
-                                print('Continuing loop because rating exist...')
-                                continue
                             
+                            if AssignedTeacher2.objects.filter(course_id = c.course_code).first() != None:
+
+                                tid = AssignedTeacher2.objects.filter(course_id = c.course_code).first().teacher.teacher_id
+
+                                print(tid)
+
+                                rr = Rating.objects.filter(student = stud , subject_id = c.course_code, teacher_id = tid).first()
+                                if rr == None:
+                                    rate = Rating(
+                                        student = stud,
+                                        subject_id = c.course_code,
+                                        teacher_id = tid,
+                                    )
+                                    rate.save()
+                                else:
+                                    print('Continuing loop because rating exist...')
+                                    continue
+                            else: 
+                                print('Continuing loop because no teacher is assigned to course...')
+                                continue
                         else:
                             print('Continuing loop because student already registered...')
                             continue
