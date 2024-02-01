@@ -2079,7 +2079,7 @@ def setActiveSS(request):
         print(sem)
         sem.active = 'Yes'
         sem.save()
-        messages.success(request,"Semester:  " + sem.ss_id + " is set active.")
+        
     
         print(SemesterSession.objects.filter(active= "Yes").all())
 
@@ -2087,6 +2087,7 @@ def setActiveSS(request):
         students = Student.objects.all()
         print(students)
         for stud in students:
+            print(stud)
             deg = stud.degree_pursued.deg_id
             lev = stud.level
             dep = stud.dept
@@ -2101,6 +2102,7 @@ def setActiveSS(request):
             courses = Subject.objects.filter(level = lev, subtype = sub, dept= dep, semester = sem.semester)
 
             for c in courses:
+                print(c)
                 check = RegisterTable.objects.filter(student = stud, subject = c, sem_ses = sem).first()
                 if check == None:
                     print('registering student: ' + str(stud) + ' to course: ' + str(c.subject_name))
@@ -2131,6 +2133,9 @@ def setActiveSS(request):
                 else:
                     print('Continuing loop because student already registered...')
                     continue
+
+        messages.success(request,"Semester:  " + sem.ss_id + " is set active.")
+        messages.success(request,"All students registered to respective courses.")
 
         return redirect('home')
     
