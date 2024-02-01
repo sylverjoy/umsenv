@@ -215,6 +215,63 @@ def home(request):
                 'low_mark':low_mark,                
 
     }
+    if request.method == 'POST':
+        # Register all students to various courses for the semester
+        sem = SemesterSession.objects.filter(active= "Yes").first()
+        students = Student.objects.all()
+        print(students)
+        for stud in students:
+            print(stud)
+            deg = stud.degree_pursued.deg_id
+            lev = stud.level
+            dep = stud.dept
+
+            if deg == "HND":
+                sub = "HND"
+            elif deg == "BTECH":
+                sub = "DEGREE"
+            else:
+                sub = "MASTER"
+
+            courses = Subject.objects.filter(level = lev, subtype = sub, dept= dep, semester = sem.semester)
+
+            for c in courses:
+                print(c)
+                check = RegisterTable.objects.filter(student = stud, subject = c, sem_ses = sem).first()
+                if check == None:
+                    print('registering student: ' + str(stud) + ' to course: ' + str(c.subject_name))
+                    ss = RegisterTable(
+                        sem_ses = sem,
+                        dept = dep,
+                        student = stud,
+                        subject = c
+                    )
+                    ss.save()
+
+                    tid = AssignedTeacher2.objects.filter(course_id = c.course_code).first().teacher.teacher_id
+
+                    print(tid)
+
+                    rr = Rating.objects.filter(student = stud , subject_id = c.course_code, teacher_id = tid).first()
+                    if rr == None:
+                        rate = Rating(
+                            student = stud,
+                            subject_id = c.course_code,
+                            teacher_id = tid,
+                        )
+                        rate.save()
+                    else:
+                        print('Continuing loop because rating exist...')
+                        continue
+                    
+                else:
+                    print('Continuing loop because student already registered...')
+                    continue
+
+        messages.success(request,"All students registered to respective courses.")
+
+        return redirect('home')
+    
     return render(request,'admin_template/index.html',context)
 
 @login_required(login_url = 'login')
