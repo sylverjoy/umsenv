@@ -155,7 +155,10 @@
       </div>
     </div>
   </div>
-
+  <form action="" method="POST"  enctype="multipart/form-data" class="forms-sample">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary mr-2">Register All</button>
+  </form>
 
 </div>
 

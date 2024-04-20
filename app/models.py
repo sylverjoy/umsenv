@@ -24,6 +24,7 @@ class AcademicYear(models.Model):
 
     def __str__(self):
         return self.ay
+    
 class SemesterSession(models.Model):
     session = models.ForeignKey(AcademicYear, on_delete=models.CASCADE, default='')
     semester = models.CharField(max_length= 200, null = False, choices= [('Semester 1', 'Semester 1'), ('Semester 2', 'Semester 2') ])
@@ -41,6 +42,7 @@ class SemesterSession(models.Model):
 
     def __str__(self):
         return self.ss_id
+    
 class Dept(models.Model):
     school = models.ForeignKey(School, on_delete= models.CASCADE, default="")
     dept_id = models.CharField(max_length= 10, null=False, primary_key=True)
@@ -83,6 +85,7 @@ class Teacher(models.Model):
 
     def __str__(self):
         return self.name
+    
 class Subject(models.Model):
     course_code = models.CharField(max_length= 200, primary_key= True)
     subject_name = models.CharField(max_length= 200)
@@ -102,6 +105,7 @@ class Subject(models.Model):
         else:
             self.dep = str(self.dept.all()[0])
         super(Subject, self).save(*args, **kwargs)
+
 class AssignedTeacher2(models.Model):
     dept = models.ForeignKey(Dept,on_delete=models.CASCADE)
     course = models.ForeignKey(Subject, on_delete=models.CASCADE, default="")
@@ -111,6 +115,7 @@ class AssignedTeacher2(models.Model):
         return str(self.teacher) + " - " + str(self.course)
     class Meta:
         unique_together = (("teacher","course"))
+
 class RegisterTable(models.Model):
     sem_ses = models.ForeignKey(SemesterSession, on_delete=models.CASCADE, default= "S1/22/23")
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -119,7 +124,7 @@ class RegisterTable(models.Model):
     dept =models.ForeignKey(Dept, on_delete=models.CASCADE)
 
     def __str__(self):
-        return str(self.student) + " - " + str(self.subject)
+        return str(self.student) + " - " + str(self.subject) + " - " + str(self.sem_ses.ss_id)
     class Meta:
         unique_together = (("student","subject","sem_ses"))
 
@@ -143,7 +148,7 @@ class Result(models.Model):
         self.total_resit = (int(self.theory_marks) + int(self.term_test_resit))/5
         super(Result, self).save(*args, **kwargs)
     def __str__(self):
-        return str(self.student) + " - " + str(self.course_code)
+        return str(self.student) + " - " + str(self.course_code) + " - " + str(self.sem_ses)
     class Meta:
         unique_together = (("student","course_code","sem_ses"))
     
@@ -153,6 +158,8 @@ class Rating(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     rating  = models.IntegerField(default = '3')
+    def __str__(self):
+        return str(self.student) + " - " + str(self.teacher) + " - " + str(self.subject)
     class Meta:
         unique_together = (("student","subject"))
 
