@@ -1822,16 +1822,24 @@ def add_excel(request):
         success = False
         for i in range(1, len(excel_data)):
             try:
-                sub = Result(
-                        sem_ses = c_ss,
-                        course_code =Subject.objects.filter(course_code = course_cd).first(),
-                        theory_marks = excel_data[i][2],
-                        dept = dept_id,
-                        student_id = excel_data[i][0],
-                        level = Student.objects.filter(registration_number = excel_data[i][0]).first().level
-                        )
-                sub.save()
-                success = True
+                stud = Student.objects.filter(registration_number = excel_data[i][0]).first()
+                res = Result.objects.filter(sem_ses = c_ss, student = stud, course_code = course_cd).first()  
+
+                if res != None:
+                    res.theory_marks = excel_data[i][2]
+                    res.save()
+                    success = True
+                else:
+                    sub = Result(
+                            sem_ses = c_ss,
+                            course_code =Subject.objects.filter(course_code = course_cd).first(),
+                            theory_marks = excel_data[i][2],
+                            dept = dept_id,
+                            student_id = excel_data[i][0],
+                            level = Student.objects.filter(registration_number = excel_data[i][0]).first().level
+                            )
+                    sub.save()
+                    success = True
             except IntegrityError :
                 messages.success(request,"Student %s already has Result for %s course"% (excel_data[i][0], course_cd))
                 success = False
@@ -2056,6 +2064,63 @@ def reupload_results(request):
             return redirect('home')
                 
     return render(request,'admin_template/reupload_results.html',context)  
+
+@login_required(login_url = 'login')
+@allowed_users(allowed_roles=['admin'])         
+def reupload_results_ca(request):
+    ss = SemesterSession.objects.filter(active ='Yes').first()
+    depts = Dept.objects.all()
+    levs = ['HND1','HND2','BTECH','M1','M2']
+
+
+    context={ 'depts': depts, 'levs': levs} 
+
+    if request.method == 'POST' and request.FILES['myfile']:
+        myfile = request.FILES['myfile']
+        dept_id = request.POST.get('dept')
+        dept = Dept.objects.filter(dept_id = dept_id).first()
+        level = request.POST.get('level')
+
+        print(dept.dept_id)
+
+        try:
+            wb = openpyxl.load_workbook(myfile)
+            ws = wb["Sheet1"]
+            print(ws)
+
+            excel_data = []
+
+            for r in ws.iter_rows():
+                row_data = []
+                for cell in r:
+                    row_data.append(str(cell.value))
+                excel_data.append(row_data)
+            
+            print(excel_data)
+
+            subjects = Subject.objects.filter(dept = dept_id, level = level).all()
+            print(subjects)
+
+
+            for i in range(1, len(excel_data)):
+                j=4
+                while j < subjects.count() + 4:
+                    for s in subjects:
+                        Result.objects.filter(sem_ses = ss, student = excel_data[i][0], level = level, course_code = s ).update(theory_marks = excel_data[i][j])
+                        j+=1
+            messages.success(request, "Succesfully reuploaded results.")
+            return redirect('home') 
+        except OSError:
+            messages.success(request, "An error occured.Please Upload an excel file. If error persists contact platform admin.")
+            return redirect('home')
+        #except DataError:
+            #messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
+            #return redirect('home')
+        except ValueError:
+            messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
+            return redirect('home')
+                
+    return render(request,'admin_template/reupload_results_ca.html',context)  
 
 @login_required(login_url = 'login')
 @allowed_users(allowed_roles=['admin'])
@@ -2660,6 +2725,25 @@ def extract_results(request):
             res.append(s.subject_name)
             ca.append(s.subject_name)
             exam.append(s.subject_name)
+            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all()
+            if len(results) == 0:
+                # create empty results in Result table
+                for r in students:
+                    res = Result(
+                        sem_ses = SemesterSession.objects.filter(active = 'Yes').first(),
+                        student = r,
+                        course_code = s.course_code,
+                        dept = r.dept,
+                        level = r.level,
+                        total = 0,
+                        theory_marks = 0,
+                        term_test = 0,
+                        total_resit = 0,
+                        theory_marks_resit = 0,
+                        term_test_resit = 0,
+                        resited = "No"
+                    )
+                    res.save()
             results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all()
             for r in results:
                 if r.resited == "No" :

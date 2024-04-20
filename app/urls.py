@@ -71,6 +71,7 @@ urlpatterns = [
     path("all_schools/",views.all_schools, name ='all_schools'),
     path('extract_results/', views.extract_results,name ="extract_results"),
     path('reupload_results/', views.reupload_results,name ="reupload_results"),
+    path('reupload_results_ca/', views.reupload_results_ca,name ="reupload_results_ca"),
     path('generate_codes/', views.generate_codes,name ="generate_codes"),
     path('download_codes/', views.download_codes,name ="download_codes"),
     path('stats/', views.extract_res_stat,name ="stats"),
