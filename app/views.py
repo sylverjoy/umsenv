@@ -2732,7 +2732,7 @@ def extract_results(request):
                     res = Result(
                         sem_ses = SemesterSession.objects.filter(active = 'Yes').first(),
                         student = r,
-                        course_code = s.course_code,
+                        course_code = s,
                         dept = r.dept,
                         level = r.level,
                         total = 0,
