@@ -2729,14 +2729,14 @@ def extract_results(request):
             if len(results) == 0:
                 # create empty results in Result table
                 for r in students:
-                    res = Result(
+                    new_res = Result(
                         sem_ses = SemesterSession.objects.filter(active = 'Yes').first(),
                         student = r,
                         course_code = s,
                         dept = r.dept,
                         level = r.level,
                     )
-                    res.save()
+                    new_res.save()
             results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all()
             for r in results:
                 if r.resited == "No" :
