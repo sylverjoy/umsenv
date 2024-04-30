@@ -2735,13 +2735,6 @@ def extract_results(request):
                         course_code = s,
                         dept = r.dept,
                         level = r.level,
-                        total = 0,
-                        theory_marks = 0,
-                        term_test = 0,
-                        total_resit = 0,
-                        theory_marks_resit = 0,
-                        term_test_resit = 0,
-                        resited = "No"
                     )
                     res.save()
             results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all()
