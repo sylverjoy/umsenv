@@ -1815,7 +1815,10 @@ def add_excel(request):
         for r in ws.iter_rows():
             row_data = []
             for cell in r:
-                row_data.append(str(cell.value))
+                if cell.value is None:
+                    row_data.append(None)
+                else:   
+                    row_data.append(str(cell.value))
             excel_data.append(row_data)
         
         print(excel_data)
@@ -1918,7 +1921,10 @@ def add_exam(request):
         for r in ws.iter_rows():
             row_data = []
             for cell in r:
-                row_data.append(str(cell.value))
+                if cell.value is None:
+                    row_data.append(None)
+                else:   
+                    row_data.append(str(cell.value))
             excel_data.append(row_data)
         
         print(excel_data)
@@ -1964,7 +1970,10 @@ def add_students(request):
         for r in ws.iter_rows():
             row_data = []
             for cell in r:
-                row_data.append(str(cell.value))
+                if cell.value is None:
+                    row_data.append(None)
+                else:   
+                    row_data.append(str(cell.value))
             excel_data.append(row_data)
         
         print(excel_data)
@@ -2035,8 +2044,11 @@ def reupload_results(request):
 
             for r in ws.iter_rows():
                 row_data = []
-                for cell in r:
-                    row_data.append(str(cell.value))
+                for cell in r:   
+                    if cell.value is None:
+                        row_data.append(None)
+                    else:   
+                        row_data.append(str(cell.value))
                 excel_data.append(row_data)
             
             print(excel_data)
@@ -2095,7 +2107,10 @@ def reupload_results_ca(request):
             for r in ws.iter_rows():
                 row_data = []
                 for cell in r:
-                    row_data.append(str(cell.value))
+                    if cell.value is None:
+                        row_data.append(None)
+                    else:   
+                        row_data.append(str(cell.value))
                 excel_data.append(row_data)
             
             print(excel_data)

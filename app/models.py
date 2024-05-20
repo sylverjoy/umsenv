@@ -134,9 +134,9 @@ class Result(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     level = models.CharField(max_length= 10, null = True, default= 'HND1')
     course_code = models.ForeignKey(Subject, on_delete=models.CASCADE, default="")
-    theory_marks  = models.IntegerField(null = True, default = 0)
-    term_test  = models.IntegerField(null = True, default= 0)
-    term_test_resit  = models.IntegerField(null = True, default= 0)
+    theory_marks  = models.FloatField(null = True, default = 0)
+    term_test  = models.FloatField(null = True, default= 0)
+    term_test_resit  = models.FloatField(null = True, default= 0)
     total = models.FloatField(null = True, default= 0)
     total_resit = models.FloatField(null = True, default= 0)
     dept = models.CharField(max_length=3, null= True)
@@ -157,7 +157,7 @@ class Rating(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    rating  = models.IntegerField(default = '3')
+    rating  = models.FloatField(default = '3')
     def __str__(self):
         return str(self.student) + " - " + str(self.teacher) + " - " + str(self.subject)
     class Meta:
