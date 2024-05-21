@@ -1922,7 +1922,7 @@ def add_exam(request):
             row_data = []
             for cell in r:
                 if cell.value is None:
-                    row_data.append(None)
+                    row_data.append(0)
                 else:   
                     row_data.append(str(cell.value))
             excel_data.append(row_data)
@@ -1971,7 +1971,7 @@ def add_students(request):
             row_data = []
             for cell in r:
                 if cell.value is None:
-                    row_data.append(None)
+                    row_data.append(0)
                 else:   
                     row_data.append(str(cell.value))
             excel_data.append(row_data)
@@ -2046,7 +2046,7 @@ def reupload_results(request):
                 row_data = []
                 for cell in r:   
                     if cell.value is None:
-                        row_data.append(None)
+                        row_data.append(0)
                     else:   
                         row_data.append(str(cell.value))
                 excel_data.append(row_data)
@@ -2108,7 +2108,7 @@ def reupload_results_ca(request):
                 row_data = []
                 for cell in r:
                     if cell.value is None:
-                        row_data.append(None)
+                        row_data.append(0)
                     else:   
                         row_data.append(str(cell.value))
                 excel_data.append(row_data)

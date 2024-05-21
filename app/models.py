@@ -144,8 +144,8 @@ class Result(models.Model):
     absent = models.CharField(max_length=3, null= False , choices=[('Yes', 'Yes'), ('No','No')], default= 'No')
 
     def save(self, *args, **kwargs):
-        self.total = (int(self.theory_marks) + int(self.term_test))/5
-        self.total_resit = (int(self.theory_marks) + int(self.term_test_resit))/5
+        self.total = (float(self.theory_marks) + float(self.term_test))/5
+        self.total_resit = (float(self.theory_marks) + float(self.term_test_resit))/5
         super(Result, self).save(*args, **kwargs)
     def __str__(self):
         return str(self.student) + " - " + str(self.course_code) + " - " + str(self.sem_ses)
