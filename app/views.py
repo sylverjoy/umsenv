@@ -195,9 +195,6 @@ def home(request):
         low_mark = round((i.avg)/4.0, 2)
 
     
-    
-    print(overall_rate)
-    
     if overall_rate['rating__avg'] is None:
         overall_rate = {'rating__avg': 0 }
     
@@ -227,7 +224,6 @@ def home(request):
             for page_num in range(1, paginator.num_pages + 1):
                 page = paginator.page(page_num)
                 for stud in page.object_list:
-                    print(stud)
                     deg = stud.degree_pursued.deg_id
                     lev = stud.level
                     dep = stud.dept
@@ -242,7 +238,6 @@ def home(request):
                     courses = Subject.objects.filter(level = lev, subtype = sub, dept= dep, semester = sem.semester)
 
                     for c in courses:
-                        print(c)
                         check = RegisterTable.objects.filter(student = stud, subject = c, sem_ses = sem).first()
                         if check == None:
                             print('registering student: ' + str(stud) + ' to course: ' + str(c.subject_name))
@@ -257,8 +252,6 @@ def home(request):
                             if AssignedTeacher2.objects.filter(course_id = c.course_code).first() != None:
 
                                 tid = AssignedTeacher2.objects.filter(course_id = c.course_code).first().teacher.teacher_id
-
-                                print(tid)
 
                                 rr = Rating.objects.filter(student = stud , subject_id = c.course_code, teacher_id = tid).first()
                                 if rr == None:
@@ -298,7 +291,6 @@ def studentHome(request):
     deg = request.user.student.degree_pursued.deg_id
     c_ss = SemesterSession.objects.filter(active = 'Yes').first()
     pe = 'auto'
-    print(res)
 
     if c_ss.results_published == "No":
         pe = 'none'
@@ -491,8 +483,6 @@ def get_subtype(request, *args, **kwargs):
     for i in subtype:
         labels.append(i.subtype)
         cntt = min(i.cnt*.75,3)
-        print(i.cnt)
-        print(i.sum_marks)
         data.append((i.sum_marks)*8/(i.cnt*100) + cntt)
 
     return JsonResponse(data={
@@ -520,11 +510,9 @@ def getting_json(subtype, regi):
     for i in marksObj:
         obj = {}
         obj[attr[0]] = i.subject_name
-        print(i.subject_name)
         obj[attr[1]] = i.cc
         
         cg = cal_cg(i.total)
-        print(i.total)
         obj[attr[2]]= cg
         json_res.append(obj) 
     return json_res
@@ -535,7 +523,6 @@ def getting_json_result(regi):
     marksObj = Result.objects.filter(student = regi)
 
     c_ss = SemesterSession.objects.filter(active = 'Yes').first()
-    print(c_ss.ss_id)
     
     pub_marks = []
 
@@ -544,7 +531,6 @@ def getting_json_result(regi):
         for m in marksObj:
             print(m.sem_ses)
             if str(m.sem_ses) != str(c_ss.ss_id):
-                print(m)
                 pub_marks.append(m)
     else:
         pub_marks = marksObj
@@ -1239,7 +1225,6 @@ def search_student_registered(request):
     if request.method == 'POST':
         course_id = request.POST.get('course_code')
         xx = course_id.split(",")
-        print(xx)
 
         return redirect(reverse('add_result', kwargs= {"dept": xx[1], "course_id": xx[0]}))
     return render(request,'teacher_template/search_student_registered.html',context)
@@ -1277,7 +1262,6 @@ def update_result(request, result_id, course_code):
     theory_marks = result.theory_marks
     term_test = result.term_test
     total = result.total
-    print(total)
     form = UpdateForm(request.POST or None, instance = result)
     regi = result.student
 
@@ -1309,7 +1293,6 @@ def update_result_resit(request, result_id, course_code):
     theory_marks = result.theory_marks
     term_test = result.term_test
     total = result.total
-    print(total)
     form = UpdateFormResit(request.POST or None, instance = result)
     regi = result.student
 
@@ -1404,17 +1387,13 @@ def add_subject(request):
 @allowed_users(allowed_roles=['teacher'])
 def extract_temp(request):
     t_id = str(request.user.teacher.teacher_id)
-    print(t_id)
     data1 = AssignedTeacher2.objects.filter(teacher_id = t_id) 
 
     c_ss = SemesterSession.objects.filter(active = 'Yes').first()
-    print(c_ss)
-    print(c_ss.ca_deadline)
     disabled = ""
     data2 = []
     from datetime import datetime
     if datetime.now().date() > c_ss.ca_deadline and datetime.now().date() > c_ss.ca_deadline_btech and datetime.now().date() > c_ss.ca_deadline_masters:
-        print(True)
 
         disabled = "disabled"
     if datetime.now().date() < c_ss.ca_deadline:
@@ -1449,7 +1428,6 @@ def extract_temp(request):
     if request.method == 'POST':
         code = request.POST.get('course_code')
         xx =code.split(",")
-        print(xx)
         course_cd = xx[0]
         dept_id =xx[1]
 
@@ -1505,17 +1483,13 @@ def extract_temp(request):
 @allowed_users(allowed_roles=['teacher'])
 def extract_temp_exam(request):
     t_id = str(request.user.teacher.teacher_id)
-    print(t_id)
     data1 = AssignedTeacher2.objects.filter(teacher_id = t_id)
 
     c_ss = SemesterSession.objects.filter(active = 'Yes').first()
-    print(c_ss)
-    print(c_ss.ca_deadline)
     disabled = ""
     data2 = []
     from datetime import datetime
     if datetime.now().date() > c_ss.result_deadline and datetime.now().date() > c_ss.result_deadline_btech and datetime.now().date() > c_ss.result_deadline_masters:
-        print(True)
 
         disabled = "disabled"
     if datetime.now().date() < c_ss.result_deadline:
@@ -1549,7 +1523,6 @@ def extract_temp_exam(request):
     if request.method == 'POST':
         code = request.POST.get('course_code')
         xx =code.split(",")
-        print(xx)
         course_cd = xx[0]
         dept_id =xx[1]
 
@@ -1614,7 +1587,6 @@ def extract_res_stat(request):
 
         res = Result.objects.filter(sem_ses = sem, level = lev, dept = dept).all()
 
-        print(res)
         if not res:
             messages.success(request, "No results.")
         else:
@@ -1758,17 +1730,13 @@ def extract_res_stat(request):
 def add_excel(request):
 
     t_id = str(request.user.teacher.teacher_id)
-    print(t_id)
     data1 = AssignedTeacher2.objects.filter(teacher_id = t_id)
 
     c_ss = SemesterSession.objects.filter(active = 'Yes').first()
-    print(c_ss)
-    print(c_ss.ca_deadline)
     disabled = ""
     data2 = []
     from datetime import datetime
     if datetime.now().date() > c_ss.ca_deadline and datetime.now().date() > c_ss.ca_deadline_btech and datetime.now().date() > c_ss.ca_deadline_masters:
-        print(True)
 
         disabled = "disabled"
     if datetime.now().date() < c_ss.ca_deadline:
@@ -1802,13 +1770,11 @@ def add_excel(request):
         myfile = request.FILES['myfile']
         code = request.POST.get('course_code')
         xx =code.split(",")
-        print(xx)
         course_cd = xx[0]
         dept_id =xx[1]
 
         wb = openpyxl.load_workbook(myfile)
         ws = wb["Sheet1"]
-        print(ws)
 
         excel_data = []
 
@@ -1816,12 +1782,11 @@ def add_excel(request):
             row_data = []
             for cell in r:
                 if cell.value is None:
-                    row_data.append(None)
+                    row_data.append("0")
                 else:   
                     row_data.append(str(cell.value))
             excel_data.append(row_data)
         
-        print(excel_data)
         success = False
         for i in range(1, len(excel_data)):
             try:
@@ -1863,17 +1828,13 @@ def add_excel(request):
 @allowed_users(allowed_roles=['teacher'])
 def add_exam(request):
     t_id = str(request.user.teacher.teacher_id)
-    print(t_id)
     data1 = AssignedTeacher2.objects.filter(teacher_id = t_id)
 
     c_ss = SemesterSession.objects.filter(active = 'Yes').first()
-    print(c_ss)
-    print(c_ss.ca_deadline)
     disabled = ""
     data2 = []
     from datetime import datetime
     if datetime.now().date() > c_ss.result_deadline and datetime.now().date() > c_ss.result_deadline_btech and datetime.now().date() > c_ss.result_deadline_masters:
-        print(True)
 
         disabled = "disabled"
     if datetime.now().date() < c_ss.result_deadline:
@@ -1908,13 +1869,11 @@ def add_exam(request):
         myfile = request.FILES['myfile']
         code = request.POST.get('course_code')
         xx =code.split(",")
-        print(xx)
         course_cd = xx[0]
         dept_id =xx[1]
 
         wb = openpyxl.load_workbook(myfile)
         ws = wb["Sheet1"]
-        print(ws)
 
         excel_data = []
 
@@ -1922,12 +1881,11 @@ def add_exam(request):
             row_data = []
             for cell in r:
                 if cell.value is None:
-                    row_data.append(0)
+                    row_data.append("0")
                 else:   
                     row_data.append(str(cell.value))
             excel_data.append(row_data)
         
-        print(excel_data)
         success = False
         for i in range(1, len(excel_data)):
             try:
@@ -1959,11 +1917,9 @@ def add_students(request):
         dept_id = request.POST.get('dept')
         dept = Dept.objects.filter(dept_id = dept_id).first()
 
-        print(dept.dept_id)
 
         wb = openpyxl.load_workbook(myfile)
         ws = wb["Sheet1"]
-        print(ws)
 
         excel_data = []
 
@@ -1971,12 +1927,11 @@ def add_students(request):
             row_data = []
             for cell in r:
                 if cell.value is None:
-                    row_data.append(0)
+                    row_data.append("0")
                 else:   
                     row_data.append(str(cell.value))
             excel_data.append(row_data)
         
-        print(excel_data)
         
         for i in range(1, len(excel_data)):
             try:
@@ -2033,12 +1988,9 @@ def reupload_results(request):
         dept = Dept.objects.filter(dept_id = dept_id).first()
         level = request.POST.get('level')
 
-        print(dept.dept_id)
-
         try:
             wb = openpyxl.load_workbook(myfile)
             ws = wb["Sheet1"]
-            print(ws)
 
             excel_data = []
 
@@ -2046,15 +1998,13 @@ def reupload_results(request):
                 row_data = []
                 for cell in r:   
                     if cell.value is None:
-                        row_data.append(0)
+                        row_data.append("0")
                     else:   
                         row_data.append(str(cell.value))
                 excel_data.append(row_data)
             
-            print(excel_data)
 
             subjects = Subject.objects.filter(dept = dept_id, level = level).all()
-            print(subjects)
 
 
             for i in range(1, len(excel_data)):
@@ -2095,12 +2045,9 @@ def reupload_results_ca(request):
         dept = Dept.objects.filter(dept_id = dept_id).first()
         level = request.POST.get('level')
 
-        print(dept.dept_id)
-
         try:
             wb = openpyxl.load_workbook(myfile)
             ws = wb["Sheet1"]
-            print(ws)
 
             excel_data = []
 
@@ -2108,16 +2055,12 @@ def reupload_results_ca(request):
                 row_data = []
                 for cell in r:
                     if cell.value is None:
-                        row_data.append(0)
+                        row_data.append("0")
                     else:   
                         row_data.append(str(cell.value))
                 excel_data.append(row_data)
-            
-            print(excel_data)
 
             subjects = Subject.objects.filter(dept = dept_id, level = level).all()
-            print(subjects)
-
 
             for i in range(1, len(excel_data)):
                 j=4
@@ -2214,10 +2157,8 @@ def addSS(request):
 @allowed_users(allowed_roles=['admin'])
 def setActiveSS(request):
     data = SemesterSession.objects.all()
-    print(data)
 
     active = SemesterSession.objects.filter(active = 'Yes').first()
-    print(active)
 
     context = {'ss' : data, 'current': active}
 
@@ -2228,14 +2169,8 @@ def setActiveSS(request):
             s.save()
         
         ssid = request.POST.get('ssid')
-        print(SemesterSession.objects.filter(ss_id = ssid).first())
-        sem = SemesterSession.objects.filter(ss_id = ssid).first()
-        print(sem)
         sem.active = 'Yes'
         sem.save()
-        
-    
-        print(SemesterSession.objects.filter(active= "Yes").all())
 
         ''' Register all students to various courses for the semester
         students = Student.objects.all()
@@ -2322,8 +2257,6 @@ def assign_teacher(request, dept_id):
         exists = AssignedTeacher2.objects.filter(course = Subject.objects.filter(course_code = cour_code).first(), teacher_id = t_id).first()
         exists2 = AssignedTeacher2.objects.filter(course = Subject.objects.filter(course_code = cour_code).first())
         
-
-        print(exists)
         if exists:
             messages.success(request,"This Lecturer is already assigned to this course")
         elif exists2:
@@ -2346,10 +2279,9 @@ def assign_teacher(request, dept_id):
 @allowed_users(allowed_roles=['admin'])
 def change_stud_dept(request):
     data1 = Student.objects.all()
-    print(data1)
     
     data2 = Dept.objects.all()
-    print(data2)
+    
 
 
     context = {'studs' : data1, 'depts': data2}
@@ -2470,7 +2402,7 @@ def student_sub_register(request):
     deg = request.user.student.degree_pursued.deg_id
     regi = request.user.student
     sem = SemesterSession.objects.filter(active = 'Yes').first()
-    print(deg)
+
     if deg == "HND":
         sub = "HND"
     elif deg == "BTECH":
@@ -2479,7 +2411,6 @@ def student_sub_register(request):
         sub = "MASTER"
 
     lev = str(request.user.student.level)
-    print(sub)
 
     data = Subject.objects.filter(dept= dept_name, subtype = sub)
 
@@ -2508,7 +2439,6 @@ def student_sub_register(request):
 
             tid = AssignedTeacher2.objects.filter(course_id = course_cc).first().teacher.teacher_id
 
-            print(tid)
 
             rr = Rating.objects.filter(student = regi , subject_id = course_cc, teacher_id = tid).first()
             if rr == None:
@@ -2557,7 +2487,6 @@ def teacher_approval(request, course_code, student_dept):
     if request.method == "POST":
         stat = request.POST.get('optionsRadios')
         xx = stat.split(',')
-        print(xx)
         if xx[0]=='Pending' or xx[0]=='Rejected':
             Result.objects.filter(student_id = xx[1], course_code = course_code, dept = student_dept).delete()
 
@@ -2591,7 +2520,7 @@ def student_rating(request):
     if request.method == "POST":
         stat = request.POST.get('optionsRadios')
         xx = stat.split(',')
-        print(xx)
+    
         Rating.objects.filter(subject_id = xx[2], student = regi,teacher_id = xx[1]).update(rating = int(xx[0]))
 
         return redirect('home')
@@ -2727,7 +2656,7 @@ def extract_results(request):
 
 
         students = Student.objects.filter(dept = dept_id, level = level).all()
-        print(students)
+
         for r in students:
             matricules.append(r.registration_number)
 
@@ -2736,7 +2665,6 @@ def extract_results(request):
             pobs.append(r.pob)
         
         subjects = Subject.objects.filter(dept = dept_id, level = level, semester = SemesterSession.objects.filter(active = 'Yes').first().semester).all().order_by('subject_name')
-        print(subjects)
         for s in subjects:
             res = []
             ca = []
@@ -2790,10 +2718,6 @@ def extract_results(request):
                 ca_results.append(ca)
             if len(exam) > 0 :
                 exam_results.append(exam)
-
-        print(f_results)
-        print(ca_results)
-        print(exam_results)
 
         wb_name = 'Combined_Results_' + str(dept_id) + '_' + str(level) + '.xlsx'
         output = io.BytesIO()
@@ -2992,7 +2916,6 @@ def download_codes(request):
 
     if request.method == 'POST':
         course_code = request.POST.get('course_code').split(",")[0]
-        print(course_code)
 
         course_name = Subject.objects.filter(course_code = course_code).first().subject_name
 
@@ -3056,7 +2979,6 @@ def delete_result(request):
     if request.method == 'POST':
         course_id = request.POST.get('course_code')
         xx = course_id.split(",")
-        print(xx)
         
         return redirect(reverse('delete_result2', kwargs= {"dept": xx[1], "course_id": xx[0]}))
 
@@ -3126,8 +3048,6 @@ class GeneratePdf2(View):
 
         cid = str(self.course_id)
         did = str(self.dept_id)
-        print(cid)
-        print(did)
         marksObj = Result.objects.filter(course_code = cid, sem_ses = SemesterSession.objects.filter(active= 'Yes').first())
         cnt=1
         for i in marksObj:
