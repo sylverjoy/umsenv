@@ -2011,7 +2011,7 @@ def reupload_results(request):
                 j=4
                 while j < subjects.count() + 4:
                     for s in subjects:  
-                        r = Result.objects.filter(sem_ses = ss, student = excel_data[i][0], level = level, course_code = s ).first()
+                        r = Result.objects.filter(sem_ses = ss.ss_id, student = excel_data[i][0], level = level, course_code = s.course_code ).first()
                         r.term_test = excel_data[i][j]
                         r.save()
                         j+=1
@@ -2021,7 +2021,7 @@ def reupload_results(request):
             messages.success(request, "An error occured.Please Upload an excel file. If error persists contact platform admin.")
             return redirect('home')
         except AttributeError:
-            messages.success(request, "Student: {stud}, seme_ses: {sem_ses}, level: {level}, course_code: {course_code}".format(stud = excel_data[i][0], sem_ses = ss, level = level, course_code = s ))
+            messages.success(request, "Student: {stud}, sem_ses: {sem_ses}, level: {level}, course_code: {course_code}".format(stud = excel_data[i][0], sem_ses = ss.ss_id, level = level, course_code = s.course_code ))
             return redirect('home')
         except ValueError:
             messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
@@ -2066,7 +2066,7 @@ def reupload_results_ca(request):
                 j=4
                 while j < subjects.count() + 4:
                     for s in subjects:
-                        r = Result.objects.filter(sem_ses = ss, student = excel_data[i][0], level = level, course_code = s ).first()
+                        r = Result.objects.filter(sem_ses = ss.ss_id, student = excel_data[i][0], level = level, course_code = s.course_code ).first()
                         r.theory_marks = excel_data[i][j]
                         r.save()
                         j+=1
@@ -2075,9 +2075,9 @@ def reupload_results_ca(request):
         except OSError:
             messages.success(request, "An error occured.Please Upload an excel file. If error persists contact platform admin.")
             return redirect('home')
-        #except DataError:
-            #messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
-            #return redirect('home')
+        except AttributeError:
+            messages.success(request, "Student: {stud}, sem_ses: {sem_ses}, level: {level}, course_code: {course_code}".format(stud = excel_data[i][0], sem_ses = ss.ss_id, level = level, course_code = s.course_code ))
+            return redirect('home')
         except ValueError:
             messages.success(request, "An error occured.You may have used wrong file. Check your file and make sure you are using correct file. If error persists contact platform admin.")
             return redirect('home')
