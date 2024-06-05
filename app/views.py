@@ -2169,6 +2169,8 @@ def setActiveSS(request):
             s.save()
         
         ssid = request.POST.get('ssid')
+
+        sem = SemesterSession.objects.filter(ss_id = ssid).first()
         sem.active = 'Yes'
         sem.save()
 
