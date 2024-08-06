@@ -538,8 +538,8 @@ def getting_json_result(regi):
     
     attr.append("subject_name")
     attr.append("course_code")
-    attr.append("semester")
     attr.append("credit")
+    attr.append("semester")
     attr.append("theory")
     attr.append("tt")
     attr.append("total")
