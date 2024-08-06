@@ -538,6 +538,7 @@ def getting_json_result(regi):
     
     attr.append("subject_name")
     attr.append("course_code")
+    attr.append("semester")
     attr.append("credit")
     attr.append("theory")
     attr.append("tt")
@@ -549,16 +550,17 @@ def getting_json_result(regi):
         obj[attr[0]] = i.course_code.subject_name
         obj[attr[1]] = i.course_code.course_code
         obj[attr[2]]= i.course_code.credit
-        obj[attr[3]] = i.theory_marks
-        obj[attr[4]] = i.term_test
+        obj[attr[3]] = i.sem_ses.semester
+        obj[attr[4]] = i.theory_marks
+        obj[attr[5]] = i.term_test
         if regi.level == "HND1" or regi.level == "HND2":
-            obj[attr[5]] = i.total
+            obj[attr[6]] = i.total
             cgpa = cal_grade(i.total) 
         else:
             cgpa = cal_cgname(cal_cg(i.total))
-            obj[attr[5]] = i.total * 5
+            obj[attr[6]] = i.total * 5
             
-        obj[attr[6]]= cgpa
+        obj[attr[7]]= cgpa
         json_res.append(obj) 
         
     return json_res
