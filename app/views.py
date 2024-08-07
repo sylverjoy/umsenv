@@ -520,7 +520,7 @@ def getting_json(subtype, regi):
 
 def getting_json_result(regi):
 
-    marksObj = Result.objects.filter(student = regi)
+    marksObj = Result.objects.filter(student = regi).order_by('sem_ses', 'course_code')
 
     c_ss = SemesterSession.objects.filter(active = 'Yes').first()
     
