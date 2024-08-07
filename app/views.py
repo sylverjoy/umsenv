@@ -2006,7 +2006,7 @@ def reupload_results(request):
                 excel_data.append(row_data)
             
 
-            subjects = Subject.objects.filter(dept = dept_id, level = level, semester = ss.semester).all()
+            subjects = Subject.objects.filter(dept = dept_id, level = level, semester = ss.semester).all().order_by('course_code')
 
 
             for i in range(1, len(excel_data)):
@@ -2062,7 +2062,7 @@ def reupload_results_ca(request):
                         row_data.append(str(cell.value))
                 excel_data.append(row_data)
 
-            subjects = Subject.objects.filter(dept = dept_id, level = level, semester = ss.semester).all()
+            subjects = Subject.objects.filter(dept = dept_id, level = level, semester = ss.semester).all().order_by('course_code')
 
             for i in range(1, len(excel_data)):
                 j=4
@@ -2668,7 +2668,7 @@ def extract_results(request):
             dobs.append(r.dob)
             pobs.append(r.pob)
         
-        subjects = Subject.objects.filter(dept = dept_id, level = level, semester = SemesterSession.objects.filter(active = 'Yes').first().semester).all().order_by('subject_name')
+        subjects = Subject.objects.filter(dept = dept_id, level = level, semester = SemesterSession.objects.filter(active = 'Yes').first().semester).all().order_by('course_code')
         for s in subjects:
             res = []
             ca = []
@@ -2676,7 +2676,7 @@ def extract_results(request):
             res.append(s.subject_name)
             ca.append(s.subject_name)
             exam.append(s.subject_name)
-            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all()
+            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all().order_by('course_code')
             if len(results) == 0:
                 # create empty results in Result table
                 for r in students:
@@ -2688,7 +2688,7 @@ def extract_results(request):
                         level = r.level,
                     )
                     new_res.save()
-            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all()
+            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all().order_by('course_code')    
             for r in results:
                 if r.resited == "No" :
                     if r.total or r.total != None  :
