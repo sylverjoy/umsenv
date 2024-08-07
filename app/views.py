@@ -2676,7 +2676,7 @@ def extract_results(request):
             res.append(s.subject_name)
             ca.append(s.subject_name)
             exam.append(s.subject_name)
-            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all().order_by('course_code')
+            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all().order_by('course_code__course_code')
             if len(results) == 0:
                 # create empty results in Result table
                 for r in students:
@@ -2688,7 +2688,7 @@ def extract_results(request):
                         level = r.level,
                     )
                     new_res.save()
-            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all().order_by('course_code')    
+            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all().order_by('course_code__course_code')    
             for r in results:
                 if r.resited == "No" :
                     if r.total or r.total != None  :
