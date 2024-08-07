@@ -2640,7 +2640,7 @@ def extract_results(request):
     data = Dept.objects.all()
 
     context={'dept':data, 'level': ['HND1', 'HND2', 'BTECH','M1','M2']} 
-
+ 
     if request.method == 'POST':
         dept_id = request.POST.get('dept')
         level = request.POST.get('level')
@@ -2659,7 +2659,7 @@ def extract_results(request):
         zip_name = 'Results_' + str(dept_id) + '_' + str(level) + '.zip'
 
 
-        students = Student.objects.filter(dept = dept_id, level = level).all()
+        students = Student.objects.filter(dept = dept_id, level = level).all().order_by('name')
 
         for r in students:
             matricules.append(r.registration_number)
@@ -2676,7 +2676,7 @@ def extract_results(request):
             res.append(s.subject_name)
             ca.append(s.subject_name)
             exam.append(s.subject_name)
-            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all().order_by('course_code__course_code')
+            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all().order_by('student__name')
             if len(results) == 0:
                 # create empty results in Result table
                 for r in students:
@@ -2688,7 +2688,7 @@ def extract_results(request):
                         level = r.level,
                     )
                     new_res.save()
-            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all().order_by('course_code__course_code')    
+            results = Result.objects.filter(course_code = s.course_code, sem_ses = SemesterSession.objects.filter(active = 'Yes').first()).all().order_by('student__name')    
             for r in results:
                 if r.resited == "No" :
                     if r.total or r.total != None  :
